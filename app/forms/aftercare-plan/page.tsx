@@ -1,18 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Users, Save, AlertCircle, CheckCircle, Plus, Trash2, FileText, Send } from "lucide-react"
+import { AlertCircle, CheckCircle, Plus, Trash2, FileText, Send, ArrowLeft, Users } from "lucide-react"
 import Link from "next/link"
+import { Badge } from "@/components/ui/badge"
 
 export default function AftercarePlanForm() {
   const [formData, setFormData] = useState({
     packageType: "",
+    otherPackageType: "",
     childName: "",
     childDOB: "",
     dischargeDate: "",
@@ -91,7 +87,16 @@ export default function AftercarePlanForm() {
     { value: "mental", label: "Mental & Behavioral Health Support Services (Required)" },
     { value: "idd", label: "IDD/Autism Spectrum Disorder Support Services (Required)" },
     { value: "treatment", label: "T3C Treatment Foster Family Care Support Services (Required)" },
-    { value: "other", label: "Other Package (Optional Aftercare)" },
+    { value: "emergency", label: "Emergency Shelter Services" },
+    { value: "basic", label: "Basic Foster Care Services" },
+    { value: "therapeutic", label: "Therapeutic Foster Care Services" },
+    { value: "kinship", label: "Kinship Care Services" },
+    { value: "adoption", label: "Adoption Support Services" },
+    { value: "independent", label: "Independent Living Services" },
+    { value: "respite", label: "Respite Care Services" },
+    { value: "family-preservation", label: "Family Preservation Services" },
+    { value: "reunification", label: "Family Reunification Services" },
+    { value: "other", label: "Other (please specify)" },
   ]
 
   const contactMethods = [
@@ -125,6 +130,11 @@ export default function AftercarePlanForm() {
     // Clear error when field is updated
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }))
+    }
+
+    // Clear other package type when not "other"
+    if (name === "packageType" && value !== "other") {
+      setFormData((prev) => ({ ...prev, otherPackageType: "" }))
     }
   }
 
@@ -203,6 +213,9 @@ export default function AftercarePlanForm() {
 
     // Required fields for all packages
     if (!formData.packageType) newErrors.packageType = "Package type is required"
+    if (formData.packageType === "other" && !formData.otherPackageType) {
+      newErrors.otherPackageType = "Please specify the other package type"
+    }
     if (!formData.childName) newErrors.childName = "Child name is required"
     if (!formData.childDOB) newErrors.childDOB = "Date of birth is required"
     if (!formData.dischargeDate) newErrors.dischargeDate = "Discharge date is required"
@@ -315,432 +328,466 @@ export default function AftercarePlanForm() {
           </div>
         </div>
 
-        {/* Form */}
-        <div className="max-w-6xl mx-auto">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Comprehensive Aftercare Services Plan
-                  </CardTitle>
-                  <CardDescription>6 months duration with twice monthly contact minimum</CardDescription>
-                </div>
-                <Badge variant="secondary" className="bg-amber-100 text-amber-800">
-                  Draft
-                </Badge>
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold mb-2 text-gray-800">Aftercare Services Plan</h2>
+                <p className="text-sm text-gray-600">
+                  Required for Mental & Behavioral Health, IDD/Autism Spectrum, and Treatment Foster Family Care
+                  packages (6 months, twice monthly contact minimum)
+                </p>
               </div>
-            </CardHeader>
-            <CardContent>
-              {showSuccess && (
-                <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg flex items-center">
-                  <CheckCircle className="h-5 w-5 mr-2" />
-                  {isDraft ? "Draft saved successfully!" : "Aftercare plan submitted successfully!"}
-                </div>
-              )}
+              <Badge variant="secondary" className="bg-amber-100 text-amber-800">
+                Draft
+              </Badge>
+            </div>
 
-              <div className="space-y-8">
-                {/* Basic Information */}
-                <section className="space-y-4">
-                  <h2 className="text-xl font-semibold text-gray-700">Basic Information</h2>
+            {showSuccess && (
+              <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg flex items-center">
+                <CheckCircle className="h-5 w-5 mr-2" />
+                {isDraft ? "Draft saved successfully!" : "Aftercare plan submitted successfully!"}
+              </div>
+            )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="packageType">Service Package Type *</Label>
-                      <select
-                        name="packageType"
-                        value={formData.packageType}
-                        onChange={handleInputChange}
-                        className={`w-full p-2 border rounded-md ${errors.packageType ? "border-red-500" : "border-gray-300"}`}
-                      >
-                        <option value="">Select package type</option>
-                        {packageTypes.map((type) => (
-                          <option key={type.value} value={type.value}>
-                            {type.label}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.packageType && <p className="text-red-500 text-sm mt-1">{errors.packageType}</p>}
-                    </div>
+            <div className="space-y-8">
+              {/* Basic Information */}
+              <section className="space-y-4">
+                <h2 className="text-xl font-semibold text-gray-700">Basic Information</h2>
 
-                    <div>
-                      <Label htmlFor="caseNumber">Case Number *</Label>
-                      <Input
-                        name="caseNumber"
-                        value={formData.caseNumber}
-                        onChange={handleInputChange}
-                        className={errors.caseNumber ? "border-red-500" : ""}
-                      />
-                      {errors.caseNumber && <p className="text-red-500 text-sm mt-1">{errors.caseNumber}</p>}
-                    </div>
-
-                    <div>
-                      <Label htmlFor="childName">Child Name *</Label>
-                      <Input
-                        name="childName"
-                        value={formData.childName}
-                        onChange={handleInputChange}
-                        className={errors.childName ? "border-red-500" : ""}
-                      />
-                      {errors.childName && <p className="text-red-500 text-sm mt-1">{errors.childName}</p>}
-                    </div>
-
-                    <div>
-                      <Label htmlFor="childDOB">Date of Birth *</Label>
-                      <Input
-                        type="date"
-                        name="childDOB"
-                        value={formData.childDOB}
-                        onChange={handleInputChange}
-                        className={errors.childDOB ? "border-red-500" : ""}
-                      />
-                      {errors.childDOB && <p className="text-red-500 text-sm mt-1">{errors.childDOB}</p>}
-                    </div>
-
-                    <div>
-                      <Label htmlFor="dischargeDate">Discharge Date *</Label>
-                      <Input
-                        type="date"
-                        name="dischargeDate"
-                        value={formData.dischargeDate}
-                        onChange={handleInputChange}
-                        className={errors.dischargeDate ? "border-red-500" : ""}
-                      />
-                      {errors.dischargeDate && <p className="text-red-500 text-sm mt-1">{errors.dischargeDate}</p>}
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Service Package Type *</label>
+                    <select
+                      name="packageType"
+                      value={formData.packageType}
+                      onChange={handleInputChange}
+                      className={`w-full p-2 border rounded-md ${errors.packageType ? "border-red-500" : "border-gray-300"}`}
+                    >
+                      <option value="">Select package type</option>
+                      {packageTypes.map((type) => (
+                        <option key={type.value} value={type.value}>
+                          {type.label}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.packageType && <p className="text-red-500 text-sm mt-1">{errors.packageType}</p>}
                   </div>
-                </section>
 
-                {/* Contact Information */}
-                <section className="space-y-4">
-                  <h2 className="text-xl font-semibold text-gray-700">Contact Information</h2>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="primaryContactMethod">Primary Contact Method *</Label>
-                      <select
-                        name="primaryContactMethod"
-                        value={formData.primaryContactMethod}
+                  {formData.packageType === "other" && (
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Please specify other package type *
+                      </label>
+                      <input
+                        type="text"
+                        name="otherPackageType"
+                        value={formData.otherPackageType}
                         onChange={handleInputChange}
-                        className={`w-full p-2 border rounded-md ${errors.primaryContactMethod ? "border-red-500" : "border-gray-300"}`}
-                      >
-                        <option value="">Select contact method</option>
-                        {contactMethods.map((method) => (
-                          <option key={method.value} value={method.value}>
-                            {method.label}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.primaryContactMethod && (
-                        <p className="text-red-500 text-sm mt-1">{errors.primaryContactMethod}</p>
+                        placeholder="Enter the specific package type"
+                        className={`w-full p-2 border rounded-md ${errors.otherPackageType ? "border-red-500" : "border-gray-300"}`}
+                      />
+                      {errors.otherPackageType && (
+                        <p className="text-red-500 text-sm mt-1">{errors.otherPackageType}</p>
                       )}
                     </div>
+                  )}
 
-                    {(formData.primaryContactMethod === "phone" || formData.primaryContactMethod === "text") && (
-                      <>
-                        <div>
-                          <Label htmlFor="phoneNumber">
-                            Phone Number {formData.primaryContactMethod === "phone" && "*"}
-                          </Label>
-                          <Input
-                            type="tel"
-                            name="phoneNumber"
-                            value={formData.phoneNumber}
-                            onChange={handleInputChange}
-                            placeholder="(123) 456-7890"
-                            className={errors.phoneNumber ? "border-red-500" : ""}
-                          />
-                          {errors.phoneNumber && <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>}
-                        </div>
-
-                        <div>
-                          <Label htmlFor="textNumber">
-                            Text Number {formData.primaryContactMethod === "text" && "*"}
-                          </Label>
-                          <Input
-                            type="tel"
-                            name="textNumber"
-                            value={formData.textNumber}
-                            onChange={handleInputChange}
-                            placeholder="(123) 456-7890"
-                            className={errors.textNumber ? "border-red-500" : ""}
-                          />
-                          {errors.textNumber && <p className="text-red-500 text-sm mt-1">{errors.textNumber}</p>}
-                        </div>
-                      </>
-                    )}
-
-                    {formData.primaryContactMethod === "email" && (
-                      <div>
-                        <Label htmlFor="email">Email Address *</Label>
-                        <Input
-                          type="email"
-                          name="email"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          placeholder="youth@example.com"
-                          className={errors.email ? "border-red-500" : ""}
-                        />
-                        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-                      </div>
-                    )}
-
-                    {formData.primaryContactMethod === "rocketchat" && (
-                      <div>
-                        <Label htmlFor="rocketChatUsername">Rocket.chat Username *</Label>
-                        <Input
-                          name="rocketChatUsername"
-                          value={formData.rocketChatUsername}
-                          onChange={handleInputChange}
-                          placeholder="@username"
-                          className={errors.rocketChatUsername ? "border-red-500" : ""}
-                        />
-                        {errors.rocketChatUsername && (
-                          <p className="text-red-500 text-sm mt-1">{errors.rocketChatUsername}</p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="alternativeContact">Alternative Contact Name</Label>
-                      <Input
-                        name="alternativeContact"
-                        value={formData.alternativeContact}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="alternativeContactPhone">Alternative Contact Phone</Label>
-                      <Input
-                        type="tel"
-                        name="alternativeContactPhone"
-                        value={formData.alternativeContactPhone}
-                        onChange={handleInputChange}
-                        placeholder="(123) 456-7890"
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Case Number *</label>
+                    <input
+                      type="text"
+                      name="caseNumber"
+                      value={formData.caseNumber}
+                      onChange={handleInputChange}
+                      className={`w-full p-2 border rounded-md ${errors.caseNumber ? "border-red-500" : "border-gray-300"}`}
+                    />
+                    {errors.caseNumber && <p className="text-red-500 text-sm mt-1">{errors.caseNumber}</p>}
                   </div>
 
                   <div>
-                    <Label className="text-base font-medium">Preferred Contact Times</Label>
-                    <div className="space-y-2 mt-2">
-                      {preferredTimes.map((time) => (
-                        <label key={time} className="flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={formData.preferredContactTimes.includes(time)}
-                            onChange={() => handleTimePreferenceChange(time)}
-                            className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          <span className="text-sm">{time}</span>
-                        </label>
-                      ))}
-                    </div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Child Name *</label>
+                    <input
+                      type="text"
+                      name="childName"
+                      value={formData.childName}
+                      onChange={handleInputChange}
+                      className={`w-full p-2 border rounded-md ${errors.childName ? "border-red-500" : "border-gray-300"}`}
+                    />
+                    {errors.childName && <p className="text-red-500 text-sm mt-1">{errors.childName}</p>}
                   </div>
-                </section>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth *</label>
+                    <input
+                      type="date"
+                      name="childDOB"
+                      value={formData.childDOB}
+                      onChange={handleInputChange}
+                      className={`w-full p-2 border rounded-md ${errors.childDOB ? "border-red-500" : "border-gray-300"}`}
+                    />
+                    {errors.childDOB && <p className="text-red-500 text-sm mt-1">{errors.childDOB}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Discharge Date *</label>
+                    <input
+                      type="date"
+                      name="dischargeDate"
+                      value={formData.dischargeDate}
+                      onChange={handleInputChange}
+                      className={`w-full p-2 border rounded-md ${errors.dischargeDate ? "border-red-500" : "border-gray-300"}`}
+                    />
+                    {errors.dischargeDate && <p className="text-red-500 text-sm mt-1">{errors.dischargeDate}</p>}
+                  </div>
+                </div>
+              </section>
+
+              {/* Contact Information */}
+              <section className="space-y-4">
+                <h2 className="text-xl font-semibold text-gray-700">Contact Information</h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Primary Contact Method *</label>
+                    <select
+                      name="primaryContactMethod"
+                      value={formData.primaryContactMethod}
+                      onChange={handleInputChange}
+                      className={`w-full p-2 border rounded-md ${errors.primaryContactMethod ? "border-red-500" : "border-gray-300"}`}
+                    >
+                      <option value="">Select contact method</option>
+                      {contactMethods.map((method) => (
+                        <option key={method.value} value={method.value}>
+                          {method.label}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.primaryContactMethod && (
+                      <p className="text-red-500 text-sm mt-1">{errors.primaryContactMethod}</p>
+                    )}
+                  </div>
+
+                  {(formData.primaryContactMethod === "phone" || formData.primaryContactMethod === "text") && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {formData.primaryContactMethod === "phone" ? "Phone Number" : "Text Number"} *
+                      </label>
+                      <input
+                        type="tel"
+                        name={formData.primaryContactMethod === "phone" ? "phoneNumber" : "textNumber"}
+                        value={formData.primaryContactMethod === "phone" ? formData.phoneNumber : formData.textNumber}
+                        onChange={handleInputChange}
+                        className={`w-full p-2 border rounded-md ${
+                          errors.phoneNumber || errors.textNumber ? "border-red-500" : "border-gray-300"
+                        }`}
+                      />
+                      {(errors.phoneNumber || errors.textNumber) && (
+                        <p className="text-red-500 text-sm mt-1">{errors.phoneNumber || errors.textNumber}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {formData.primaryContactMethod === "email" && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        className={`w-full p-2 border rounded-md ${errors.email ? "border-red-500" : "border-gray-300"}`}
+                      />
+                      {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                    </div>
+                  )}
+
+                  {formData.primaryContactMethod === "rocketchat" && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Rocket.chat Username *</label>
+                      <input
+                        type="text"
+                        name="rocketChatUsername"
+                        value={formData.rocketChatUsername}
+                        onChange={handleInputChange}
+                        className={`w-full p-2 border rounded-md ${errors.rocketChatUsername ? "border-red-500" : "border-gray-300"}`}
+                      />
+                      {errors.rocketChatUsername && (
+                        <p className="text-red-500 text-sm mt-1">{errors.rocketChatUsername}</p>
+                      )}
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Alternative Contact</label>
+                    <input
+                      type="text"
+                      name="alternativeContact"
+                      value={formData.alternativeContact}
+                      onChange={handleInputChange}
+                      placeholder="Name of alternative contact person"
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Alternative Contact Phone</label>
+                    <input
+                      type="tel"
+                      name="alternativeContactPhone"
+                      value={formData.alternativeContactPhone}
+                      onChange={handleInputChange}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                </div>
 
                 {/* Mailing Address */}
-                <section className="space-y-4">
-                  <h2 className="text-xl font-semibold text-gray-700">Mailing Address</h2>
-
-                  <div className="grid grid-cols-1 gap-4">
-                    <div>
-                      <Label htmlFor="mailingAddress.street">Street Address *</Label>
-                      <Input
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium text-gray-700">Mailing Address</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Street Address *</label>
+                      <input
+                        type="text"
                         name="mailingAddress.street"
                         value={formData.mailingAddress.street}
                         onChange={handleInputChange}
-                        className={errors["mailingAddress.street"] ? "border-red-500" : ""}
+                        className={`w-full p-2 border rounded-md ${
+                          errors["mailingAddress.street"] ? "border-red-500" : "border-gray-300"
+                        }`}
                       />
                       {errors["mailingAddress.street"] && (
                         <p className="text-red-500 text-sm mt-1">{errors["mailingAddress.street"]}</p>
                       )}
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      <div>
-                        <Label htmlFor="mailingAddress.city">City *</Label>
-                        <Input
-                          name="mailingAddress.city"
-                          value={formData.mailingAddress.city}
-                          onChange={handleInputChange}
-                          className={errors["mailingAddress.city"] ? "border-red-500" : ""}
-                        />
-                        {errors["mailingAddress.city"] && (
-                          <p className="text-red-500 text-sm mt-1">{errors["mailingAddress.city"]}</p>
-                        )}
-                      </div>
-
-                      <div>
-                        <Label htmlFor="mailingAddress.state">State</Label>
-                        <Input
-                          name="mailingAddress.state"
-                          value={formData.mailingAddress.state}
-                          onChange={handleInputChange}
-                          readOnly
-                          className="bg-gray-50"
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="mailingAddress.zip">ZIP Code *</Label>
-                        <Input
-                          name="mailingAddress.zip"
-                          value={formData.mailingAddress.zip}
-                          onChange={handleInputChange}
-                          pattern="[0-9]{5}"
-                          className={errors["mailingAddress.zip"] ? "border-red-500" : ""}
-                        />
-                        {errors["mailingAddress.zip"] && (
-                          <p className="text-red-500 text-sm mt-1">{errors["mailingAddress.zip"]}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">City *</label>
                       <input
-                        type="checkbox"
-                        id="addressVerified"
-                        name="addressVerified"
-                        checked={formData.addressVerified}
+                        type="text"
+                        name="mailingAddress.city"
+                        value={formData.mailingAddress.city}
                         onChange={handleInputChange}
-                        className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className={`w-full p-2 border rounded-md ${
+                          errors["mailingAddress.city"] ? "border-red-500" : "border-gray-300"
+                        }`}
                       />
-                      <Label htmlFor="addressVerified">
-                        I have verified this mailing address is current and correct *
-                      </Label>
+                      {errors["mailingAddress.city"] && (
+                        <p className="text-red-500 text-sm mt-1">{errors["mailingAddress.city"]}</p>
+                      )}
                     </div>
-                    {errors.addressVerified && <p className="text-red-500 text-sm">{errors.addressVerified}</p>}
-                  </div>
-                </section>
-
-                {/* Package-specific sections */}
-                {formData.packageType === "mental" && (
-                  <section className="space-y-4 p-4 bg-blue-50 rounded-lg">
-                    <h2 className="text-xl font-semibold text-gray-700">Mental & Behavioral Health Support</h2>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="therapistName">Therapist Name *</Label>
-                        <Input
-                          name="therapistName"
-                          value={formData.therapistName}
-                          onChange={handleInputChange}
-                          className={errors.therapistName ? "border-red-500" : ""}
-                        />
-                        {errors.therapistName && <p className="text-red-500 text-sm mt-1">{errors.therapistName}</p>}
-                      </div>
-
-                      <div>
-                        <Label htmlFor="therapistPhone">Therapist Phone</Label>
-                        <Input
-                          type="tel"
-                          name="therapistPhone"
-                          value={formData.therapistPhone}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="nextTherapyAppointment">Next Therapy Appointment</Label>
-                        <Input
-                          type="datetime-local"
-                          name="nextTherapyAppointment"
-                          value={formData.nextTherapyAppointment}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          id="medicationManagement"
-                          name="medicationManagement"
-                          checked={formData.medicationManagement}
-                          onChange={handleInputChange}
-                          className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <Label htmlFor="medicationManagement">Requires medication management</Label>
-                      </div>
-                    </div>
-
-                    {formData.medicationManagement && (
-                      <div>
-                        <Label htmlFor="psychiatristName">Psychiatrist Name</Label>
-                        <Input name="psychiatristName" value={formData.psychiatristName} onChange={handleInputChange} />
-                      </div>
-                    )}
 
                     <div>
-                      <Label htmlFor="crisisPlan">Crisis Plan *</Label>
-                      <Textarea
+                      <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                      <select
+                        name="mailingAddress.state"
+                        value={formData.mailingAddress.state}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      >
+                        <option value="TX">Texas</option>
+                        <option value="OK">Oklahoma</option>
+                        <option value="AR">Arkansas</option>
+                        <option value="LA">Louisiana</option>
+                        <option value="NM">New Mexico</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">ZIP Code *</label>
+                      <input
+                        type="text"
+                        name="mailingAddress.zip"
+                        value={formData.mailingAddress.zip}
+                        onChange={handleInputChange}
+                        className={`w-full p-2 border rounded-md ${
+                          errors["mailingAddress.zip"] ? "border-red-500" : "border-gray-300"
+                        }`}
+                      />
+                      {errors["mailingAddress.zip"] && (
+                        <p className="text-red-500 text-sm mt-1">{errors["mailingAddress.zip"]}</p>
+                      )}
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="addressVerified"
+                          checked={formData.addressVerified}
+                          onChange={handleInputChange}
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium text-gray-700">
+                          I have verified this mailing address is current and accurate *
+                        </span>
+                      </label>
+                      {errors.addressVerified && <p className="text-red-500 text-sm mt-1">{errors.addressVerified}</p>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preferred Contact Times */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Contact Times</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {preferredTimes.map((time) => (
+                      <label key={time} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.preferredContactTimes.includes(time)}
+                          onChange={() => handleTimePreferenceChange(time)}
+                          className="mr-2"
+                        />
+                        <span className="text-sm">{time}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              {/* Package-Specific Sections */}
+              {formData.packageType === "mental" && (
+                <section className="space-y-4 bg-blue-50 p-4 rounded-lg">
+                  <h2 className="text-xl font-semibold text-blue-800">Mental & Behavioral Health Support Services</h2>
+                  <p className="text-sm text-blue-700">Required aftercare: 6 months, twice monthly contact minimum</p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Current Therapist Name *</label>
+                      <input
+                        type="text"
+                        name="therapistName"
+                        value={formData.therapistName}
+                        onChange={handleInputChange}
+                        className={`w-full p-2 border rounded-md ${errors.therapistName ? "border-red-500" : "border-gray-300"}`}
+                      />
+                      {errors.therapistName && <p className="text-red-500 text-sm mt-1">{errors.therapistName}</p>}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Therapist Phone</label>
+                      <input
+                        type="tel"
+                        name="therapistPhone"
+                        value={formData.therapistPhone}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Next Therapy Appointment</label>
+                      <input
+                        type="datetime-local"
+                        name="nextTherapyAppointment"
+                        value={formData.nextTherapyAppointment}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Crisis Plan *</label>
+                      <textarea
                         name="crisisPlan"
                         value={formData.crisisPlan}
                         onChange={handleInputChange}
-                        rows={4}
-                        className={errors.crisisPlan ? "border-red-500" : ""}
-                        placeholder="Describe the crisis intervention plan..."
+                        rows="3"
+                        placeholder="Document crisis intervention plan and emergency contacts"
+                        className={`w-full p-2 border rounded-md ${errors.crisisPlan ? "border-red-500" : "border-gray-300"}`}
                       />
                       {errors.crisisPlan && <p className="text-red-500 text-sm mt-1">{errors.crisisPlan}</p>}
                     </div>
-                  </section>
-                )}
 
-                {formData.packageType === "idd" && (
-                  <section className="space-y-4 p-4 bg-purple-50 rounded-lg">
-                    <h2 className="text-xl font-semibold text-gray-700">IDD/Autism Spectrum Support</h2>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="rnCaseManagerName">RN Case Manager Name *</Label>
-                        <Input
-                          name="rnCaseManagerName"
-                          value={formData.rnCaseManagerName}
+                    <div className="md:col-span-2">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="medicationManagement"
+                          checked={formData.medicationManagement}
                           onChange={handleInputChange}
-                          className={errors.rnCaseManagerName ? "border-red-500" : ""}
+                          className="mr-2"
                         />
-                        {errors.rnCaseManagerName && (
-                          <p className="text-red-500 text-sm mt-1">{errors.rnCaseManagerName}</p>
-                        )}
-                      </div>
-
-                      <div>
-                        <Label htmlFor="rnCaseManagerPhone">RN Case Manager Phone</Label>
-                        <Input
-                          type="tel"
-                          name="rnCaseManagerPhone"
-                          value={formData.rnCaseManagerPhone}
-                          onChange={handleInputChange}
-                        />
-                      </div>
+                        <span className="text-sm font-medium text-gray-700">Medication management required</span>
+                      </label>
                     </div>
 
-                    <div className="flex items-center mb-4">
+                    {formData.medicationManagement && (
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Psychiatrist Name</label>
+                        <input
+                          type="text"
+                          name="psychiatristName"
+                          value={formData.psychiatristName}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {formData.packageType === "idd" && (
+                <section className="space-y-4 bg-green-50 p-4 rounded-lg">
+                  <h2 className="text-xl font-semibold text-green-800">
+                    IDD/Autism Spectrum Disorder Support Services
+                  </h2>
+                  <p className="text-sm text-green-700">Required aftercare: 6 months, twice monthly contact minimum</p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">RN Case Manager Name *</label>
                       <input
-                        type="checkbox"
-                        id="behaviorPlanInPlace"
-                        name="behaviorPlanInPlace"
-                        checked={formData.behaviorPlanInPlace}
+                        type="text"
+                        name="rnCaseManagerName"
+                        value={formData.rnCaseManagerName}
                         onChange={handleInputChange}
-                        className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className={`w-full p-2 border rounded-md ${errors.rnCaseManagerName ? "border-red-500" : "border-gray-300"}`}
                       />
-                      <Label htmlFor="behaviorPlanInPlace">Behavior plan in place</Label>
+                      {errors.rnCaseManagerName && (
+                        <p className="text-red-500 text-sm mt-1">{errors.rnCaseManagerName}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">RN Case Manager Phone</label>
+                      <input
+                        type="tel"
+                        name="rnCaseManagerPhone"
+                        value={formData.rnCaseManagerPhone}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="behaviorPlanInPlace"
+                          checked={formData.behaviorPlanInPlace}
+                          onChange={handleInputChange}
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Behavior plan in place</span>
+                      </label>
                     </div>
 
                     {formData.behaviorPlanInPlace && (
-                      <div>
-                        <Label htmlFor="behaviorPlanDetails">Behavior Plan Details *</Label>
-                        <Textarea
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Behavior Plan Details *</label>
+                        <textarea
                           name="behaviorPlanDetails"
                           value={formData.behaviorPlanDetails}
                           onChange={handleInputChange}
-                          rows={3}
-                          className={errors.behaviorPlanDetails ? "border-red-500" : ""}
-                          placeholder="Describe the behavior plan..."
+                          rows="3"
+                          placeholder="Describe the behavior plan and implementation strategies"
+                          className={`w-full p-2 border rounded-md ${
+                            errors.behaviorPlanDetails ? "border-red-500" : "border-gray-300"
+                          }`}
                         />
                         {errors.behaviorPlanDetails && (
                           <p className="text-red-500 text-sm mt-1">{errors.behaviorPlanDetails}</p>
@@ -748,274 +795,348 @@ export default function AftercarePlanForm() {
                       </div>
                     )}
 
-                    <div>
-                      <Label htmlFor="specializedSupports">Specialized Supports</Label>
-                      <Textarea
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Specialized Supports</label>
+                      <textarea
                         name="specializedSupports"
                         value={formData.specializedSupports}
                         onChange={handleInputChange}
-                        rows={3}
-                        placeholder="List any specialized supports or accommodations..."
-                      />
-                    </div>
-                  </section>
-                )}
-
-                {formData.packageType === "treatment" && (
-                  <section className="space-y-4 p-4 bg-green-50 rounded-lg">
-                    <h2 className="text-xl font-semibold text-gray-700">Treatment Foster Family Care Support</h2>
-
-                    <div className="bg-green-100 border border-green-200 rounded-md p-3">
-                      <p className="text-sm text-green-800">
-                        Standard aftercare services will be provided: 6 months duration with twice monthly contact
-                        minimum. Focus will be on maintaining treatment gains and supporting step-down transition.
-                      </p>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="additionalNotes">Treatment Focus Areas (Optional)</Label>
-                      <Textarea
-                        name="additionalNotes"
-                        value={formData.additionalNotes}
-                        onChange={handleInputChange}
-                        rows={3}
-                        placeholder="Note any specific treatment gains to monitor or support needs during aftercare..."
-                      />
-                    </div>
-                  </section>
-                )}
-
-                {formData.packageType === "other" && (
-                  <section className="space-y-4 p-4 bg-yellow-50 rounded-lg">
-                    <h2 className="text-xl font-semibold text-gray-700">Optional Aftercare Services</h2>
-
-                    <div className="bg-yellow-100 border border-yellow-200 rounded-md p-3">
-                      <p className="text-sm text-yellow-800">
-                        <strong>Note:</strong> Aftercare is not required for this package. Program Director approval is
-                        needed based on clinical need and available resources.
-                      </p>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="additionalNotes">Justification and Approval *</Label>
-                      <Textarea
-                        name="additionalNotes"
-                        value={formData.additionalNotes}
-                        onChange={handleInputChange}
-                        rows={4}
-                        className={errors.additionalNotes ? "border-red-500" : ""}
-                        placeholder="Document clinical justification and Program Director approval for optional aftercare services..."
-                      />
-                      {errors.additionalNotes && <p className="text-red-500 text-sm mt-1">{errors.additionalNotes}</p>}
-                    </div>
-                  </section>
-                )}
-
-                {/* Service Continuity */}
-                <section className="space-y-4">
-                  <h2 className="text-xl font-semibold text-gray-700">Service Continuity</h2>
-
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <Label>Scheduled Appointments</Label>
-                      <Button type="button" onClick={addAppointment} size="sm" className="gap-1">
-                        <Plus className="h-4 w-4" />
-                        Add Appointment
-                      </Button>
-                    </div>
-
-                    {formData.appointments.length > 0 ? (
-                      <div className="space-y-3">
-                        {formData.appointments.map((apt) => (
-                          <div key={apt.id} className="p-3 border border-gray-200 rounded-md">
-                            <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
-                              <Input
-                                placeholder="Provider"
-                                value={apt.provider}
-                                onChange={(e) => updateAppointment(apt.id, "provider", e.target.value)}
-                              />
-                              <Input
-                                type="date"
-                                value={apt.date}
-                                onChange={(e) => updateAppointment(apt.id, "date", e.target.value)}
-                              />
-                              <Input
-                                type="time"
-                                value={apt.time}
-                                onChange={(e) => updateAppointment(apt.id, "time", e.target.value)}
-                              />
-                              <Input
-                                placeholder="Type"
-                                value={apt.type}
-                                onChange={(e) => updateAppointment(apt.id, "type", e.target.value)}
-                              />
-                              <Button
-                                type="button"
-                                onClick={() => removeAppointment(apt.id)}
-                                variant="destructive"
-                                size="sm"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-gray-500 text-sm">No appointments scheduled yet.</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <Label>Service Referrals</Label>
-                      <Button type="button" onClick={addReferral} size="sm" className="gap-1">
-                        <Plus className="h-4 w-4" />
-                        Add Referral
-                      </Button>
-                    </div>
-
-                    {formData.referrals.length > 0 ? (
-                      <div className="space-y-3">
-                        {formData.referrals.map((ref) => (
-                          <div key={ref.id} className="p-3 border border-gray-200 rounded-md">
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-                              <Input
-                                placeholder="Service"
-                                value={ref.service}
-                                onChange={(e) => updateReferral(ref.id, "service", e.target.value)}
-                              />
-                              <Input
-                                placeholder="Provider"
-                                value={ref.provider}
-                                onChange={(e) => updateReferral(ref.id, "provider", e.target.value)}
-                              />
-                              <select
-                                value={ref.status}
-                                onChange={(e) => updateReferral(ref.id, "status", e.target.value)}
-                                className="p-2 border border-gray-300 rounded-md"
-                              >
-                                <option value="pending">Pending</option>
-                                <option value="in-progress">In Progress</option>
-                                <option value="completed">Completed</option>
-                              </select>
-                              <Button
-                                type="button"
-                                onClick={() => removeReferral(ref.id)}
-                                variant="destructive"
-                                size="sm"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                            <Input
-                              placeholder="Notes"
-                              value={ref.notes}
-                              onChange={(e) => updateReferral(ref.id, "notes", e.target.value)}
-                              className="mt-2"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-gray-500 text-sm">No referrals added yet.</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="starHealthCoordinator">STAR Health Service Coordinator</Label>
-                    <Input
-                      name="starHealthCoordinator"
-                      value={formData.starHealthCoordinator}
-                      onChange={handleInputChange}
-                      placeholder="Name and contact if assigned"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Include name and phone number if child has an assigned STAR Health Service Coordinator
-                    </p>
-                  </div>
-                </section>
-
-                {/* SSCC/DFPS Documentation Submission */}
-                <section className="space-y-4">
-                  <h2 className="text-xl font-semibold text-gray-700">SSCC/DFPS Documentation Submission</h2>
-
-                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
-                    <p className="text-sm text-blue-800">
-                      Documentation must be provided to SSCC/DFPS at the end of each month per T3C Blueprint
-                      requirements.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="ssccContactEmail">SSCC/DFPS Contact Email</Label>
-                      <Input
-                        type="email"
-                        name="ssccContactEmail"
-                        value={formData.ssccContactEmail}
-                        onChange={handleInputChange}
-                        placeholder="sscc@dfps.state.tx.us"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="preferredSubmissionMethod">Preferred Submission Method</Label>
-                      <select
-                        name="preferredSubmissionMethod"
-                        value={formData.preferredSubmissionMethod}
-                        onChange={handleInputChange}
+                        rows="2"
+                        placeholder="List any specialized supports or accommodations needed"
                         className="w-full p-2 border border-gray-300 rounded-md"
-                      >
-                        <option value="email">Email</option>
-                        <option value="portal">DFPS Portal</option>
-                        <option value="other">Other (specify in notes)</option>
-                      </select>
+                      />
                     </div>
                   </div>
                 </section>
+              )}
 
-                {/* Form Actions */}
-                <div className="flex flex-col sm:flex-row gap-3 justify-end pt-6 border-t">
-                  <Button type="button" onClick={() => setShowPreview(true)} variant="outline" className="gap-2">
-                    <FileText className="h-4 w-4" />
-                    Preview PDF
-                  </Button>
+              {formData.packageType === "treatment" && (
+                <section className="space-y-4 bg-purple-50 p-4 rounded-lg">
+                  <h2 className="text-xl font-semibold text-purple-800">
+                    T3C Treatment Foster Family Care Support Services
+                  </h2>
+                  <p className="text-sm text-purple-700">Required aftercare: 6 months, twice monthly contact minimum</p>
 
-                  <Button
-                    type="button"
-                    onClick={handleSaveDraft}
-                    disabled={isSubmitting}
-                    variant="outline"
-                    className="gap-2 bg-transparent"
-                  >
-                    <Save className="h-4 w-4" />
-                    {isSubmitting && isDraft ? "Saving..." : "Save as Draft"}
-                  </Button>
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium text-gray-700">Weekly Contact Schedule</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Week 1 Contact Plan</label>
+                        <textarea
+                          name="weeklySchedule.week1"
+                          value={formData.weeklySchedule.week1}
+                          onChange={handleInputChange}
+                          rows="2"
+                          placeholder="Planned contact for week 1"
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                        />
+                      </div>
 
-                  <Button type="button" onClick={handleSubmit} disabled={isSubmitting} className="gap-2">
-                    <Send className="h-4 w-4" />
-                    {isSubmitting && !isDraft ? "Submitting..." : "Submit Plan"}
-                  </Button>
-                </div>
-              </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Week 2 Contact Plan</label>
+                        <textarea
+                          name="weeklySchedule.week2"
+                          value={formData.weeklySchedule.week2}
+                          onChange={handleInputChange}
+                          rows="2"
+                          placeholder="Planned contact for week 2"
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                        />
+                      </div>
 
-              {/* Preview Modal (simplified) */}
-              {showPreview && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                  <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                    <h3 className="text-lg font-semibold mb-4">PDF Preview</h3>
-                    <div className="border-2 border-gray-200 rounded p-4 bg-gray-50">
-                      <p className="text-gray-600 text-center py-8">PDF preview would be displayed here</p>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Week 3 Contact Plan</label>
+                        <textarea
+                          name="weeklySchedule.week3"
+                          value={formData.weeklySchedule.week3}
+                          onChange={handleInputChange}
+                          rows="2"
+                          placeholder="Planned contact for week 3"
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Week 4 Contact Plan</label>
+                        <textarea
+                          name="weeklySchedule.week4"
+                          value={formData.weeklySchedule.week4}
+                          onChange={handleInputChange}
+                          rows="2"
+                          placeholder="Planned contact for week 4"
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                        />
+                      </div>
                     </div>
-                    <Button onClick={() => setShowPreview(false)} className="mt-4" variant="outline">
-                      Close Preview
-                    </Button>
+                  </div>
+                </section>
+              )}
+
+              {/* Service Continuity */}
+              <section className="space-y-4">
+                <h2 className="text-xl font-semibold text-gray-700">Service Continuity</h2>
+
+                {/* Appointments */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-medium text-gray-700">Scheduled Appointments</h3>
+                    <button
+                      type="button"
+                      onClick={addAppointment}
+                      className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center text-sm"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Appointment
+                    </button>
+                  </div>
+
+                  {formData.appointments.map((appointment) => (
+                    <div key={appointment.id} className="border border-gray-200 rounded-lg p-4 mb-3">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Provider/Service</label>
+                          <input
+                            type="text"
+                            value={appointment.provider}
+                            onChange={(e) => updateAppointment(appointment.id, "provider", e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                          <input
+                            type="date"
+                            value={appointment.date}
+                            onChange={(e) => updateAppointment(appointment.id, "date", e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                          <input
+                            type="time"
+                            value={appointment.time}
+                            onChange={(e) => updateAppointment(appointment.id, "time", e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                          <select
+                            value={appointment.type}
+                            onChange={(e) => updateAppointment(appointment.id, "type", e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                          >
+                            <option value="">Select type</option>
+                            <option value="medical">Medical</option>
+                            <option value="therapy">Therapy</option>
+                            <option value="psychiatric">Psychiatric</option>
+                            <option value="educational">Educational</option>
+                            <option value="court">Court</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                          <input
+                            type="text"
+                            value={appointment.location}
+                            onChange={(e) => updateAppointment(appointment.id, "location", e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => removeAppointment(appointment.id)}
+                        className="mt-2 text-red-600 hover:text-red-800 flex items-center text-sm"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Referrals */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-medium text-gray-700">Referrals</h3>
+                    <button
+                      type="button"
+                      onClick={addReferral}
+                      className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 flex items-center text-sm"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Referral
+                    </button>
+                  </div>
+
+                  {formData.referrals.map((referral) => (
+                    <div key={referral.id} className="border border-gray-200 rounded-lg p-4 mb-3">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Service Type</label>
+                          <input
+                            type="text"
+                            value={referral.service}
+                            onChange={(e) => updateReferral(referral.id, "service", e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Provider</label>
+                          <input
+                            type="text"
+                            value={referral.provider}
+                            onChange={(e) => updateReferral(referral.id, "provider", e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                          <select
+                            value={referral.status}
+                            onChange={(e) => updateReferral(referral.id, "status", e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="scheduled">Scheduled</option>
+                            <option value="completed">Completed</option>
+                            <option value="declined">Declined</option>
+                          </select>
+                        </div>
+
+                        <div className="md:col-span-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                          <textarea
+                            value={referral.notes}
+                            onChange={(e) => updateReferral(referral.id, "notes", e.target.value)}
+                            rows="2"
+                            className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => removeReferral(referral.id)}
+                        className="mt-2 text-red-600 hover:text-red-800 flex items-center text-sm"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* STAR Health Coordinator */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">STAR Health Coordinator</label>
+                  <input
+                    type="text"
+                    name="starHealthCoordinator"
+                    value={formData.starHealthCoordinator}
+                    onChange={handleInputChange}
+                    placeholder="Name and contact information"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+              </section>
+
+              {/* SSCC/DFPS Documentation */}
+              <section className="space-y-4 bg-yellow-50 p-4 rounded-lg">
+                <h2 className="text-xl font-semibold text-yellow-800">SSCC/DFPS Documentation Requirements</h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">SSCC Contact Email</label>
+                    <input
+                      type="email"
+                      name="ssccContactEmail"
+                      value={formData.ssccContactEmail}
+                      onChange={handleInputChange}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Documentation Frequency</label>
+                    <select
+                      name="documentationFrequency"
+                      value={formData.documentationFrequency}
+                      onChange={handleInputChange}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    >
+                      <option value="monthly">Monthly</option>
+                      <option value="biweekly">Bi-weekly</option>
+                      <option value="weekly">Weekly</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Submission Method</label>
+                    <select
+                      name="preferredSubmissionMethod"
+                      value={formData.preferredSubmissionMethod}
+                      onChange={handleInputChange}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    >
+                      <option value="email">Email</option>
+                      <option value="portal">DFPS Portal</option>
+                      <option value="fax">Fax</option>
+                    </select>
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </section>
+
+              {/* Additional Notes */}
+              <section className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
+                  <textarea
+                    name="additionalNotes"
+                    value={formData.additionalNotes}
+                    onChange={handleInputChange}
+                    rows="4"
+                    placeholder="Any additional information, special considerations, or Program Director approval notes for optional aftercare"
+                    className={`w-full p-2 border rounded-md ${errors.additionalNotes ? "border-red-500" : "border-gray-300"}`}
+                  />
+                  {errors.additionalNotes && <p className="text-red-500 text-sm mt-1">{errors.additionalNotes}</p>}
+                </div>
+              </section>
+
+              {/* Submit Buttons */}
+              <div className="flex justify-between pt-6 border-t">
+                <button
+                  type="button"
+                  onClick={handleSaveDraft}
+                  disabled={isSubmitting}
+                  className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 disabled:bg-gray-400 flex items-center"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  {isSubmitting && isDraft ? "Saving Draft..." : "Save Draft"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400 flex items-center"
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  {isSubmitting && !isDraft ? "Submitting..." : "Submit Plan"}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
