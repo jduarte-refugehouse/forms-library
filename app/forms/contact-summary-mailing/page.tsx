@@ -4,6 +4,18 @@ import { useState } from "react"
 import { Mail, FileText, ArrowLeft, CheckCircle, Eye, Download, Send, Calendar, User } from "lucide-react"
 import Link from "next/link"
 
+const HelpTooltip = ({ text }: { text: string }) => (
+  <div className="group relative inline-block ml-2">
+    <div className="w-4 h-4 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs cursor-help">
+      ?
+    </div>
+    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10 w-64">
+      {text}
+      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+    </div>
+  </div>
+)
+
 export default function ContactSummaryMailingForm() {
   const [formData, setFormData] = useState({
     // Basic Information
@@ -443,7 +455,39 @@ export default function ContactSummaryMailingForm() {
 
                 {/* Service Updates */}
                 <section>
-                  <h2 className="text-xl font-semibold text-gray-800 mb-4">Service Updates</h2>
+                  <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    Service Updates
+                    <HelpTooltip text="Document service updates based on package-specific requirements. Include mandatory elements for each service type." />
+                  </h2>
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <h3 className="font-medium text-blue-800 mb-2">Package-Specific Documentation Requirements:</h3>
+                    <div className="text-sm text-blue-700 space-y-1">
+                      <div>
+                        <strong>Mental/Behavioral Health:</strong> Include STAR Health Coordinator if assigned, therapy
+                        attendance, medication compliance
+                      </div>
+                      <div>
+                        <strong>IDD/Autism:</strong> Education Portfolio status required, behavioral supports, IEP
+                        compliance
+                      </div>
+                      <div>
+                        <strong>Treatment Foster Care:</strong> Weekly contact documentation, treatment progress, family
+                        dynamics
+                      </div>
+                      <div>
+                        <strong>Kinship Care:</strong> 30-day pre-permanency planning status, family stability
+                        assessment
+                      </div>
+                      <div>
+                        <strong>Independent Living:</strong> 6-month transition planning, alumni contact information
+                      </div>
+                      <div>
+                        <strong>Pregnant/Parenting:</strong> Dual-generation support, parenting education, child
+                        development
+                      </div>
+                    </div>
+                  </div>
 
                   <div className="space-y-4">
                     {formData.serviceUpdates.map((service, index) => (
@@ -510,7 +554,22 @@ export default function ContactSummaryMailingForm() {
 
                 {/* Goals Progress */}
                 <section>
-                  <h2 className="text-xl font-semibold text-gray-800 mb-4">Goals Progress</h2>
+                  <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    Goals Progress
+                    <HelpTooltip text="Document progress on package-specific goals and requirements." />
+                  </h2>
+
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                    <h3 className="font-medium text-green-800 mb-2">Common Package-Specific Goals:</h3>
+                    <div className="text-sm text-green-700 grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <div>• Educational stability and progress</div>
+                      <div>• Mental health treatment compliance</div>
+                      <div>• Behavioral support effectiveness</div>
+                      <div>• Family relationship strengthening</div>
+                      <div>• Independent living skill development</div>
+                      <div>• Permanency planning progress</div>
+                    </div>
+                  </div>
 
                   <div className="space-y-4">
                     {formData.goalsProgress.map((goal, index) => (

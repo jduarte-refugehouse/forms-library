@@ -1,272 +1,286 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Phone, PhoneOff, Mic, CheckCircle, Flag, Expand, Save, ChevronUp, ChevronDown, ArrowLeft } from "lucide-react"
+import { useState } from "react"
+import { Phone, CheckCircle, Send, ArrowLeft, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 
-export default function QuickPhoneContactWidget() {
-  const [contactData, setContactData] = useState({
-    contactSuccess: true,
-    duration: 15,
-    attemptCount: 1,
-    voiceNote: "",
-    followUpNeeded: false,
+const HelpTooltip = ({ text }: { text: string }) => (
+  <div className="group relative inline-block ml-2">
+    <div className="w-4 h-4 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs cursor-help">
+      ?
+    </div>
+    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10 w-64">
+      {text}
+      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+    </div>
+  </div>
+)
+
+export default function QuickPhoneWidget() {
+  const [formData, setFormData] = useState({
+    servicePackage: "",
+    contactPurpose: "",
     childName: "",
-    quickNotes: "",
-    contactPurpose: "general",
-    packageType: "",
-    otherPackageType: "",
+    caseNumber: "",
+    contactDate: new Date().toISOString().split("T")[0],
+    contactTime: new Date().toTimeString().slice(0, 5),
+    duration: "",
+    contactMethod: "phone",
+    contactedBy: "",
+    summary: "",
+    followUpNeeded: false,
+    followUpDate: "",
+    followUpNotes: "",
+
+    // Package-specific quick checks
+    childWelfareCheck: false,
+    transitionGoalsProgress: false,
+    familyStabilityMaintained: false,
   })
 
-  const [isRecording, setIsRecording] = useState(false)
-  const [recordingTime, setRecordingTime] = useState(0)
-  const [recentContacts, setRecentContacts] = useState([])
-  const [showRecent, setShowRecent] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
+  const [errors, setErrors] = useState({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
-  const [expandedView, setExpandedView] = useState(false)
-  const [activeChild, setActiveChild] = useState(null)
 
-  // Duration presets for quick selection
-  const durationPresets = [5, 10, 15, 20, 30, 45]
-
-  // Recent children for quick selection
-  const recentChildren = [
-    { id: 1, name: "Sarah Johnson", caseNumber: "TX-2024-001" },
-    { id: 2, name: "Michael Chen", caseNumber: "TX-2024-002" },
-    { id: 3, name: "Maria Rodriguez", caseNumber: "TX-2024-003" },
-    { id: 4, name: "James Wilson", caseNumber: "TX-2024-004" },
-    { id: 5, name: "Emma Davis", caseNumber: "TX-2024-005" },
+  const servicePackages = [
+    {
+      value: "mental",
+      label: "Mental & Behavioral Health Support Services (Required)",
+      required: true,
+      helpText: "6 months, twice monthly contact minimum. Include STAR Health Coordinator if assigned.",
+    },
+    {
+      value: "idd",
+      label: "IDD/Autism Spectrum Disorder Support Services (Required)",
+      required: true,
+      helpText: "6 months, twice monthly contact minimum. Education Portfolio required for all cases.",
+    },
+    {
+      value: "treatment",
+      label: "T3C Treatment Foster Family Care Support Services (Required)",
+      required: true,
+      helpText: "6 months, twice monthly contact minimum. Weekly contact schedule required.",
+    },
+    {
+      value: "independent",
+      label: "Independent Living Services",
+      required: true,
+      helpText: "6-month transition support required. Alumni information mandatory for tracking.",
+    },
+    {
+      value: "transition",
+      label: "Transition Support Services Add-On",
+      required: false,
+      helpText: "PAL worker support and alumni connections. Weekly to monthly contact schedule.",
+    },
+    {
+      value: "kinship",
+      label: "Kinship Caregiver Support Add-On",
+      required: false,
+      helpText: "30-day pre-permanency planning required. Focus on family support and stability.",
+    },
+    {
+      value: "pregnant-parenting",
+      label: "Pregnant & Parenting Youth Add-On",
+      required: false,
+      helpText: "Focus on dual-generation support. Include parenting education and child development.",
+    },
+    {
+      value: "basic",
+      label: "Basic Foster Home (Optional)",
+      required: false,
+      helpText: "Optional aftercare - requires Program Director approval.",
+    },
+    {
+      value: "emergency",
+      label: "Emergency Shelter Services",
+      required: false,
+      helpText: "Optional aftercare - requires Program Director approval.",
+    },
+    {
+      value: "therapeutic",
+      label: "Therapeutic Foster Care Services",
+      required: false,
+      helpText: "Optional aftercare - requires Program Director approval.",
+    },
+    {
+      value: "adoption",
+      label: "Adoption Support Services",
+      required: false,
+      helpText: "Post-adoption support planning. Include family integration strategies.",
+    },
+    {
+      value: "respite",
+      label: "Respite Care Services",
+      required: false,
+      helpText: "Short-term support planning. Coordinate with primary placement.",
+    },
+    {
+      value: "family-preservation",
+      label: "Family Preservation Services",
+      required: false,
+      helpText: "Focus on family strengthening and prevention strategies.",
+    },
+    {
+      value: "reunification",
+      label: "Family Reunification Services",
+      required: false,
+      helpText: "Transition planning for family reunification. Safety planning required.",
+    },
   ]
 
-  // Contact purpose options
-  const contactPurposes = [
-    { value: "general", label: "General Check-in" },
-    { value: "aftercare", label: "Aftercare Contact" },
-    { value: "crisis", label: "Crisis Response" },
-    { value: "placement", label: "Placement Related" },
-    { value: "medical", label: "Medical/Health" },
-    { value: "education", label: "Education/School" },
-    { value: "family", label: "Family Contact" },
-    { value: "court", label: "Court/Legal" },
-  ]
-
-  // Service package options
-  const packageTypes = [
-    { value: "mental", label: "Mental & Behavioral Health Support Services" },
-    { value: "idd", label: "IDD/Autism Spectrum Disorder Support Services" },
-    { value: "treatment", label: "T3C Treatment Foster Family Care Support Services" },
-    { value: "emergency", label: "Emergency Shelter Services" },
-    { value: "basic", label: "Basic Foster Care Services" },
-    { value: "therapeutic", label: "Therapeutic Foster Care Services" },
-    { value: "kinship", label: "Kinship Care Services" },
-    { value: "adoption", label: "Adoption Support Services" },
-    { value: "independent", label: "Independent Living Services" },
-    { value: "respite", label: "Respite Care Services" },
-    { value: "family-preservation", label: "Family Preservation Services" },
-    { value: "reunification", label: "Family Reunification Services" },
-    { value: "other", label: "Other (please specify)" },
-  ]
-
-  // Load recent contacts on mount
-  useEffect(() => {
-    loadRecentContacts()
-  }, [])
-
-  // Timer for voice recording
-  useEffect(() => {
-    let interval
-    if (isRecording) {
-      interval = setInterval(() => {
-        setRecordingTime((prev) => prev + 1)
-      }, 1000)
-    } else {
-      setRecordingTime(0)
-    }
-    return () => clearInterval(interval)
-  }, [isRecording])
-
-  const loadRecentContacts = () => {
-    // Simulate loading recent contacts
-    const mockRecent = [
-      {
-        id: 1,
-        childName: "Sarah Johnson",
-        time: "10 min ago",
-        type: "successful",
-        duration: 15,
-        purpose: "aftercare",
-      },
-      {
-        id: 2,
-        childName: "Michael Chen",
-        time: "2 hours ago",
-        type: "attempted",
-        attempts: 2,
-        purpose: "medical",
-      },
-      {
-        id: 3,
-        childName: "Maria Rodriguez",
-        time: "3 hours ago",
-        type: "successful",
-        duration: 25,
-        purpose: "family",
-      },
-      {
-        id: 4,
-        childName: "James Wilson",
-        time: "Yesterday",
-        type: "successful",
-        duration: 10,
-        purpose: "general",
-      },
-      {
-        id: 5,
-        childName: "Emma Davis",
-        time: "Yesterday",
-        type: "attempted",
-        attempts: 1,
-        purpose: "placement",
-      },
+  const getContactPurposes = () => {
+    const basePurposes = [
+      "Routine Check-in",
+      "Crisis Support",
+      "Appointment Reminder",
+      "Service Coordination",
+      "Documentation Follow-up",
+      "Resource Referral",
+      "Other",
     ]
-    setRecentContacts(mockRecent)
-  }
 
-  const handleSuccessToggle = (value) => {
-    setContactData((prev) => ({
-      ...prev,
-      contactSuccess: value,
-      duration: value ? 15 : 0,
-      attemptCount: value ? 0 : 1,
-    }))
-  }
+    const packageSpecificPurposes = []
 
-  const handleDurationChange = (value) => {
-    setContactData((prev) => ({
-      ...prev,
-      duration: Number.parseInt(value),
-    }))
-  }
-
-  const handleDurationPreset = (preset) => {
-    setContactData((prev) => ({
-      ...prev,
-      duration: preset,
-    }))
-  }
-
-  const adjustAttempts = (change) => {
-    setContactData((prev) => ({
-      ...prev,
-      attemptCount: Math.max(1, Math.min(10, prev.attemptCount + change)),
-    }))
-  }
-
-  const toggleRecording = () => {
-    if (isRecording) {
-      // Stop recording
-      setIsRecording(false)
-      // Simulate saving voice note
-      setTimeout(() => {
-        setContactData((prev) => ({
-          ...prev,
-          voiceNote: `Voice note recorded (${recordingTime}s)`,
-        }))
-      }, 500)
-    } else {
-      // Start recording
-      setIsRecording(true)
+    // Add package-specific purposes
+    if (formData.servicePackage === "transition" || formData.servicePackage === "independent") {
+      packageSpecificPurposes.push("PAL Check-in", "Alumni Connection")
     }
+
+    if (formData.servicePackage === "pregnant-parenting") {
+      packageSpecificPurposes.push("Parenting Support", "Benefits Review")
+    }
+
+    if (formData.servicePackage === "kinship") {
+      packageSpecificPurposes.push("Caregiver Support", "Benefits Review")
+    }
+
+    return [...packageSpecificPurposes, ...basePurposes]
   }
 
-  const selectChild = (child) => {
-    setActiveChild(child)
-    setContactData((prev) => ({
-      ...prev,
-      childName: child.name,
-    }))
-  }
+  const contactMethods = [
+    { value: "phone", label: "Phone Call" },
+    { value: "text", label: "Text Message" },
+    { value: "email", label: "Email" },
+    { value: "in-person", label: "In-Person" },
+    { value: "video", label: "Video Call" },
+  ]
+
+  const durations = [
+    { value: "5", label: "5 minutes" },
+    { value: "10", label: "10 minutes" },
+    { value: "15", label: "15 minutes" },
+    { value: "30", label: "30 minutes" },
+    { value: "45", label: "45 minutes" },
+    { value: "60", label: "1 hour" },
+    { value: "other", label: "Other" },
+  ]
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
-    setContactData((prev) => ({
+
+    setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }))
 
-    // Clear other package type when not "other"
-    if (name === "packageType" && value !== "other") {
-      setContactData((prev) => ({ ...prev, otherPackageType: "" }))
+    // Reset contact purpose when package changes
+    if (name === "servicePackage") {
+      setFormData((prev) => ({
+        ...prev,
+        contactPurpose: "",
+      }))
+    }
+
+    // Clear error when field is updated
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }))
     }
   }
 
-  const handleSave = async () => {
-    if (!contactData.childName) {
-      alert("Please select a child")
+  const validateForm = () => {
+    const newErrors = {}
+
+    if (!formData.servicePackage) newErrors.servicePackage = "Service package is required"
+    if (!formData.contactPurpose) newErrors.contactPurpose = "Contact purpose is required"
+    if (!formData.childName) newErrors.childName = "Child name is required"
+    if (!formData.caseNumber) newErrors.caseNumber = "Case number is required"
+    if (!formData.contactDate) newErrors.contactDate = "Contact date is required"
+    if (!formData.contactTime) newErrors.contactTime = "Contact time is required"
+    if (!formData.duration) newErrors.duration = "Duration is required"
+    if (!formData.contactedBy) newErrors.contactedBy = "Contacted by field is required"
+    if (!formData.summary) newErrors.summary = "Contact summary is required"
+
+    if (formData.followUpNeeded && !formData.followUpDate) {
+      newErrors.followUpDate = "Follow-up date is required when follow-up is needed"
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleSubmit = async () => {
+    if (!validateForm()) {
       return
     }
 
-    setIsSaving(true)
+    setIsSubmitting(true)
 
     // Simulate API call
     setTimeout(() => {
-      const newContact = {
-        id: Date.now(),
-        childName: contactData.childName,
-        time: "Just now",
-        type: contactData.contactSuccess ? "successful" : "attempted",
-        duration: contactData.duration,
-        attempts: contactData.attemptCount,
-        followUp: contactData.followUpNeeded,
-        purpose: contactData.contactPurpose,
-      }
-
-      setRecentContacts((prev) => [newContact, ...prev.slice(0, 4)])
-      setIsSaving(false)
+      setIsSubmitting(false)
       setShowSuccess(true)
+      setTimeout(() => setShowSuccess(false), 3000)
 
-      // Reset form after short delay
-      setTimeout(() => {
-        setShowSuccess(false)
-        setContactData({
-          contactSuccess: true,
-          duration: 15,
-          attemptCount: 1,
-          voiceNote: "",
-          followUpNeeded: false,
-          childName: "",
-          quickNotes: "",
-          contactPurpose: "general",
-          packageType: "",
-          otherPackageType: "",
-        })
-        setActiveChild(null)
-      }, 2000)
-    }, 800)
+      // Reset form
+      setFormData({
+        servicePackage: "",
+        contactPurpose: "",
+        childName: "",
+        caseNumber: "",
+        contactDate: new Date().toISOString().split("T")[0],
+        contactTime: new Date().toTimeString().slice(0, 5),
+        duration: "",
+        contactMethod: "phone",
+        contactedBy: "",
+        summary: "",
+        followUpNeeded: false,
+        followUpDate: "",
+        followUpNotes: "",
+        childWelfareCheck: false,
+        transitionGoalsProgress: false,
+        familyStabilityMaintained: false,
+      })
+    }, 1000)
   }
 
-  const createTask = () => {
-    if (!contactData.childName) {
-      alert("Please select a child first")
-      return
+  const getPackageReminder = () => {
+    const selectedPackage = servicePackages.find((pkg) => pkg.value === formData.servicePackage)
+    if (!selectedPackage) return null
+
+    const reminderMap = {
+      mental: "Remember to document therapy attendance and crisis plan updates",
+      idd: "Check education portfolio status and behavior plan implementation",
+      treatment: "Document weekly contact schedule and treatment progress",
+      independent: "Review transition goals and alumni network connections",
+      transition: "Check PAL worker contact and transition domain progress",
+      kinship: "Assess family stability and permanency planning progress",
+      "pregnant-parenting": "Review dual-generation support and child welfare",
+      basic: "Document optional aftercare justification",
+      emergency: "Note temporary placement status and next steps",
+      therapeutic: "Review therapeutic interventions and progress",
+      adoption: "Check post-adoption adjustment and support needs",
+      respite: "Coordinate with primary placement provider",
+      "family-preservation": "Document family strengthening activities",
+      reunification: "Review safety plan and family progress",
     }
-    alert(`Task created for ${contactData.childName}`)
-  }
 
-  const expandToFullForm = () => {
-    alert("Expanding to full contact form...")
-  }
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, "0")}`
+    return reminderMap[formData.servicePackage]
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-100">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -276,335 +290,314 @@ export default function QuickPhoneContactWidget() {
           </Link>
 
           <div className="flex items-center gap-3 mb-4">
-            <Phone className="h-8 w-8 text-blue-600" />
+            <Phone className="h-8 w-8 text-green-600" />
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Quick Phone Contact Widget (Draft)</h1>
-              <p className="text-gray-600">Streamlined phone contact logging for quick interactions</p>
-            </div>
-          </div>
-
-          {/* Draft Notice */}
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center gap-2 text-amber-800">
-              <Phone className="h-5 w-5" />
-              <p className="font-medium">This is a draft form for review and evaluation purposes only.</p>
+              <h1 className="text-3xl font-bold text-gray-900">Quick Phone Contact Widget</h1>
+              <p className="text-gray-600">Fast logging for brief phone contacts and check-ins</p>
             </div>
           </div>
         </div>
 
-        <div
-          className={`w-full max-w-md mx-auto bg-white rounded-lg shadow-lg transition-all duration-300 ${
-            expandedView ? "max-h-screen" : "max-h-[600px]"
-          }`}
-        >
-          {/* Header */}
-          <div className="bg-blue-500 text-white p-4 rounded-t-lg">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold flex items-center">
-                <Phone className="h-5 w-5 mr-2" />
-                Quick Contact
-              </h2>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="bg-blue-400 text-blue-100">
-                  Draft
-                </Badge>
-                <button onClick={() => setExpandedView(!expandedView)} className="p-1 hover:bg-blue-600 rounded">
-                  <Expand className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Success Message */}
-          {showSuccess && (
-            <div className="bg-green-500 text-white p-3 flex items-center justify-center">
-              <CheckCircle className="h-5 w-5 mr-2" />
-              Contact saved!
-            </div>
-          )}
-
-          <div className="p-4 space-y-4">
-            {/* Child Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Select Child</label>
-              <div className="grid grid-cols-2 gap-2">
-                {recentChildren.slice(0, expandedView ? 5 : 4).map((child) => (
-                  <button
-                    key={child.id}
-                    onClick={() => selectChild(child)}
-                    className={`p-3 rounded-lg border-2 transition-all ${
-                      activeChild?.id === child.id
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <p className="font-medium text-sm">{child.name}</p>
-                    <p className="text-xs text-gray-500">{child.caseNumber}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Service Package */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Service Package</label>
-              <select
-                name="packageType"
-                value={contactData.packageType}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-              >
-                <option value="">Select package type</option>
-                {packageTypes.map((type) => (
-                  <option key={type.value} value={type.value}>
-                    {type.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {contactData.packageType === "other" && (
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="flex items-center justify-between mb-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Specify Other Package</label>
-                <input
-                  type="text"
-                  name="otherPackageType"
-                  value={contactData.otherPackageType}
-                  onChange={handleInputChange}
-                  placeholder="Enter specific package type"
-                  className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                />
+                <h2 className="text-2xl font-bold mb-2 text-gray-800">Quick Contact Log</h2>
+                <p className="text-sm text-gray-600">Log brief contacts and check-ins efficiently</p>
+              </div>
+              <Badge variant="secondary" className="bg-green-100 text-green-800">
+                Quick Entry
+              </Badge>
+            </div>
+
+            {showSuccess && (
+              <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg flex items-center">
+                <CheckCircle className="h-5 w-5 mr-2" />
+                Contact logged successfully!
               </div>
             )}
 
-            {/* Contact Purpose */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Contact Purpose</label>
-              <select
-                value={contactData.contactPurpose}
-                onChange={(e) => setContactData((prev) => ({ ...prev, contactPurpose: e.target.value }))}
-                className="w-full p-3 border border-gray-300 rounded-lg text-sm"
-              >
-                {contactPurposes.map((purpose) => (
-                  <option key={purpose.value} value={purpose.value}>
-                    {purpose.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Contact Type Toggle */}
-            <div className="flex rounded-lg overflow-hidden border-2 border-gray-200">
-              <button
-                onClick={() => handleSuccessToggle(true)}
-                className={`flex-1 py-4 flex flex-col items-center transition-all ${
-                  contactData.contactSuccess ? "bg-green-500 text-white" : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                <Phone className="h-8 w-8 mb-1" />
-                <span className="text-sm font-medium">Successful</span>
-              </button>
-              <button
-                onClick={() => handleSuccessToggle(false)}
-                className={`flex-1 py-4 flex flex-col items-center transition-all ${
-                  !contactData.contactSuccess
-                    ? "bg-yellow-500 text-white"
-                    : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                <PhoneOff className="h-8 w-8 mb-1" />
-                <span className="text-sm font-medium">Attempted</span>
-              </button>
-            </div>
-
-            {/* Person Contacted (for successful contacts) */}
-            {contactData.contactSuccess && expandedView && (
+            <div className="space-y-6">
+              {/* Service Package */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Person Contacted</label>
-                <input
-                  type="text"
-                  value={contactData.personContacted || ""}
-                  onChange={(e) => setContactData((prev) => ({ ...prev, personContacted: e.target.value }))}
-                  className="w-full p-3 border border-gray-300 rounded-lg text-sm"
-                  placeholder="e.g., Youth, Foster Parent, Case Worker"
-                />
-              </div>
-            )}
-
-            {/* Duration Slider (for successful contacts) */}
-            {contactData.contactSuccess && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Duration: {contactData.duration} minutes
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                  Service Package *
+                  <HelpTooltip text="Select the service package to show relevant contact options and reminders." />
                 </label>
-                <input
-                  type="range"
-                  min="5"
-                  max="60"
-                  step="5"
-                  value={contactData.duration}
-                  onChange={(e) => handleDurationChange(e.target.value)}
-                  className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                  style={{
-                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${
-                      ((contactData.duration - 5) / 55) * 100
-                    }%, #e5e7eb ${((contactData.duration - 5) / 55) * 100}%, #e5e7eb 100%)`,
-                  }}
-                />
-                {/* Duration Presets */}
-                <div className="grid grid-cols-6 gap-1 mt-2">
-                  {durationPresets.map((preset) => (
-                    <button
-                      key={preset}
-                      onClick={() => handleDurationPreset(preset)}
-                      className={`py-1 text-xs rounded ${
-                        contactData.duration === preset
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
-                    >
-                      {preset}m
-                    </button>
+                <select
+                  name="servicePackage"
+                  value={formData.servicePackage}
+                  onChange={handleInputChange}
+                  className={`w-full p-2 border rounded-md ${errors.servicePackage ? "border-red-500" : "border-gray-300"}`}
+                >
+                  <option value="">Select service package</option>
+                  {servicePackages.map((pkg) => (
+                    <option key={pkg.value} value={pkg.value}>
+                      {pkg.label}
+                    </option>
                   ))}
-                </div>
-              </div>
-            )}
-
-            {/* Attempt Counter (for attempted contacts) */}
-            {!contactData.contactSuccess && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Number of Attempts</label>
-                <div className="flex items-center justify-center space-x-4">
-                  <button
-                    onClick={() => adjustAttempts(-1)}
-                    className="w-12 h-12 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
-                  >
-                    <ChevronDown className="h-6 w-6" />
-                  </button>
-                  <span className="text-3xl font-bold text-gray-800 w-12 text-center">{contactData.attemptCount}</span>
-                  <button
-                    onClick={() => adjustAttempts(1)}
-                    className="w-12 h-12 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
-                  >
-                    <ChevronUp className="h-6 w-6" />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Voice Note */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Voice Note</label>
-              <button
-                onClick={toggleRecording}
-                className={`w-full py-4 rounded-lg flex items-center justify-center transition-all ${
-                  isRecording
-                    ? "bg-red-500 hover:bg-red-600 text-white animate-pulse"
-                    : contactData.voiceNote
-                      ? "bg-green-100 hover:bg-green-200 text-green-700"
-                      : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                }`}
-              >
-                <Mic className="h-6 w-6 mr-2" />
-                {isRecording ? (
-                  <span>Recording... {formatTime(recordingTime)}</span>
-                ) : contactData.voiceNote ? (
-                  <span>{contactData.voiceNote}</span>
-                ) : (
-                  <span>Tap to record</span>
-                )}
-              </button>
-            </div>
-
-            {/* Quick Notes (expanded view only) */}
-            {expandedView && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Quick Notes</label>
-                <textarea
-                  value={contactData.quickNotes}
-                  onChange={(e) => setContactData((prev) => ({ ...prev, quickNotes: e.target.value }))}
-                  rows="2"
-                  className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                  placeholder="Add any quick notes..."
-                />
-              </div>
-            )}
-
-            {/* Follow-up Flag */}
-            <label className="flex items-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
-              <input
-                type="checkbox"
-                checked={contactData.followUpNeeded}
-                onChange={(e) => setContactData((prev) => ({ ...prev, followUpNeeded: e.target.checked }))}
-                className="mr-3 h-5 w-5 text-blue-500"
-              />
-              <Flag className="h-5 w-5 mr-2 text-orange-500" />
-              <span className="text-sm font-medium">Follow-up needed</span>
-            </label>
-
-            {/* Quick Actions */}
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                onClick={handleSave}
-                disabled={isSaving || !activeChild}
-                className={`py-3 rounded-lg font-medium transition-all flex flex-col items-center ${
-                  isSaving || !activeChild
-                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    : "bg-blue-500 hover:bg-blue-600 text-white"
-                }`}
-              >
-                <Save className="h-5 w-5 mb-1" />
-                <span className="text-xs">{isSaving ? "Saving..." : "Save"}</span>
-              </button>
-
-              <button
-                onClick={createTask}
-                className="py-3 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white font-medium transition-all flex flex-col items-center"
-              >
-                <Flag className="h-5 w-5 mb-1" />
-                <span className="text-xs">Task</span>
-              </button>
-
-              <button
-                onClick={expandToFullForm}
-                className="py-3 rounded-lg bg-gray-500 hover:bg-gray-600 text-white font-medium transition-all flex flex-col items-center"
-              >
-                <Expand className="h-5 w-5 mb-1" />
-                <span className="text-xs">Full Form</span>
-              </button>
-            </div>
-
-            {/* Recent Contacts */}
-            <div>
-              <button
-                onClick={() => setShowRecent(!showRecent)}
-                className="w-full flex items-center justify-between text-sm font-medium text-gray-700 py-2"
-              >
-                <span>Recent Contacts ({recentContacts.length})</span>
-                {showRecent ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </button>
-
-              {showRecent && (
-                <div className="space-y-2 mt-2">
-                  {recentContacts.map((contact) => (
-                    <div key={contact.id} className="p-3 bg-gray-50 rounded-lg flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{contact.childName}</p>
-                        <p className="text-xs text-gray-500">
-                          {contact.time} •{" "}
-                          {contact.type === "successful" ? `${contact.duration} min` : `${contact.attempts} attempts`}
-                        </p>
-                        {contact.purpose && contact.purpose !== "general" && (
-                          <span className="text-xs text-blue-600">
-                            {contactPurposes.find((p) => p.value === contact.purpose)?.label}
-                          </span>
-                        )}
-                      </div>
-                      {contact.followUp && <Flag className="h-4 w-4 text-orange-500 flex-shrink-0" />}
+                </select>
+                {formData.servicePackage &&
+                  servicePackages.find((p) => p.value === formData.servicePackage)?.helpText && (
+                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
+                      <strong>Package Info:</strong>{" "}
+                      {servicePackages.find((p) => p.value === formData.servicePackage)?.helpText}
                     </div>
+                  )}
+                {errors.servicePackage && <p className="text-red-500 text-sm mt-1">{errors.servicePackage}</p>}
+              </div>
+
+              {/* Contact Purpose */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Contact Purpose *</label>
+                <select
+                  name="contactPurpose"
+                  value={formData.contactPurpose}
+                  onChange={handleInputChange}
+                  className={`w-full p-2 border rounded-md ${errors.contactPurpose ? "border-red-500" : "border-gray-300"}`}
+                  disabled={!formData.servicePackage}
+                >
+                  <option value="">Select contact purpose</option>
+                  {getContactPurposes().map((purpose) => (
+                    <option key={purpose} value={purpose}>
+                      {purpose}
+                    </option>
                   ))}
+                </select>
+                {errors.contactPurpose && <p className="text-red-500 text-sm mt-1">{errors.contactPurpose}</p>}
+              </div>
+
+              {/* Basic Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Child Name *</label>
+                  <input
+                    type="text"
+                    name="childName"
+                    value={formData.childName}
+                    onChange={handleInputChange}
+                    className={`w-full p-2 border rounded-md ${errors.childName ? "border-red-500" : "border-gray-300"}`}
+                  />
+                  {errors.childName && <p className="text-red-500 text-sm mt-1">{errors.childName}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Case Number *</label>
+                  <input
+                    type="text"
+                    name="caseNumber"
+                    value={formData.caseNumber}
+                    onChange={handleInputChange}
+                    className={`w-full p-2 border rounded-md ${errors.caseNumber ? "border-red-500" : "border-gray-300"}`}
+                  />
+                  {errors.caseNumber && <p className="text-red-500 text-sm mt-1">{errors.caseNumber}</p>}
+                </div>
+              </div>
+
+              {/* Contact Details */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Contact Date *</label>
+                  <input
+                    type="date"
+                    name="contactDate"
+                    value={formData.contactDate}
+                    onChange={handleInputChange}
+                    className={`w-full p-2 border rounded-md ${errors.contactDate ? "border-red-500" : "border-gray-300"}`}
+                  />
+                  {errors.contactDate && <p className="text-red-500 text-sm mt-1">{errors.contactDate}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Contact Time *</label>
+                  <input
+                    type="time"
+                    name="contactTime"
+                    value={formData.contactTime}
+                    onChange={handleInputChange}
+                    className={`w-full p-2 border rounded-md ${errors.contactTime ? "border-red-500" : "border-gray-300"}`}
+                  />
+                  {errors.contactTime && <p className="text-red-500 text-sm mt-1">{errors.contactTime}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Duration *</label>
+                  <select
+                    name="duration"
+                    value={formData.duration}
+                    onChange={handleInputChange}
+                    className={`w-full p-2 border rounded-md ${errors.duration ? "border-red-500" : "border-gray-300"}`}
+                  >
+                    <option value="">Select duration</option>
+                    {durations.map((duration) => (
+                      <option key={duration.value} value={duration.value}>
+                        {duration.label}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.duration && <p className="text-red-500 text-sm mt-1">{errors.duration}</p>}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Contact Method</label>
+                  <select
+                    name="contactMethod"
+                    value={formData.contactMethod}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  >
+                    {contactMethods.map((method) => (
+                      <option key={method.value} value={method.value}>
+                        {method.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Contacted By *</label>
+                  <input
+                    type="text"
+                    name="contactedBy"
+                    value={formData.contactedBy}
+                    onChange={handleInputChange}
+                    placeholder="Staff member name"
+                    className={`w-full p-2 border rounded-md ${errors.contactedBy ? "border-red-500" : "border-gray-300"}`}
+                  />
+                  {errors.contactedBy && <p className="text-red-500 text-sm mt-1">{errors.contactedBy}</p>}
+                </div>
+              </div>
+
+              {/* Package-Specific Quick Checks */}
+              {formData.servicePackage === "pregnant-parenting" && (
+                <div className="bg-pink-50 p-4 rounded-lg border border-pink-200">
+                  <h3 className="text-lg font-medium text-pink-800 mb-3">Pregnant/Parenting Quick Check</h3>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="childWelfareCheck"
+                      checked={formData.childWelfareCheck}
+                      onChange={handleInputChange}
+                      className="mr-2"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Child welfare check completed?</span>
+                  </label>
                 </div>
               )}
+
+              {(formData.servicePackage === "transition" || formData.servicePackage === "independent") && (
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h3 className="text-lg font-medium text-blue-800 mb-3">Transition Support Quick Check</h3>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="transitionGoalsProgress"
+                      checked={formData.transitionGoalsProgress}
+                      onChange={handleInputChange}
+                      className="mr-2"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Progress on transition goals?</span>
+                  </label>
+                </div>
+              )}
+
+              {formData.servicePackage === "kinship" && (
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                  <h3 className="text-lg font-medium text-green-800 mb-3">Kinship Support Quick Check</h3>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="familyStabilityMaintained"
+                      checked={formData.familyStabilityMaintained}
+                      onChange={handleInputChange}
+                      className="mr-2"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Family stability maintained?</span>
+                  </label>
+                </div>
+              )}
+
+              {/* Package Reminder */}
+              {getPackageReminder() && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 text-yellow-800">
+                    <AlertCircle className="h-5 w-5" />
+                    <p className="font-medium">Package Reminder:</p>
+                  </div>
+                  <p className="text-yellow-700 mt-1">{getPackageReminder()}</p>
+                </div>
+              )}
+
+              {/* Contact Summary */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Contact Summary *</label>
+                <textarea
+                  name="summary"
+                  value={formData.summary}
+                  onChange={handleInputChange}
+                  rows="4"
+                  placeholder="Brief summary of the contact..."
+                  className={`w-full p-2 border rounded-md ${errors.summary ? "border-red-500" : "border-gray-300"}`}
+                />
+                {errors.summary && <p className="text-red-500 text-sm mt-1">{errors.summary}</p>}
+              </div>
+
+              {/* Follow-up */}
+              <div className="space-y-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="followUpNeeded"
+                    checked={formData.followUpNeeded}
+                    onChange={handleInputChange}
+                    className="mr-2"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Follow-up needed</span>
+                </label>
+
+                {formData.followUpNeeded && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Follow-up Date *</label>
+                      <input
+                        type="date"
+                        name="followUpDate"
+                        value={formData.followUpDate}
+                        onChange={handleInputChange}
+                        className={`w-full p-2 border rounded-md ${errors.followUpDate ? "border-red-500" : "border-gray-300"}`}
+                      />
+                      {errors.followUpDate && <p className="text-red-500 text-sm mt-1">{errors.followUpDate}</p>}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Follow-up Notes</label>
+                      <textarea
+                        name="followUpNotes"
+                        value={formData.followUpNotes}
+                        onChange={handleInputChange}
+                        rows="2"
+                        placeholder="What needs to be followed up on?"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Submit Button */}
+              <div className="pt-6 border-t">
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="w-full px-6 py-3 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:bg-gray-400 flex items-center justify-center text-lg font-medium"
+                >
+                  <Send className="h-5 w-5 mr-2" />
+                  {isSubmitting ? "Logging Contact..." : "Log Contact"}
+                </button>
+              </div>
             </div>
           </div>
         </div>

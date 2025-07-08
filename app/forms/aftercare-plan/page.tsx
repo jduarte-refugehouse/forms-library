@@ -5,6 +5,18 @@ import { AlertCircle, CheckCircle, Plus, Trash2, FileText, Send, ArrowLeft, User
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 
+const HelpTooltip = ({ text }: { text: string }) => (
+  <div className="group relative inline-block ml-2">
+    <div className="w-4 h-4 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs cursor-help">
+      ?
+    </div>
+    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10 w-64">
+      {text}
+      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+    </div>
+  </div>
+)
+
 export default function AftercarePlanForm() {
   const [formData, setFormData] = useState({
     packageType: "",
@@ -39,6 +51,7 @@ export default function AftercarePlanForm() {
     crisisPlan: "",
     medicationManagement: false,
     psychiatristName: "",
+    starHealthCoordinatorMental: "",
 
     // IDD/Autism
     rnCaseManagerName: "",
@@ -46,6 +59,8 @@ export default function AftercarePlanForm() {
     behaviorPlanInPlace: false,
     behaviorPlanDetails: "",
     specializedSupports: "",
+    educationPortfolioStatus: "",
+    educationPortfolioDetails: "",
 
     // Treatment Foster Care
     weeklySchedule: {
@@ -55,11 +70,61 @@ export default function AftercarePlanForm() {
       week4: "",
     },
 
+    // Independent Living Services
+    alumniEmail: "",
+    transitionCoordinator: "",
+    transitionPlan: "",
+
+    // Kinship Care Services
+    kinshipCaregiverName: "",
+    relationshipToChild: "",
+    prePermanencyPlan: "",
+    familySupportServices: "",
+
+    // Pregnant/Parenting Youth Services
+    parentingEducationProvider: "",
+    childDevelopmentSpecialist: "",
+    dualGenerationPlan: "",
+    childDateOfBirth: "",
+    expectedDueDate: "",
+
+    // Transition Support Services Add-On
+    palWorkerName: "",
+    palWorkerContact: "",
+    alumniOrganizationsProvided: "",
+    transitionDomainsChecklist: [],
+
+    // Kinship Caregiver Support Add-On
+    kinshipCaregiverNameAddon: "",
+    relationshipToChildAddon: "",
+    permanencyType: "",
+    supportGroupReferralProvided: false,
+    ongoingFamilyChallenges: "",
+
+    // Pregnant & Parenting Youth Add-On
+    numberOfChildren: "",
+    childrenAges: "",
+    currentLivingArrangementSuitable: false,
+    coParentInvolved: false,
+    coParentContactInfo: "",
+    childcarePlan: "",
+    pediatricianInfo: "",
+    wicStatus: "",
+    parentingSupportGroups: "",
+
     // Service Continuity
     appointments: [],
     referrals: [],
     starHealthCoordinator: "",
     additionalNotes: "",
+
+    // Contact Schedule
+    contactSchedule: {
+      frequency: "",
+      duration: "",
+      method: "",
+      notes: "",
+    },
 
     // SSCC/DFPS Documentation
     ssccContactEmail: "",
@@ -83,20 +148,121 @@ export default function AftercarePlanForm() {
     }))
   }, [])
 
+  // Auto-populate contact schedule based on package type
+  useEffect(() => {
+    if (formData.packageType) {
+      let scheduleText = ""
+
+      switch (formData.packageType) {
+        case "transition":
+          scheduleText =
+            "Weekly contact for first 4 weeks, then bi-weekly for 8 weeks, then monthly for remainder of 6 months"
+          break
+        case "pregnant-parenting":
+          scheduleText = "Weekly contact for first 4 weeks, then bi-weekly for remainder of service period"
+          break
+        case "kinship":
+          scheduleText = "Weekly contact for first 8 weeks, then bi-weekly for 4 weeks, then monthly for remainder"
+          break
+        case "mental":
+        case "idd":
+        case "treatment":
+          scheduleText = "Twice monthly contact for 6 months minimum"
+          break
+        case "independent":
+          scheduleText =
+            "Weekly contact for first month, then bi-weekly for 2 months, then monthly for remainder of 6 months"
+          break
+        default:
+          scheduleText = "Contact frequency to be determined based on individual needs"
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        contactSchedule: {
+          ...prev.contactSchedule,
+          frequency: scheduleText,
+        },
+      }))
+    }
+  }, [formData.packageType])
+
   const packageTypes = [
-    { value: "mental", label: "Mental & Behavioral Health Support Services (Required)" },
-    { value: "idd", label: "IDD/Autism Spectrum Disorder Support Services (Required)" },
-    { value: "treatment", label: "T3C Treatment Foster Family Care Support Services (Required)" },
-    { value: "emergency", label: "Emergency Shelter Services" },
-    { value: "basic", label: "Basic Foster Care Services" },
-    { value: "therapeutic", label: "Therapeutic Foster Care Services" },
-    { value: "kinship", label: "Kinship Care Services" },
-    { value: "adoption", label: "Adoption Support Services" },
-    { value: "independent", label: "Independent Living Services" },
-    { value: "respite", label: "Respite Care Services" },
-    { value: "family-preservation", label: "Family Preservation Services" },
-    { value: "reunification", label: "Family Reunification Services" },
-    { value: "other", label: "Other (please specify)" },
+    {
+      value: "mental",
+      label: "Mental & Behavioral Health Support Services (Required)",
+      helpText: "6 months, twice monthly contact minimum. Include STAR Health Coordinator if assigned.",
+    },
+    {
+      value: "idd",
+      label: "IDD/Autism Spectrum Disorder Support Services (Required)",
+      helpText: "6 months, twice monthly contact minimum. Education Portfolio required for all cases.",
+    },
+    {
+      value: "treatment",
+      label: "T3C Treatment Foster Family Care Support Services (Required)",
+      helpText: "6 months, twice monthly contact minimum. Weekly contact schedule required.",
+    },
+    {
+      value: "emergency",
+      label: "Emergency Shelter Services",
+      helpText: "Optional aftercare - requires Program Director approval.",
+    },
+    {
+      value: "basic",
+      label: "Basic Foster Care Services",
+      helpText: "Optional aftercare - requires Program Director approval.",
+    },
+    {
+      value: "therapeutic",
+      label: "Therapeutic Foster Care Services",
+      helpText: "Optional aftercare - requires Program Director approval.",
+    },
+    {
+      value: "kinship",
+      label: "Kinship Caregiver Support Add-On",
+      helpText: "30-day pre-permanency planning required. Focus on family support and stability.",
+    },
+    {
+      value: "adoption",
+      label: "Adoption Support Services",
+      helpText: "Post-adoption support planning. Include family integration strategies.",
+    },
+    {
+      value: "independent",
+      label: "Independent Living Services",
+      helpText: "6-month transition support required. Alumni information mandatory for tracking.",
+    },
+    {
+      value: "respite",
+      label: "Respite Care Services",
+      helpText: "Short-term support planning. Coordinate with primary placement.",
+    },
+    {
+      value: "family-preservation",
+      label: "Family Preservation Services",
+      helpText: "Focus on family strengthening and prevention strategies.",
+    },
+    {
+      value: "reunification",
+      label: "Family Reunification Services",
+      helpText: "Transition planning for family reunification. Safety planning required.",
+    },
+    {
+      value: "pregnant-parenting",
+      label: "Pregnant & Parenting Youth Add-On",
+      helpText: "Focus on dual-generation support. Include parenting education and child development.",
+    },
+    {
+      value: "transition",
+      label: "Transition Support Services Add-On",
+      helpText: "PAL worker support and alumni connections. Weekly to monthly contact schedule.",
+    },
+    {
+      value: "other",
+      label: "Other (please specify)",
+      helpText: "Requires Program Director approval and detailed justification.",
+    },
   ]
 
   const contactMethods = [
@@ -107,6 +273,15 @@ export default function AftercarePlanForm() {
   ]
 
   const preferredTimes = ["Morning (8am-12pm)", "Afternoon (12pm-5pm)", "Evening (5pm-8pm)", "Weekends"]
+
+  const transitionDomains = [
+    "Education/Career",
+    "Employment/Financial",
+    "Housing/Living Skills",
+    "Health Management",
+    "Relationships",
+    "Transportation",
+  ]
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -144,6 +319,15 @@ export default function AftercarePlanForm() {
       preferredContactTimes: prev.preferredContactTimes.includes(time)
         ? prev.preferredContactTimes.filter((t) => t !== time)
         : [...prev.preferredContactTimes, time],
+    }))
+  }
+
+  const handleTransitionDomainChange = (domain) => {
+    setFormData((prev) => ({
+      ...prev,
+      transitionDomainsChecklist: prev.transitionDomainsChecklist.includes(domain)
+        ? prev.transitionDomainsChecklist.filter((d) => d !== domain)
+        : [...prev.transitionDomainsChecklist, domain],
     }))
   }
 
@@ -357,7 +541,10 @@ export default function AftercarePlanForm() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Service Package Type *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                      Service Package Type *
+                      <HelpTooltip text="Select the appropriate service package. Required packages have mandatory aftercare periods." />
+                    </label>
                     <select
                       name="packageType"
                       value={formData.packageType}
@@ -371,6 +558,12 @@ export default function AftercarePlanForm() {
                         </option>
                       ))}
                     </select>
+                    {formData.packageType && packageTypes.find((t) => t.value === formData.packageType)?.helpText && (
+                      <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
+                        <strong>Requirements:</strong>{" "}
+                        {packageTypes.find((t) => t.value === formData.packageType)?.helpText}
+                      </div>
+                    )}
                     {errors.packageType && <p className="text-red-500 text-sm mt-1">{errors.packageType}</p>}
                   </div>
 
@@ -715,7 +908,7 @@ export default function AftercarePlanForm() {
                     </div>
 
                     {formData.medicationManagement && (
-                      <div className="md:col-span-2">
+                      <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Psychiatrist Name</label>
                         <input
                           type="text"
@@ -726,16 +919,31 @@ export default function AftercarePlanForm() {
                         />
                       </div>
                     )}
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                        STAR Health Coordinator
+                        <HelpTooltip text="Include STAR Health Coordinator if assigned to this case." />
+                      </label>
+                      <input
+                        type="text"
+                        name="starHealthCoordinatorMental"
+                        value={formData.starHealthCoordinatorMental}
+                        onChange={handleInputChange}
+                        placeholder="Name and contact info if assigned"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
                   </div>
                 </section>
               )}
 
               {formData.packageType === "idd" && (
-                <section className="space-y-4 bg-green-50 p-4 rounded-lg">
-                  <h2 className="text-xl font-semibold text-green-800">
+                <section className="space-y-4 bg-purple-50 p-4 rounded-lg">
+                  <h2 className="text-xl font-semibold text-purple-800">
                     IDD/Autism Spectrum Disorder Support Services
                   </h2>
-                  <p className="text-sm text-green-700">Required aftercare: 6 months, twice monthly contact minimum</p>
+                  <p className="text-sm text-purple-700">Required aftercare: 6 months, twice monthly contact minimum</p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -785,9 +993,7 @@ export default function AftercarePlanForm() {
                           onChange={handleInputChange}
                           rows="3"
                           placeholder="Describe the behavior plan and implementation strategies"
-                          className={`w-full p-2 border rounded-md ${
-                            errors.behaviorPlanDetails ? "border-red-500" : "border-gray-300"
-                          }`}
+                          className={`w-full p-2 border rounded-md ${errors.behaviorPlanDetails ? "border-red-500" : "border-gray-300"}`}
                         />
                         {errors.behaviorPlanDetails && (
                           <p className="text-red-500 text-sm mt-1">{errors.behaviorPlanDetails}</p>
@@ -806,16 +1012,49 @@ export default function AftercarePlanForm() {
                         className="w-full p-2 border border-gray-300 rounded-md"
                       />
                     </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                        Education Portfolio Status
+                        <HelpTooltip text="Education Portfolio required for all IDD/Autism cases." />
+                      </label>
+                      <select
+                        name="educationPortfolioStatus"
+                        value={formData.educationPortfolioStatus}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      >
+                        <option value="">Select status</option>
+                        <option value="complete">Complete</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="needs-update">Needs Update</option>
+                        <option value="not-started">Not Started</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Education Portfolio Details
+                      </label>
+                      <textarea
+                        name="educationPortfolioDetails"
+                        value={formData.educationPortfolioDetails}
+                        onChange={handleInputChange}
+                        rows="2"
+                        placeholder="Notes about education portfolio status and next steps"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
                   </div>
                 </section>
               )}
 
               {formData.packageType === "treatment" && (
-                <section className="space-y-4 bg-purple-50 p-4 rounded-lg">
-                  <h2 className="text-xl font-semibold text-purple-800">
+                <section className="space-y-4 bg-green-50 p-4 rounded-lg">
+                  <h2 className="text-xl font-semibold text-green-800">
                     T3C Treatment Foster Family Care Support Services
                   </h2>
-                  <p className="text-sm text-purple-700">Required aftercare: 6 months, twice monthly contact minimum</p>
+                  <p className="text-sm text-green-700">Required aftercare: 6 months, twice monthly contact minimum</p>
 
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium text-gray-700">Weekly Contact Schedule</h3>
@@ -827,7 +1066,7 @@ export default function AftercarePlanForm() {
                           value={formData.weeklySchedule.week1}
                           onChange={handleInputChange}
                           rows="2"
-                          placeholder="Planned contact for week 1"
+                          placeholder="Plan for first week contact"
                           className="w-full p-2 border border-gray-300 rounded-md"
                         />
                       </div>
@@ -839,7 +1078,7 @@ export default function AftercarePlanForm() {
                           value={formData.weeklySchedule.week2}
                           onChange={handleInputChange}
                           rows="2"
-                          placeholder="Planned contact for week 2"
+                          placeholder="Plan for second week contact"
                           className="w-full p-2 border border-gray-300 rounded-md"
                         />
                       </div>
@@ -851,7 +1090,7 @@ export default function AftercarePlanForm() {
                           value={formData.weeklySchedule.week3}
                           onChange={handleInputChange}
                           rows="2"
-                          placeholder="Planned contact for week 3"
+                          placeholder="Plan for third week contact"
                           className="w-full p-2 border border-gray-300 rounded-md"
                         />
                       </div>
@@ -863,7 +1102,7 @@ export default function AftercarePlanForm() {
                           value={formData.weeklySchedule.week4}
                           onChange={handleInputChange}
                           rows="2"
-                          placeholder="Planned contact for week 4"
+                          placeholder="Plan for fourth week contact"
                           className="w-full p-2 border border-gray-300 rounded-md"
                         />
                       </div>
@@ -872,14 +1111,402 @@ export default function AftercarePlanForm() {
                 </section>
               )}
 
+              {formData.packageType === "independent" && (
+                <section className="space-y-4 bg-indigo-50 p-4 rounded-lg">
+                  <h2 className="text-xl font-semibold text-indigo-800">Independent Living Services</h2>
+                  <p className="text-sm text-indigo-700">
+                    6-month transition support required. Alumni information mandatory.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                        Alumni Email Address
+                        <HelpTooltip text="Alumni information mandatory for tracking and support network." />
+                      </label>
+                      <input
+                        type="email"
+                        name="alumniEmail"
+                        value={formData.alumniEmail}
+                        onChange={handleInputChange}
+                        placeholder="Alumni email for ongoing support"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Transition Coordinator</label>
+                      <input
+                        type="text"
+                        name="transitionCoordinator"
+                        value={formData.transitionCoordinator}
+                        onChange={handleInputChange}
+                        placeholder="Name of assigned transition coordinator"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Transition Plan</label>
+                      <textarea
+                        name="transitionPlan"
+                        value={formData.transitionPlan}
+                        onChange={handleInputChange}
+                        rows="4"
+                        placeholder="Detailed transition plan including goals and milestones"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {formData.packageType === "transition" && (
+                <section className="space-y-4 bg-blue-50 p-4 rounded-lg">
+                  <h2 className="text-xl font-semibold text-blue-800">Transition Support Services Add-On</h2>
+                  <p className="text-sm text-blue-700">
+                    PAL worker support and alumni connections. Weekly to monthly contact schedule.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">PAL Worker Name</label>
+                      <input
+                        type="text"
+                        name="palWorkerName"
+                        value={formData.palWorkerName}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">PAL Worker Contact</label>
+                      <input
+                        type="text"
+                        name="palWorkerContact"
+                        value={formData.palWorkerContact}
+                        onChange={handleInputChange}
+                        placeholder="Phone or email"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Alumni Organizations Provided
+                      </label>
+                      <textarea
+                        name="alumniOrganizationsProvided"
+                        value={formData.alumniOrganizationsProvided}
+                        onChange={handleInputChange}
+                        rows="3"
+                        placeholder="List alumni organizations and resources provided"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Transition Domains Checklist
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {transitionDomains.map((domain) => (
+                          <label key={domain} className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={formData.transitionDomainsChecklist.includes(domain)}
+                              onChange={() => handleTransitionDomainChange(domain)}
+                              className="mr-2"
+                            />
+                            <span className="text-sm">{domain}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {formData.packageType === "kinship" && (
+                <section className="space-y-4 bg-green-50 p-4 rounded-lg">
+                  <h2 className="text-xl font-semibold text-green-800">Kinship Caregiver Support Add-On</h2>
+                  <p className="text-sm text-green-700">
+                    30-day pre-permanency planning required. Focus on family support and stability.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Kinship Caregiver Name</label>
+                      <input
+                        type="text"
+                        name="kinshipCaregiverNameAddon"
+                        value={formData.kinshipCaregiverNameAddon}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Relationship to Child</label>
+                      <input
+                        type="text"
+                        name="relationshipToChildAddon"
+                        value={formData.relationshipToChildAddon}
+                        onChange={handleInputChange}
+                        placeholder="e.g., Grandmother, Aunt, etc."
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Permanency Type</label>
+                      <select
+                        name="permanencyType"
+                        value={formData.permanencyType}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      >
+                        <option value="">Select permanency type</option>
+                        <option value="adoption">Adoption</option>
+                        <option value="pmc-pca">PMC with PCA</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="supportGroupReferralProvided"
+                          checked={formData.supportGroupReferralProvided}
+                          onChange={handleInputChange}
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Support Group Referral Provided</span>
+                      </label>
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Ongoing Family Challenges</label>
+                      <textarea
+                        name="ongoingFamilyChallenges"
+                        value={formData.ongoingFamilyChallenges}
+                        onChange={handleInputChange}
+                        rows="3"
+                        placeholder="Document any ongoing challenges and support needs"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {formData.packageType === "pregnant-parenting" && (
+                <section className="space-y-4 bg-pink-50 p-4 rounded-lg">
+                  <h2 className="text-xl font-semibold text-pink-800">Pregnant & Parenting Youth Add-On</h2>
+                  <p className="text-sm text-pink-700">
+                    Focus on dual-generation support. Include parenting education and child development.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Number of Children</label>
+                      <input
+                        type="number"
+                        name="numberOfChildren"
+                        value={formData.numberOfChildren}
+                        onChange={handleInputChange}
+                        min="0"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Children's Ages</label>
+                      <input
+                        type="text"
+                        name="childrenAges"
+                        value={formData.childrenAges}
+                        onChange={handleInputChange}
+                        placeholder="e.g., 2 years, 6 months"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="currentLivingArrangementSuitable"
+                          checked={formData.currentLivingArrangementSuitable}
+                          onChange={handleInputChange}
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium text-gray-700">
+                          Current Living Arrangement Suitable for Children
+                        </span>
+                      </label>
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="coParentInvolved"
+                          checked={formData.coParentInvolved}
+                          onChange={handleInputChange}
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Co-parent Involved</span>
+                      </label>
+                    </div>
+
+                    {formData.coParentInvolved && (
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Co-parent Contact Information
+                        </label>
+                        <input
+                          type="text"
+                          name="coParentContactInfo"
+                          value={formData.coParentContactInfo}
+                          onChange={handleInputChange}
+                          placeholder="Name, phone, and relationship details"
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                        />
+                      </div>
+                    )}
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Childcare Plan</label>
+                      <textarea
+                        name="childcarePlan"
+                        value={formData.childcarePlan}
+                        onChange={handleInputChange}
+                        rows="3"
+                        placeholder="Describe childcare arrangements and support"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Pediatrician Information</label>
+                      <input
+                        type="text"
+                        name="pediatricianInfo"
+                        value={formData.pediatricianInfo}
+                        onChange={handleInputChange}
+                        placeholder="Name and contact information"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">WIC Status</label>
+                      <select
+                        name="wicStatus"
+                        value={formData.wicStatus}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      >
+                        <option value="">Select WIC status</option>
+                        <option value="active">Active</option>
+                        <option value="pending">Pending</option>
+                        <option value="not-applied">Not Applied</option>
+                      </select>
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Parenting Support Groups</label>
+                      <textarea
+                        name="parentingSupportGroups"
+                        value={formData.parentingSupportGroups}
+                        onChange={handleInputChange}
+                        rows="2"
+                        placeholder="List parenting support groups and resources"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {/* Contact Schedule */}
+              <section className="space-y-4">
+                <h2 className="text-xl font-semibold text-gray-700">Contact Schedule</h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                      Contact Frequency
+                      <HelpTooltip text="Auto-populated based on package type. Modify as needed for individual case." />
+                    </label>
+                    <textarea
+                      name="contactSchedule.frequency"
+                      value={formData.contactSchedule.frequency}
+                      onChange={handleInputChange}
+                      rows="3"
+                      className="w-full p-2 border border-gray-300 rounded-md bg-gray-50"
+                      readOnly
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Typical Contact Duration</label>
+                    <select
+                      name="contactSchedule.duration"
+                      value={formData.contactSchedule.duration}
+                      onChange={handleInputChange}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    >
+                      <option value="">Select duration</option>
+                      <option value="15-30 minutes">15-30 minutes</option>
+                      <option value="30-45 minutes">30-45 minutes</option>
+                      <option value="45-60 minutes">45-60 minutes</option>
+                      <option value="60+ minutes">60+ minutes</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Primary Contact Method</label>
+                    <select
+                      name="contactSchedule.method"
+                      value={formData.contactSchedule.method}
+                      onChange={handleInputChange}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    >
+                      <option value="">Select method</option>
+                      <option value="phone">Phone</option>
+                      <option value="text">Text</option>
+                      <option value="email">Email</option>
+                      <option value="in-person">In-Person</option>
+                      <option value="video">Video Call</option>
+                    </select>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Schedule Notes</label>
+                    <textarea
+                      name="contactSchedule.notes"
+                      value={formData.contactSchedule.notes}
+                      onChange={handleInputChange}
+                      rows="2"
+                      placeholder="Any special scheduling considerations or preferences"
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                </div>
+              </section>
+
               {/* Service Continuity */}
               <section className="space-y-4">
                 <h2 className="text-xl font-semibold text-gray-700">Service Continuity</h2>
 
                 {/* Appointments */}
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-lg font-medium text-gray-700">Scheduled Appointments</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium text-gray-700">Upcoming Appointments</h3>
                     <button
                       type="button"
                       onClick={addAppointment}
@@ -891,10 +1518,21 @@ export default function AftercarePlanForm() {
                   </div>
 
                   {formData.appointments.map((appointment) => (
-                    <div key={appointment.id} className="border border-gray-200 rounded-lg p-4 mb-3">
+                    <div key={appointment.id} className="border border-gray-200 rounded-lg p-4 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <h4 className="font-medium text-gray-700">Appointment #{appointment.id}</h4>
+                        <button
+                          type="button"
+                          onClick={() => removeAppointment(appointment.id)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Provider/Service</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Provider</label>
                           <input
                             type="text"
                             value={appointment.provider}
@@ -925,19 +1563,13 @@ export default function AftercarePlanForm() {
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                          <select
+                          <input
+                            type="text"
                             value={appointment.type}
                             onChange={(e) => updateAppointment(appointment.id, "type", e.target.value)}
+                            placeholder="e.g., Therapy, Medical"
                             className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                          >
-                            <option value="">Select type</option>
-                            <option value="medical">Medical</option>
-                            <option value="therapy">Therapy</option>
-                            <option value="psychiatric">Psychiatric</option>
-                            <option value="educational">Educational</option>
-                            <option value="court">Court</option>
-                            <option value="other">Other</option>
-                          </select>
+                          />
                         </div>
 
                         <div className="md:col-span-2">
@@ -950,23 +1582,14 @@ export default function AftercarePlanForm() {
                           />
                         </div>
                       </div>
-
-                      <button
-                        type="button"
-                        onClick={() => removeAppointment(appointment.id)}
-                        className="mt-2 text-red-600 hover:text-red-800 flex items-center text-sm"
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Remove
-                      </button>
                     </div>
                   ))}
                 </div>
 
                 {/* Referrals */}
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-lg font-medium text-gray-700">Referrals</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium text-gray-700">Service Referrals</h3>
                     <button
                       type="button"
                       onClick={addReferral}
@@ -978,14 +1601,26 @@ export default function AftercarePlanForm() {
                   </div>
 
                   {formData.referrals.map((referral) => (
-                    <div key={referral.id} className="border border-gray-200 rounded-lg p-4 mb-3">
+                    <div key={referral.id} className="border border-gray-200 rounded-lg p-4 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <h4 className="font-medium text-gray-700">Referral #{referral.id}</h4>
+                        <button
+                          type="button"
+                          onClick={() => removeReferral(referral.id)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Service Type</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Service</label>
                           <input
                             type="text"
                             value={referral.service}
                             onChange={(e) => updateReferral(referral.id, "service", e.target.value)}
+                            placeholder="e.g., Mental Health, Housing"
                             className="w-full p-2 border border-gray-300 rounded-md text-sm"
                           />
                         </div>
@@ -1008,6 +1643,7 @@ export default function AftercarePlanForm() {
                             className="w-full p-2 border border-gray-300 rounded-md text-sm"
                           >
                             <option value="pending">Pending</option>
+                            <option value="contacted">Contacted</option>
                             <option value="scheduled">Scheduled</option>
                             <option value="completed">Completed</option>
                             <option value="declined">Declined</option>
@@ -1024,36 +1660,44 @@ export default function AftercarePlanForm() {
                           />
                         </div>
                       </div>
-
-                      <button
-                        type="button"
-                        onClick={() => removeReferral(referral.id)}
-                        className="mt-2 text-red-600 hover:text-red-800 flex items-center text-sm"
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Remove
-                      </button>
                     </div>
                   ))}
                 </div>
 
                 {/* STAR Health Coordinator */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">STAR Health Coordinator</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    STAR Health Coordinator
+                    <HelpTooltip text="Include STAR Health Coordinator information if assigned to this case." />
+                  </label>
                   <input
                     type="text"
                     name="starHealthCoordinator"
                     value={formData.starHealthCoordinator}
                     onChange={handleInputChange}
-                    placeholder="Name and contact information"
+                    placeholder="Name and contact information if assigned"
                     className="w-full p-2 border border-gray-300 rounded-md"
                   />
+                </div>
+
+                {/* Additional Notes */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
+                  <textarea
+                    name="additionalNotes"
+                    value={formData.additionalNotes}
+                    onChange={handleInputChange}
+                    rows="4"
+                    placeholder="Any additional information, special considerations, or Program Director approval documentation"
+                    className={`w-full p-2 border rounded-md ${errors.additionalNotes ? "border-red-500" : "border-gray-300"}`}
+                  />
+                  {errors.additionalNotes && <p className="text-red-500 text-sm mt-1">{errors.additionalNotes}</p>}
                 </div>
               </section>
 
               {/* SSCC/DFPS Documentation */}
-              <section className="space-y-4 bg-yellow-50 p-4 rounded-lg">
-                <h2 className="text-xl font-semibold text-yellow-800">SSCC/DFPS Documentation Requirements</h2>
+              <section className="space-y-4">
+                <h2 className="text-xl font-semibold text-gray-700">SSCC/DFPS Documentation</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -1063,6 +1707,7 @@ export default function AftercarePlanForm() {
                       name="ssccContactEmail"
                       value={formData.ssccContactEmail}
                       onChange={handleInputChange}
+                      placeholder="SSCC contact for documentation submission"
                       className="w-full p-2 border border-gray-300 rounded-md"
                     />
                   </div>
@@ -1076,8 +1721,9 @@ export default function AftercarePlanForm() {
                       className="w-full p-2 border border-gray-300 rounded-md"
                     >
                       <option value="monthly">Monthly</option>
-                      <option value="biweekly">Bi-weekly</option>
+                      <option value="bi-weekly">Bi-weekly</option>
                       <option value="weekly">Weekly</option>
+                      <option value="as-needed">As Needed</option>
                     </select>
                   </div>
 
@@ -1090,38 +1736,23 @@ export default function AftercarePlanForm() {
                       className="w-full p-2 border border-gray-300 rounded-md"
                     >
                       <option value="email">Email</option>
-                      <option value="portal">DFPS Portal</option>
+                      <option value="portal">Online Portal</option>
                       <option value="fax">Fax</option>
+                      <option value="mail">Mail</option>
                     </select>
                   </div>
                 </div>
               </section>
 
-              {/* Additional Notes */}
-              <section className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
-                  <textarea
-                    name="additionalNotes"
-                    value={formData.additionalNotes}
-                    onChange={handleInputChange}
-                    rows="4"
-                    placeholder="Any additional information, special considerations, or Program Director approval notes for optional aftercare"
-                    className={`w-full p-2 border rounded-md ${errors.additionalNotes ? "border-red-500" : "border-gray-300"}`}
-                  />
-                  {errors.additionalNotes && <p className="text-red-500 text-sm mt-1">{errors.additionalNotes}</p>}
-                </div>
-              </section>
-
               {/* Submit Buttons */}
-              <div className="flex justify-between pt-6 border-t">
+              <div className="pt-6 border-t flex gap-4">
                 <button
                   type="button"
                   onClick={handleSaveDraft}
                   disabled={isSubmitting}
-                  className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 disabled:bg-gray-400 flex items-center"
+                  className="flex-1 px-6 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600 disabled:bg-gray-400 flex items-center justify-center text-lg font-medium"
                 >
-                  <FileText className="h-4 w-4 mr-2" />
+                  <FileText className="h-5 w-5 mr-2" />
                   {isSubmitting && isDraft ? "Saving Draft..." : "Save Draft"}
                 </button>
 
@@ -1129,10 +1760,10 @@ export default function AftercarePlanForm() {
                   type="button"
                   onClick={handleSubmit}
                   disabled={isSubmitting}
-                  className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400 flex items-center"
+                  className="flex-1 px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400 flex items-center justify-center text-lg font-medium"
                 >
-                  <Send className="h-4 w-4 mr-2" />
-                  {isSubmitting && !isDraft ? "Submitting..." : "Submit Plan"}
+                  <Send className="h-5 w-5 mr-2" />
+                  {isSubmitting && !isDraft ? "Submitting Plan..." : "Submit Aftercare Plan"}
                 </button>
               </div>
             </div>

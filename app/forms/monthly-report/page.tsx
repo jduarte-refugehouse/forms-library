@@ -4,6 +4,18 @@ import { useState } from "react"
 import { BarChart3, Save, ArrowLeft, CheckCircle, Calendar, TrendingUp, Users, AlertCircle } from "lucide-react"
 import Link from "next/link"
 
+const HelpTooltip = ({ text }: { text: string }) => (
+  <div className="group relative inline-block ml-2">
+    <div className="w-4 h-4 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs cursor-help">
+      ?
+    </div>
+    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10 w-64">
+      {text}
+      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+    </div>
+  </div>
+)
+
 export default function MonthlyReportForm() {
   const [formData, setFormData] = useState({
     // Report Information
@@ -545,7 +557,34 @@ export default function MonthlyReportForm() {
 
             {/* Service Delivery */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Service Delivery</h2>
+              <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                Service Delivery
+                <HelpTooltip text="Document service delivery based on package-specific requirements and contact frequency mandates." />
+              </h2>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <h3 className="font-medium text-blue-800 mb-2">Package-Specific Service Requirements:</h3>
+                <div className="text-sm text-blue-700 grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div>
+                    <strong>Mental/Behavioral Health:</strong> Twice monthly contact, STAR Health coordination
+                  </div>
+                  <div>
+                    <strong>IDD/Autism:</strong> Twice monthly contact, Education Portfolio maintenance
+                  </div>
+                  <div>
+                    <strong>Treatment Foster Care:</strong> Twice monthly contact, weekly schedule documentation
+                  </div>
+                  <div>
+                    <strong>Kinship Care:</strong> 30-day pre-permanency planning, family support services
+                  </div>
+                  <div>
+                    <strong>Independent Living:</strong> 6-month transition support, alumni tracking
+                  </div>
+                  <div>
+                    <strong>Pregnant/Parenting:</strong> Dual-generation support, parenting education
+                  </div>
+                </div>
+              </div>
 
               <div className="space-y-4">
                 {formData.serviceDelivery.map((service, index) => (
@@ -626,7 +665,39 @@ export default function MonthlyReportForm() {
 
             {/* Outcomes and Progress */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Outcomes and Progress</h2>
+              <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                Outcomes and Progress
+                <HelpTooltip text="Track outcomes specific to service package requirements and mandated goals." />
+              </h2>
+
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <h3 className="font-medium text-green-800 mb-2">Package-Specific Outcome Indicators:</h3>
+                <div className="text-sm text-green-700 space-y-1">
+                  <div>
+                    <strong>Mental/Behavioral Health:</strong> Therapy attendance, medication compliance, crisis plan
+                    effectiveness
+                  </div>
+                  <div>
+                    <strong>IDD/Autism:</strong> Educational progress, behavioral support success, IEP goal achievement
+                  </div>
+                  <div>
+                    <strong>Treatment Foster Care:</strong> Treatment goal progress, placement stability, family
+                    engagement
+                  </div>
+                  <div>
+                    <strong>Kinship Care:</strong> Permanency planning milestones, family stability, support service
+                    utilization
+                  </div>
+                  <div>
+                    <strong>Independent Living:</strong> Life skills development, transition readiness, alumni
+                    engagement
+                  </div>
+                  <div>
+                    <strong>Pregnant/Parenting:</strong> Parenting skill development, child development milestones,
+                    dual-generation outcomes
+                  </div>
+                </div>
+              </div>
 
               <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
                 <div>
