@@ -18,6 +18,18 @@ import {
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 
+const HelpTooltip = ({ text }: { text: string }) => (
+  <div className="group relative inline-block ml-2">
+    <div className="w-4 h-4 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs cursor-help">
+      ?
+    </div>
+    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10 w-64">
+      {text}
+      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+    </div>
+  </div>
+)
+
 export default function ContactLogEntryForm() {
   const [contactData, setContactData] = useState({
     // Basic Information
@@ -49,6 +61,22 @@ export default function ContactLogEntryForm() {
     immediateActions: "",
     safetyPlan: "",
     notificationsRequired: [],
+
+    // Package-specific fields - Transition Support
+    alumniOrganizationConnection: false,
+    palResourceProvided: "",
+    independentLivingTopicDiscussed: false,
+
+    // Package-specific fields - Pregnant & Parenting
+    parentingTopicDiscussed: false,
+    childSafetyAssessed: false,
+    benefitStatusReviewed: "",
+    coparentingIssuesAddressed: false,
+
+    // Package-specific fields - Kinship
+    caregiverSupportNeeded: false,
+    familyDynamicsDiscussed: false,
+    permanencyAchievementDate: "",
 
     // Documentation
     documentationComplete: false,
@@ -83,19 +111,114 @@ export default function ContactLogEntryForm() {
   }, [isRecording])
 
   const packageTypes = [
-    { value: "mental", label: "Mental & Behavioral Health Support Services" },
-    { value: "idd", label: "IDD/Autism Spectrum Disorder Support Services" },
-    { value: "treatment", label: "T3C Treatment Foster Family Care Support Services" },
-    { value: "emergency", label: "Emergency Shelter Services" },
-    { value: "basic", label: "Basic Foster Care Services" },
-    { value: "therapeutic", label: "Therapeutic Foster Care Services" },
-    { value: "kinship", label: "Kinship Care Services" },
-    { value: "adoption", label: "Adoption Support Services" },
-    { value: "independent", label: "Independent Living Services" },
-    { value: "respite", label: "Respite Care Services" },
-    { value: "family-preservation", label: "Family Preservation Services" },
-    { value: "reunification", label: "Family Reunification Services" },
-    { value: "other", label: "Other (please specify)" },
+    {
+      value: "mental",
+      label: "Mental & Behavioral Health Support Services",
+      helpText: "Include STAR Health Coordinator if assigned. Document mental health status and crisis plans.",
+      required: true,
+    },
+    {
+      value: "idd",
+      label: "IDD/Autism Spectrum Disorder Support Services",
+      helpText: "Education Portfolio required. Document behavioral supports and accommodations.",
+      required: true,
+    },
+    {
+      value: "treatment",
+      label: "T3C Treatment Foster Family Care Support Services",
+      helpText: "Weekly contact schedule required. Document treatment progress and family dynamics.",
+      required: true,
+    },
+    {
+      value: "emergency",
+      label: "Emergency Shelter Services",
+      helpText: "Focus on immediate safety and stabilization needs.",
+      required: true,
+    },
+    {
+      value: "basic",
+      label: "Basic Foster Care Services",
+      helpText: "Standard foster care documentation and support.",
+      required: true,
+    },
+    {
+      value: "basic-optional",
+      label: "Basic Foster Home (Optional Aftercare)",
+      helpText: "Optional aftercare support. Program Director approval required.",
+      required: false,
+    },
+    {
+      value: "therapeutic",
+      label: "Therapeutic Foster Care Services",
+      helpText: "Document therapeutic interventions and specialized care needs.",
+      required: true,
+    },
+    {
+      value: "kinship",
+      label: "Kinship Care Services",
+      helpText: "30-day pre-permanency planning. Focus on family support and stability.",
+      required: true,
+    },
+    {
+      value: "kinship-addon",
+      label: "Kinship Caregiver Support Add-On",
+      helpText: "Additional support for kinship caregivers. Document family dynamics and permanency progress.",
+      required: false,
+    },
+    {
+      value: "adoption",
+      label: "Adoption Support Services",
+      helpText: "Post-adoption support and family integration.",
+      required: true,
+    },
+    {
+      value: "independent",
+      label: "Independent Living Services",
+      helpText: "6-month transition support. Alumni information mandatory for tracking.",
+      required: true,
+    },
+    {
+      value: "transition-addon",
+      label: "Transition Support Services Add-On",
+      helpText: "Extended transition support with PAL resources and alumni connections.",
+      required: false,
+    },
+    {
+      value: "respite",
+      label: "Respite Care Services",
+      helpText: "Short-term support coordination with primary placement.",
+      required: true,
+    },
+    {
+      value: "family-preservation",
+      label: "Family Preservation Services",
+      helpText: "Family strengthening and prevention strategies.",
+      required: true,
+    },
+    {
+      value: "reunification",
+      label: "Family Reunification Services",
+      helpText: "Transition planning and safety assessment for family reunification.",
+      required: true,
+    },
+    {
+      value: "pregnant-parenting",
+      label: "Pregnant/Parenting Youth Services",
+      helpText: "Focus on dual-generation support. Include parenting education and child development.",
+      required: true,
+    },
+    {
+      value: "pregnant-parenting-addon",
+      label: "Pregnant & Parenting Youth Add-On",
+      helpText: "Enhanced support for parenting youth. Document child welfare and benefit status.",
+      required: false,
+    },
+    {
+      value: "other",
+      label: "Other (please specify)",
+      helpText: "Specify service type and document unique requirements.",
+      required: true,
+    },
   ]
 
   const contactTypes = [
@@ -149,6 +272,14 @@ export default function ContactLogEntryForm() {
     "CASA",
     "Therapist",
     "Medical Provider",
+  ]
+
+  const benefitStatusOptions = [
+    { value: "wic", label: "WIC" },
+    { value: "snap", label: "SNAP" },
+    { value: "tanf", label: "TANF" },
+    { value: "childcare", label: "Childcare Assistance" },
+    { value: "multiple", label: "Multiple Benefits" },
   ]
 
   const loadTodaysEntries = () => {
@@ -333,12 +464,28 @@ export default function ContactLogEntryForm() {
           immediateActions: "",
           safetyPlan: "",
           notificationsRequired: [],
+          alumniOrganizationConnection: false,
+          palResourceProvided: "",
+          independentLivingTopicDiscussed: false,
+          parentingTopicDiscussed: false,
+          childSafetyAssessed: false,
+          benefitStatusReviewed: "",
+          coparentingIssuesAddressed: false,
+          caregiverSupportNeeded: false,
+          familyDynamicsDiscussed: false,
+          permanencyAchievementDate: "",
           documentationComplete: false,
           supervisorReview: false,
         })
       }, 2000)
     }, 1500)
   }
+
+  const isTransitionPackage =
+    contactData.packageType === "independent" || contactData.packageType === "transition-addon"
+  const isPregnantParentingPackage =
+    contactData.packageType === "pregnant-parenting" || contactData.packageType === "pregnant-parenting-addon"
+  const isKinshipPackage = contactData.packageType === "kinship" || contactData.packageType === "kinship-addon"
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -468,7 +615,10 @@ export default function ContactLogEntryForm() {
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Service Package *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                      Service Package *
+                      <HelpTooltip text="Select the service package to ensure proper documentation requirements are met." />
+                    </label>
                     <select
                       name="packageType"
                       value={contactData.packageType}
@@ -482,6 +632,13 @@ export default function ContactLogEntryForm() {
                         </option>
                       ))}
                     </select>
+                    {contactData.packageType &&
+                      packageTypes.find((t) => t.value === contactData.packageType)?.helpText && (
+                        <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
+                          <strong>Documentation Focus:</strong>{" "}
+                          {packageTypes.find((t) => t.value === contactData.packageType)?.helpText}
+                        </div>
+                      )}
                     {errors.packageType && <p className="text-red-500 text-sm mt-1">{errors.packageType}</p>}
                   </div>
 
@@ -633,6 +790,178 @@ export default function ContactLogEntryForm() {
                 </div>
               </section>
 
+              {/* Package-Specific Fields - Transition Support */}
+              {isTransitionPackage && (
+                <section className="space-y-4 bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h3 className="text-lg font-semibold text-blue-800 flex items-center">
+                    <Users className="h-6 w-6 mr-2" />
+                    Transition Support Specific Fields
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="alumniOrganizationConnection"
+                          checked={contactData.alumniOrganizationConnection}
+                          onChange={handleInputChange}
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Alumni Organization Connection Made</span>
+                      </label>
+                    </div>
+
+                    <div>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="independentLivingTopicDiscussed"
+                          checked={contactData.independentLivingTopicDiscussed}
+                          onChange={handleInputChange}
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Independent Living Topic Discussed</span>
+                      </label>
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">PAL Resource Provided</label>
+                      <select
+                        name="palResourceProvided"
+                        value={contactData.palResourceProvided}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      >
+                        <option value="">Select option</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                        <option value="na">N/A</option>
+                      </select>
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {/* Package-Specific Fields - Pregnant & Parenting */}
+              {isPregnantParentingPackage && (
+                <section className="space-y-4 bg-pink-50 p-4 rounded-lg border border-pink-200">
+                  <h3 className="text-lg font-semibold text-pink-800 flex items-center">
+                    <Users className="h-6 w-6 mr-2" />
+                    Pregnant & Parenting Specific Fields
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="parentingTopicDiscussed"
+                          checked={contactData.parentingTopicDiscussed}
+                          onChange={handleInputChange}
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Parenting Topic Discussed</span>
+                      </label>
+                    </div>
+
+                    <div>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="childSafetyAssessed"
+                          checked={contactData.childSafetyAssessed}
+                          onChange={handleInputChange}
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Child Safety Assessed</span>
+                      </label>
+                    </div>
+
+                    <div>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="coparentingIssuesAddressed"
+                          checked={contactData.coparentingIssuesAddressed}
+                          onChange={handleInputChange}
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Co-parenting Issues Addressed</span>
+                      </label>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Benefit Status Reviewed</label>
+                      <select
+                        name="benefitStatusReviewed"
+                        value={contactData.benefitStatusReviewed}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      >
+                        <option value="">Select benefit type</option>
+                        {benefitStatusOptions.map((benefit) => (
+                          <option key={benefit.value} value={benefit.value}>
+                            {benefit.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {/* Package-Specific Fields - Kinship */}
+              {isKinshipPackage && (
+                <section className="space-y-4 bg-green-50 p-4 rounded-lg border border-green-200">
+                  <h3 className="text-lg font-semibold text-green-800 flex items-center">
+                    <Users className="h-6 w-6 mr-2" />
+                    Kinship Caregiver Specific Fields
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="caregiverSupportNeeded"
+                          checked={contactData.caregiverSupportNeeded}
+                          onChange={handleInputChange}
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Caregiver Support Needed</span>
+                      </label>
+                    </div>
+
+                    <div>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="familyDynamicsDiscussed"
+                          checked={contactData.familyDynamicsDiscussed}
+                          onChange={handleInputChange}
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Family Dynamics Discussed</span>
+                      </label>
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Permanency Achievement Date (if applicable)
+                      </label>
+                      <input
+                        type="date"
+                        name="permanencyAchievementDate"
+                        value={contactData.permanencyAchievementDate}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                  </div>
+                </section>
+              )}
+
               {/* Topics Discussed */}
               <section className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-700">Topics Discussed</h3>
@@ -682,7 +1011,33 @@ export default function ContactLogEntryForm() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Conversation Notes *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                      Conversation Notes *
+                      <HelpTooltip text="Document conversation details based on service package requirements. Include specific elements as prompted below." />
+                    </label>
+                    {contactData.packageType && (
+                      <div className="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm">
+                        <strong>Package-Specific Documentation:</strong>
+                        {contactData.packageType === "mental" &&
+                          " Include mental health status, therapy attendance, medication compliance, and crisis plan review."}
+                        {contactData.packageType === "idd" &&
+                          " Document educational progress, behavioral supports, IEP compliance, and accommodation effectiveness."}
+                        {contactData.packageType === "treatment" &&
+                          " Include treatment progress, family dynamics, therapeutic goals, and placement stability."}
+                        {contactData.packageType === "kinship" &&
+                          " Focus on family stability, permanency planning, and support service utilization."}
+                        {contactData.packageType === "independent" &&
+                          " Document transition progress, life skills development, and alumni contact information."}
+                        {contactData.packageType === "pregnant-parenting" &&
+                          " Include parenting education progress, child development, and dual-generation support needs."}
+                        {contactData.packageType === "transition-addon" &&
+                          " Document PAL resource utilization, alumni connections, and transition domain progress."}
+                        {contactData.packageType === "pregnant-parenting-addon" &&
+                          " Include child welfare assessments, benefit status, and co-parenting dynamics."}
+                        {contactData.packageType === "kinship-addon" &&
+                          " Focus on caregiver support needs, family dynamics, and permanency progress."}
+                      </div>
+                    )}
                     <textarea
                       name="conversationNotes"
                       value={contactData.conversationNotes}
@@ -779,7 +1134,7 @@ export default function ContactLogEntryForm() {
                         placeholder="Document safety plan and ongoing monitoring requirements"
                         className={`w-full p-2 border rounded-md ${errors.safetyPlan ? "border-red-500" : "border-gray-300"}`}
                       />
-                      {errors.safetyPlan && <p className="text-red-500 text-sm mt-1">{errors.safe}</p>}
+                      {errors.safetyPlan && <p className="text-red-500 text-sm mt-1">{errors.safetyPlan}</p>}
                     </div>
                   </div>
                 </section>

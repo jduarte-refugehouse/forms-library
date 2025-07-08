@@ -5,6 +5,18 @@ import { AlertTriangle, Save, Mail, CheckCircle, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 
+const HelpTooltip = ({ text }: { text: string }) => (
+  <div className="group relative inline-block ml-2">
+    <div className="w-4 h-4 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs cursor-help">
+      ?
+    </div>
+    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10 w-64">
+      {text}
+      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+    </div>
+  </div>
+)
+
 export default function ServiceRefusalDocumentationForm() {
   const [refusalData, setRefusalData] = useState({
     // Basic Information
@@ -27,6 +39,11 @@ export default function ServiceRefusalDocumentationForm() {
     letterSent: false,
     letterSentDate: "",
 
+    // Program Director Approval (for optional packages)
+    programDirectorName: "",
+    approvalDate: "",
+    clinicalJustificationDocumented: false,
+
     // Additional Notes
     additionalNotes: "",
   })
@@ -36,19 +53,102 @@ export default function ServiceRefusalDocumentationForm() {
   const [showSuccess, setShowSuccess] = useState(false)
 
   const packageTypes = [
-    { value: "mental", label: "Mental & Behavioral Health Support Services" },
-    { value: "idd", label: "IDD/Autism Spectrum Disorder Support Services" },
-    { value: "treatment", label: "T3C Treatment Foster Family Care Support Services" },
-    { value: "emergency", label: "Emergency Shelter Services" },
-    { value: "basic", label: "Basic Foster Care Services" },
-    { value: "therapeutic", label: "Therapeutic Foster Care Services" },
-    { value: "kinship", label: "Kinship Care Services" },
-    { value: "adoption", label: "Adoption Support Services" },
-    { value: "independent", label: "Independent Living Services" },
-    { value: "respite", label: "Respite Care Services" },
-    { value: "family-preservation", label: "Family Preservation Services" },
-    { value: "reunification", label: "Family Reunification Services" },
-    { value: "other", label: "Other (please specify)" },
+    {
+      value: "mental",
+      label: "Mental & Behavioral Health Support Services",
+      helpText: "Required aftercare: 6 months, twice monthly. Include STAR Health Coordinator if assigned.",
+      required: true,
+    },
+    {
+      value: "idd",
+      label: "IDD/Autism Spectrum Disorder Support Services",
+      helpText: "Required aftercare: 6 months, twice monthly. Education Portfolio required.",
+      required: true,
+    },
+    {
+      value: "treatment",
+      label: "T3C Treatment Foster Family Care Support Services",
+      helpText: "Required aftercare: 6 months, twice monthly. Weekly contact schedule.",
+      required: true,
+    },
+    {
+      value: "basic",
+      label: "Basic Foster Home",
+      helpText: "Optional aftercare - requires Program Director approval.",
+      required: false,
+    },
+    {
+      value: "transition-support",
+      label: "Transition Support Services Add-On",
+      helpText: "6-month transition support required. Alumni information mandatory. PAL resources available.",
+      required: false,
+    },
+    {
+      value: "kinship-addon",
+      label: "Kinship Caregiver Support Add-On",
+      helpText: "30-day pre-permanency planning required. Focus on family support services.",
+      required: false,
+    },
+    {
+      value: "pregnant-parenting-addon",
+      label: "Pregnant & Parenting Youth Add-On",
+      helpText: "Focus on dual-generation support. Include parenting education and support services.",
+      required: false,
+    },
+    {
+      value: "emergency",
+      label: "Emergency Shelter Services",
+      helpText: "Optional aftercare - requires Program Director approval.",
+      required: false,
+    },
+    {
+      value: "therapeutic",
+      label: "Therapeutic Foster Care Services",
+      helpText: "Optional aftercare - requires Program Director approval.",
+      required: false,
+    },
+    {
+      value: "kinship",
+      label: "Kinship Care Services",
+      helpText: "30-day pre-permanency planning required. Focus on family support.",
+      required: false,
+    },
+    {
+      value: "adoption",
+      label: "Adoption Support Services",
+      helpText: "Post-adoption support planning and family integration.",
+      required: false,
+    },
+    {
+      value: "independent",
+      label: "Independent Living Services",
+      helpText: "6-month transition support required. Alumni information mandatory.",
+      required: false,
+    },
+    {
+      value: "respite",
+      label: "Respite Care Services",
+      helpText: "Short-term support coordination with primary placement.",
+      required: false,
+    },
+    {
+      value: "family-preservation",
+      label: "Family Preservation Services",
+      helpText: "Family strengthening and prevention strategies.",
+      required: false,
+    },
+    {
+      value: "reunification",
+      label: "Family Reunification Services",
+      helpText: "Transition planning and safety assessment required.",
+      required: false,
+    },
+    {
+      value: "other",
+      label: "Other (please specify)",
+      helpText: "Requires Program Director approval and detailed justification.",
+      required: false,
+    },
   ]
 
   const handleInputChange = (e) => {
@@ -71,6 +171,7 @@ export default function ServiceRefusalDocumentationForm() {
 
   const validateForm = () => {
     const newErrors = {}
+    const selectedPackage = packageTypes.find((p) => p.value === refusalData.packageType)
 
     if (!refusalData.childName) newErrors.childName = "Child name is required"
     if (!refusalData.caseNumber) newErrors.caseNumber = "Case number is required"
@@ -81,6 +182,19 @@ export default function ServiceRefusalDocumentationForm() {
     if (!refusalData.whoRefused) newErrors.whoRefused = "Please specify who refused services"
     if (!refusalData.refusalReason) newErrors.refusalReason = "Please document the reason for refusal"
     if (!refusalData.conversationNotes) newErrors.conversationNotes = "Please document the refusal conversation"
+
+    // Validation for optional packages requiring Program Director approval
+    if (selectedPackage && !selectedPackage.required) {
+      if (!refusalData.programDirectorName) {
+        newErrors.programDirectorName = "Program Director name is required for optional aftercare"
+      }
+      if (!refusalData.approvalDate) {
+        newErrors.approvalDate = "Approval date is required for optional aftercare"
+      }
+      if (!refusalData.clinicalJustificationDocumented) {
+        newErrors.clinicalJustificationDocumented = "Clinical justification must be documented for optional aftercare"
+      }
+    }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -103,10 +217,39 @@ export default function ServiceRefusalDocumentationForm() {
   }
 
   const generateSimpleLetter = () => {
+    const selectedPackage = packageTypes.find((p) => p.value === refusalData.packageType)
     const packageLabel =
-      refusalData.packageType === "other"
-        ? refusalData.otherPackageType
-        : packageTypes.find((p) => p.value === refusalData.packageType)?.label || ""
+      refusalData.packageType === "other" ? refusalData.otherPackageType : selectedPackage?.label || ""
+
+    let specificServices = ""
+
+    switch (refusalData.packageType) {
+      case "transition-support":
+      case "independent":
+        specificServices =
+          "These services include PAL (Positive Adult Liaisons) resources, independent living skills support, and alumni network connections."
+        break
+      case "pregnant-parenting-addon":
+        specificServices =
+          "These services include parenting education, dual-generation support, childcare resources, and family planning assistance."
+        break
+      case "kinship-addon":
+      case "kinship":
+        specificServices =
+          "These services include family support services, kinship caregiver resources, and family strengthening programs."
+        break
+      case "mental":
+        specificServices =
+          "These services include mental health support, behavioral health resources, and coordination with STAR Health if applicable."
+        break
+      case "idd":
+        specificServices =
+          "These services include educational portfolio support, developmental services, and specialized autism spectrum resources."
+        break
+      default:
+        specificServices =
+          "These services include case management support, referrals, and assistance with transition needs."
+    }
 
     const letter = `
 Date: ${new Date().toLocaleDateString()}
@@ -116,11 +259,21 @@ Service Package: ${packageLabel}
 
 This letter confirms that aftercare services were offered and declined on ${new Date(refusalData.refusalDate).toLocaleDateString()}.
 
-Aftercare services remain available should you choose to access them in the future. These services include case management support, referrals, and assistance with transition needs.
+${specificServices}
 
-To access services at any time during the 6-month aftercare period, please contact your aftercare case manager.
+Aftercare services remain available should you choose to access them in the future. To access services at any time during the 6-month aftercare period, please contact your aftercare case manager.
 
 We will continue monthly check-ins to ensure you have our current contact information and to offer services if your needs change.
+
+${
+  selectedPackage && !selectedPackage.required
+    ? `
+Program Director Approval: ${refusalData.programDirectorName}
+Approval Date: ${new Date(refusalData.approvalDate).toLocaleDateString()}
+Clinical Justification: Documented
+`
+    : ""
+}
 `
 
     // In a real implementation, this would generate a PDF
@@ -213,7 +366,10 @@ We will continue monthly check-ins to ensure you have our current contact inform
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Service Package *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                      Service Package *
+                      <HelpTooltip text="Select the service package to understand what aftercare services are being declined." />
+                    </label>
                     <select
                       name="packageType"
                       value={refusalData.packageType}
@@ -227,8 +383,111 @@ We will continue monthly check-ins to ensure you have our current contact inform
                         </option>
                       ))}
                     </select>
+                    {refusalData.packageType &&
+                      packageTypes.find((t) => t.value === refusalData.packageType)?.helpText && (
+                        <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
+                          <strong>Package Requirements:</strong>{" "}
+                          {packageTypes.find((t) => t.value === refusalData.packageType)?.helpText}
+                        </div>
+                      )}
                     {errors.packageType && <p className="text-red-500 text-sm mt-1">{errors.packageType}</p>}
                   </div>
+
+                  {refusalData.packageType && (
+                    <div className="md:col-span-2">
+                      {packageTypes.find((t) => t.value === refusalData.packageType)?.required ? (
+                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                          <div className="flex items-center gap-2 text-red-800">
+                            <AlertTriangle className="h-5 w-5" />
+                            <strong>Required Aftercare Package</strong>
+                          </div>
+                          <p className="text-sm text-red-700 mt-1">
+                            This is a required aftercare package. Document thoroughly and ensure services remain
+                            available. Consider alternative engagement strategies.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <div className="flex items-center gap-2 text-blue-800">
+                            <AlertTriangle className="h-5 w-5" />
+                            <strong>Optional Aftercare Package</strong>
+                          </div>
+                          <p className="text-sm text-blue-700 mt-1">
+                            Program Director approval required for optional aftercare. Document the refusal and ensure
+                            the family knows services remain available if needed.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Program Director Approval Section for Optional Packages */}
+                  {refusalData.packageType &&
+                    !packageTypes.find((t) => t.value === refusalData.packageType)?.required && (
+                      <div className="md:col-span-2">
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-4">
+                          <h3 className="text-lg font-semibold text-yellow-800 flex items-center">
+                            <AlertTriangle className="h-5 w-5 mr-2" />
+                            Program Director Approval Required
+                          </h3>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Program Director Name *
+                              </label>
+                              <input
+                                type="text"
+                                name="programDirectorName"
+                                value={refusalData.programDirectorName}
+                                onChange={handleInputChange}
+                                placeholder="Enter Program Director's name"
+                                className={`w-full p-2 border rounded-md ${errors.programDirectorName ? "border-red-500" : "border-gray-300"}`}
+                              />
+                              {errors.programDirectorName && (
+                                <p className="text-red-500 text-sm mt-1">{errors.programDirectorName}</p>
+                              )}
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Approval Date *</label>
+                              <input
+                                type="date"
+                                name="approvalDate"
+                                value={refusalData.approvalDate}
+                                onChange={handleInputChange}
+                                className={`w-full p-2 border rounded-md ${errors.approvalDate ? "border-red-500" : "border-gray-300"}`}
+                              />
+                              {errors.approvalDate && (
+                                <p className="text-red-500 text-sm mt-1">{errors.approvalDate}</p>
+                              )}
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="flex items-center">
+                              <input
+                                type="checkbox"
+                                name="clinicalJustificationDocumented"
+                                checked={refusalData.clinicalJustificationDocumented}
+                                onChange={handleInputChange}
+                                className="mr-2"
+                              />
+                              <span className="text-sm font-medium text-gray-700">
+                                Clinical Justification Documented *
+                              </span>
+                            </label>
+                            {errors.clinicalJustificationDocumented && (
+                              <p className="text-red-500 text-sm mt-1">{errors.clinicalJustificationDocumented}</p>
+                            )}
+                            <p className="text-xs text-gray-600 mt-1">
+                              Confirm that clinical justification for optional aftercare has been documented in case
+                              file
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                   {refusalData.packageType === "other" && (
                     <div className="md:col-span-2">
