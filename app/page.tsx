@@ -86,6 +86,11 @@ export default function FormDirectory() {
     },
   ]
 
+  const downloadForm = (formId: string) => {
+    // Implement your download logic here
+    alert(`Downloading form: ${formId}`)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-8">
@@ -138,11 +143,16 @@ export default function FormDirectory() {
                 <CardContent>
                   <div className="flex items-center justify-between">
                     <Badge variant="outline">{form.category}</Badge>
-                    <Link href={`/forms/${form.id}`}>
-                      <Button variant="outline" size="sm">
-                        View Form
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => downloadForm(form.id)}>
+                        <Download className="h-4 w-4" />
                       </Button>
-                    </Link>
+                      <Link href={`/forms/${form.id}`}>
+                        <Button variant="outline" size="sm">
+                          View Form
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -172,11 +182,16 @@ export default function FormDirectory() {
                 <CardContent>
                   <div className="flex items-center justify-between">
                     <Badge variant="outline">{form.category}</Badge>
-                    <Link href={`/forms/${form.id}`}>
-                      <Button variant="outline" size="sm">
-                        View Form
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => downloadForm(form.id)}>
+                        <Download className="h-4 w-4" />
                       </Button>
-                    </Link>
+                      <Link href={`/forms/${form.id}`}>
+                        <Button variant="outline" size="sm">
+                          View Form
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -206,11 +221,16 @@ export default function FormDirectory() {
                 <CardContent>
                   <div className="flex items-center justify-between">
                     <Badge variant="outline">{form.category}</Badge>
-                    <Link href={`/forms/${form.id}`}>
-                      <Button variant="outline" size="sm">
-                        View Form
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => downloadForm(form.id)}>
+                        <Download className="h-4 w-4" />
                       </Button>
-                    </Link>
+                      <Link href={`/forms/${form.id}`}>
+                        <Button variant="outline" size="sm">
+                          View Form
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
