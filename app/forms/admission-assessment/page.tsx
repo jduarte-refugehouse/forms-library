@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { useSearchParams } from "next/navigation"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -31,6 +30,7 @@ import {
   Info,
   AlertTriangle,
   Settings,
+  Plus,
 } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 
@@ -91,6 +91,18 @@ export default function AdmissionAssessmentPage() {
   const [documents, setDocuments] = useState<any[]>([])
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({})
+  const [activeSection, setActiveSection] = useState("overview")
+  const [showAddSection, setShowAddSection] = useState(false)
+  const [customSections, setCustomSections] = useState<
+    Array<{
+      id: string
+      title: string
+      icon: any
+      progress: number
+      content?: string
+    }>
+  >([])
+  const [newSectionTitle, setNewSectionTitle] = useState("")
 
   useEffect(() => {
     const stored = localStorage.getItem("placementComplete")
@@ -345,589 +357,480 @@ export default function AdmissionAssessmentPage() {
       </Card>
 
       {/* Main Tabs */}
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-7 mb-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="core">Core Assessment</TabsTrigger>
-          <TabsTrigger value="tbri">TBRI®</TabsTrigger>
-          {childData.servicePackage !== "Basic" && <TabsTrigger value="package">Package-Specific</TabsTrigger>}
-          <TabsTrigger value="special">Special Populations</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
-          <TabsTrigger value="review">Review & Submit</TabsTrigger>
-        </TabsList>
-
-        {/* Overview Tab */}
-        <TabsContent value="overview">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  Child Information Summary
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <Label className="text-gray-500">Name</Label>
-                    <p className="font-medium">
-                      {childData.firstName} {childData.lastName}
-                    </p>
-                  </div>
-                  <div>
-                    <Label className="text-gray-500">DFPS ID</Label>
-                    <p className="font-medium">{childData.dfpsPersonId}</p>
-                  </div>
-                  <div>
-                    <Label className="text-gray-500">Date of Birth</Label>
-                    <p className="font-medium">{new Date(childData.dateOfBirth).toLocaleDateString()}</p>
-                  </div>
-                  <div>
-                    <Label className="text-gray-500">Gender</Label>
-                    <p className="font-medium">{childData.gender}</p>
-                  </div>
-                  <div>
-                    <Label className="text-gray-500">Service Package</Label>
-                    <p className="font-medium">{childData.servicePackage}</p>
-                  </div>
-                  <div>
-                    <Label className="text-gray-500">Placement Type</Label>
-                    <p className="font-medium">{childData.placementType}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  Timeline Progress
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
-                    <div>
-                      <p className="font-medium">Placement Completed</p>
-                      <p className="text-sm text-gray-500">Initial 24-72 hour tasks</p>
+      <div className="flex gap-6">
+        {/* Left Sidebar Navigation */}
+        <div className="w-80 bg-white rounded-lg border p-4 h-fit sticky top-4">
+          <h3 className="font-semibold text-lg mb-4">Assessment Sections</h3>
+          <div className="space-y-2">
+            {[
+              { id: "overview", title: "Overview", icon: User, progress: 100 },
+              { id: "core", title: "Core Assessment", icon: FileText, progress: 75 },
+              { id: "tbri", title: "TBRI®", icon: CheckCircle2, progress: 60 },
+              ...(childData.servicePackage !== "Basic"
+                ? [{ id: "package", title: "Package-Specific", icon: Settings, progress: 45 }]
+                : []),
+              { id: "special", title: "Special Populations", icon: AlertTriangle, progress: 80 },
+              { id: "documents", title: "Documents", icon: Upload, progress: 90 },
+              { id: "review", title: "Review & Submit", icon: CheckCircle2, progress: 0 },
+            ].map((section) => {
+              const Icon = section.icon
+              return (
+                <button
+                  key={section.id}
+                  onClick={() => setActiveSection(section.id)}
+                  className={`w-full flex items-center gap-3 px-3 py-3 text-left rounded-lg transition-colors ${
+                    activeSection === section.id
+                      ? "bg-blue-50 text-blue-700 border border-blue-200"
+                      : "hover:bg-gray-50 text-gray-700"
+                  }`}
+                >
+                  <Icon className="h-5 w-5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium">{section.title}</div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                        <div
+                          className="bg-blue-500 h-1.5 rounded-full transition-all"
+                          style={{ width: `${section.progress}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-gray-500">{section.progress}%</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Clock className="h-5 w-5 text-blue-500" />
-                    <div>
-                      <p className="font-medium">Assessment In Progress</p>
-                      <p className="text-sm text-gray-500">30-day comprehensive assessment</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
-                    <div>
-                      <p className="font-medium text-gray-400">Service Plan Development</p>
-                      <p className="text-sm text-gray-400">Post-assessment planning</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Required Tasks by Category
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <p className="text-2xl font-bold text-blue-600">5/7</p>
-                    <p className="text-sm text-gray-600">Core Assessment</p>
-                  </div>
-                  <div className="text-center p-4 bg-purple-50 rounded-lg">
-                    <p className="text-2xl font-bold text-purple-600">2/3</p>
-                    <p className="text-sm text-gray-600">TBRI® Components</p>
-                  </div>
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <p className="text-2xl font-bold text-green-600">3/4</p>
-                    <p className="text-sm text-gray-600">Package-Specific</p>
-                  </div>
-                  <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                    <p className="text-2xl font-bold text-yellow-600">1/2</p>
-                    <p className="text-sm text-gray-600">Special Populations</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </button>
+              )
+            })}
           </div>
-        </TabsContent>
 
-        {/* Core Assessment Tab */}
-        <TabsContent value="core">
-          <div className="space-y-6">
-            {/* Section 1: Information Gathering */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Section 1: Information Gathering (Days 1-7)
-                  <Badge variant="outline" className="ml-2">
-                    Required
-                  </Badge>
-                </CardTitle>
-                <CardDescription>Request and review all relevant records and documentation</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <h4 className="font-semibold mb-4 flex items-center gap-2">
-                    Records Request Tracking
-                    <Info className="h-4 w-4 text-blue-500" />
-                  </h4>
+          {/* Add New Section Button */}
+          <div className="mt-6 pt-4 border-t">
+            <Button variant="outline" className="w-full bg-transparent" onClick={() => setShowAddSection(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add New Section
+            </Button>
+          </div>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1">
+          {/* Content based on active section */}
+          {activeSection === "overview" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="h-5 w-5" />
+                    Child Information Summary
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <Label className="text-gray-500">Name</Label>
+                      <p className="font-medium">
+                        {childData.firstName} {childData.lastName}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-gray-500">DFPS ID</Label>
+                      <p className="font-medium">{childData.dfpsPersonId}</p>
+                    </div>
+                    <div>
+                      <Label className="text-gray-500">Date of Birth</Label>
+                      <p className="font-medium">{new Date(childData.dateOfBirth).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                      <Label className="text-gray-500">Gender</Label>
+                      <p className="font-medium">{childData.gender}</p>
+                    </div>
+                    <div>
+                      <Label className="text-gray-500">Service Package</Label>
+                      <p className="font-medium">{childData.servicePackage}</p>
+                    </div>
+                    <div>
+                      <Label className="text-gray-500">Placement Type</Label>
+                      <p className="font-medium">{childData.placementType}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="h-5 w-5" />
+                    Timeline Progress
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
                   <div className="space-y-4">
-                    {[
-                      { type: "DFPS records", required: true },
-                      { type: "Previous placement records", required: true },
-                      { type: "Medical records", required: true },
-                      { type: "Educational records", required: true },
-                      { type: "Mental health records", required: false },
-                    ].map((record) => (
-                      <div key={record.type} className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border rounded-lg">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox id={`${record.type}-requested`} />
-                          <Label htmlFor={`${record.type}-requested`} className="font-medium">
-                            {record.type} {record.required && <span className="text-red-500">*</span>}
-                          </Label>
-                        </div>
-                        <div>
-                          <Label className="text-sm text-gray-500">Date Requested</Label>
-                          <Input type="date" className="mt-1" />
-                        </div>
-                        <div>
-                          <Label className="text-sm text-gray-500">Status</Label>
-                          <Select>
-                            <SelectTrigger className="mt-1">
-                              <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="requested">Requested</SelectItem>
-                              <SelectItem value="received">Received</SelectItem>
-                              <SelectItem value="not-available">Not Available</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label className="text-sm text-gray-500">Date Received</Label>
-                          <Input type="date" className="mt-1" />
-                        </div>
-                        <div>
-                          <Label className="text-sm text-gray-500">Upload File</Label>
-                          <Button variant="outline" size="sm" className="mt-1 w-full bg-transparent">
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload
-                          </Button>
-                        </div>
+                    <div className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      <div>
+                        <p className="font-medium">Placement Completed</p>
+                        <p className="text-sm text-gray-500">Initial 24-72 hour tasks</p>
                       </div>
-                    ))}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Clock className="h-5 w-5 text-blue-500" />
+                      <div>
+                        <p className="font-medium">Assessment In Progress</p>
+                        <p className="text-sm text-gray-500">30-day comprehensive assessment</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
+                      <div>
+                        <p className="font-medium text-gray-400">Service Plan Development</p>
+                        <p className="text-sm text-gray-400">Post-assessment planning</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                </CardContent>
+              </Card>
 
-                <Separator />
-
-                <div>
-                  <h4 className="font-semibold mb-4">Information Review Checklist</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {[
-                      "Removal affidavit reviewed",
-                      "Previous placement history documented",
-                      "Trauma history assessed",
-                      "Medical history compiled",
-                      "Educational needs identified",
-                      "Cultural/religious factors noted",
-                      "Family connections mapped",
-                    ].map((item) => (
-                      <div key={item} className="flex items-center space-x-2">
-                        <Checkbox id={item} />
-                        <Label htmlFor={item}>{item}</Label>
-                      </div>
-                    ))}
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Required Tasks by Category
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="text-center p-4 bg-blue-50 rounded-lg">
+                      <p className="text-2xl font-bold text-blue-600">5/7</p>
+                      <p className="text-sm text-gray-600">Core Assessment</p>
+                    </div>
+                    <div className="text-center p-4 bg-purple-50 rounded-lg">
+                      <p className="text-2xl font-bold text-purple-600">2/3</p>
+                      <p className="text-sm text-gray-600">TBRI® Components</p>
+                    </div>
+                    <div className="text-center p-4 bg-green-50 rounded-lg">
+                      <p className="text-2xl font-bold text-green-600">3/4</p>
+                      <p className="text-sm text-gray-600">Package-Specific</p>
+                    </div>
+                    <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                      <p className="text-2xl font-bold text-yellow-600">1/2</p>
+                      <p className="text-sm text-gray-600">Special Populations</p>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
-            {/* Section 2: Comprehensive Assessment Areas */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Section 2: Comprehensive Assessment Areas</CardTitle>
-                <CardDescription>Detailed evaluation across all developmental domains</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Physical Health & Development */}
-                <Collapsible open={expandedSections["physical"]} onOpenChange={() => toggleSection("physical")}>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-between p-4 h-auto">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 bg-blue-500 rounded-full" />
-                        <span className="font-semibold">Physical Health & Development</span>
-                        <Badge variant="outline">Required</Badge>
-                      </div>
-                      {expandedSections["physical"] ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="px-4 pb-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                      <div>
-                        <Label htmlFor="height">
-                          Height (inches) <span className="text-red-500">*</span>
-                        </Label>
-                        <Input id="height" type="number" placeholder="Enter height" />
-                      </div>
-                      <div>
-                        <Label htmlFor="weight">
-                          Weight (lbs) <span className="text-red-500">*</span>
-                        </Label>
-                        <Input id="weight" type="number" placeholder="Enter weight" />
-                      </div>
-                      <div>
-                        <Label htmlFor="bmi">BMI (calculated)</Label>
-                        <Input id="bmi" disabled placeholder="Auto-calculated" />
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <Label>
-                        Physical Development <span className="text-red-500">*</span>
-                      </Label>
-                      <Select>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select development level" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="age-appropriate">Age Appropriate</SelectItem>
-                          <SelectItem value="delayed">Delayed</SelectItem>
-                          <SelectItem value="advanced">Advanced</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="mt-4">
-                      <Label htmlFor="chronic-conditions">Chronic Conditions</Label>
-                      <Textarea id="chronic-conditions" placeholder="List any chronic medical conditions..." />
-                    </div>
-                    <div className="mt-4">
-                      <Label htmlFor="physical-limitations">Physical Limitations</Label>
-                      <Textarea id="physical-limitations" placeholder="Describe any physical limitations..." />
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-
-                {/* Emotional/Behavioral Functioning */}
-                <Collapsible open={expandedSections["emotional"]} onOpenChange={() => toggleSection("emotional")}>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-between p-4 h-auto">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 bg-purple-500 rounded-full" />
-                        <span className="font-semibold">Emotional/Behavioral Functioning</span>
-                        <Badge variant="outline">Required</Badge>
-                      </div>
-                      {expandedSections["emotional"] ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="px-4 pb-4">
-                    <div className="space-y-4 mt-4">
-                      <div>
-                        <Label>
-                          Emotional Regulation (1-5 scale) <span className="text-red-500">*</span>
-                        </Label>
-                        <RadioGroup className="flex gap-4 mt-2">
-                          {[1, 2, 3, 4, 5].map((num) => (
-                            <div key={num} className="flex items-center space-x-2">
-                              <RadioGroupItem value={num.toString()} id={`emotion-${num}`} />
-                              <Label htmlFor={`emotion-${num}`}>{num}</Label>
-                            </div>
-                          ))}
-                        </RadioGroup>
-                        <p className="text-sm text-gray-500 mt-1">1 = Poor regulation, 5 = Excellent regulation</p>
-                      </div>
-                      <div>
-                        <Label>Behavioral Patterns</Label>
-                        <div className="grid grid-cols-2 gap-2 mt-2">
-                          {[
-                            "Aggression",
-                            "Self-harm",
-                            "Withdrawal",
-                            "Hyperactivity",
-                            "Defiance",
-                            "Anxiety behaviors",
-                            "Compulsive behaviors",
-                            "Sleep issues",
-                          ].map((behavior) => (
-                            <div key={behavior} className="flex items-center space-x-2">
-                              <Checkbox id={behavior} />
-                              <Label htmlFor={behavior}>{behavior}</Label>
-                            </div>
-                          ))}
+          {activeSection === "core" && (
+            <div className="space-y-6">
+              {/* Section 1: Information Gathering */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Section 1: Information Gathering (Days 1-7)
+                    <Badge variant="outline" className="ml-2">
+                      Required
+                    </Badge>
+                  </CardTitle>
+                  <CardDescription>Request and review all relevant records and documentation</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div>
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      Records Request Tracking
+                      <Info className="h-4 w-4 text-blue-500" />
+                    </h4>
+                    <div className="space-y-4">
+                      {[
+                        { type: "DFPS records", required: true },
+                        { type: "Previous placement records", required: true },
+                        { type: "Medical records", required: true },
+                        { type: "Educational records", required: true },
+                        { type: "Mental health records", required: false },
+                      ].map((record) => (
+                        <div key={record.type} className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border rounded-lg">
+                          <div className="flex items-center space-x-2">
+                            <Checkbox id={`${record.type}-requested`} />
+                            <Label htmlFor={`${record.type}-requested`} className="font-medium">
+                              {record.type} {record.required && <span className="text-red-500">*</span>}
+                            </Label>
+                          </div>
+                          <div>
+                            <Label className="text-sm text-gray-500">Date Requested</Label>
+                            <Input type="date" className="mt-1" />
+                          </div>
+                          <div>
+                            <Label className="text-sm text-gray-500">Status</Label>
+                            <Select>
+                              <SelectTrigger className="mt-1">
+                                <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="requested">Requested</SelectItem>
+                                <SelectItem value="received">Received</SelectItem>
+                                <SelectItem value="not-available">Not Available</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label className="text-sm text-gray-500">Date Received</Label>
+                            <Input type="date" className="mt-1" />
+                          </div>
+                          <div>
+                            <Label className="text-sm text-gray-500">Upload File</Label>
+                            <Button variant="outline" size="sm" className="mt-1 w-full bg-transparent">
+                              <Upload className="h-4 w-4 mr-2" />
+                              Upload
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="coping-strategies">Coping Strategies</Label>
-                        <Textarea id="coping-strategies" placeholder="Describe effective coping strategies..." />
-                      </div>
-                      <div>
-                        <Label>Trauma Responses</Label>
-                        <div className="grid grid-cols-2 gap-2 mt-2">
-                          {[
-                            "Hypervigilance",
-                            "Flashbacks",
-                            "Nightmares",
-                            "Dissociation",
-                            "Emotional numbing",
-                            "Startle response",
-                            "Regression",
-                            "Somatic complaints",
-                          ].map((response) => (
-                            <div key={response} className="flex items-center space-x-2">
-                              <Checkbox id={response} />
-                              <Label htmlFor={response}>{response}</Label>
-                            </div>
-                          ))}
-                        </div>
-                        <Textarea className="mt-2" placeholder="Additional notes on trauma responses..." />
-                      </div>
+                      ))}
                     </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                  </div>
 
-                {/* Social Functioning */}
-                <Collapsible open={expandedSections["social"]} onOpenChange={() => toggleSection("social")}>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-between p-4 h-auto">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 bg-green-500 rounded-full" />
-                        <span className="font-semibold">Social Functioning</span>
-                        <Badge variant="outline">Required</Badge>
-                      </div>
-                      {expandedSections["social"] ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="px-4 pb-4">
-                    <div className="space-y-4 mt-4">
-                      <div>
-                        <Label>
-                          Peer Relationships (1-5 scale) <span className="text-red-500">*</span>
-                        </Label>
-                        <RadioGroup className="flex gap-4 mt-2">
-                          {[1, 2, 3, 4, 5].map((num) => (
-                            <div key={num} className="flex items-center space-x-2">
-                              <RadioGroupItem value={num.toString()} id={`peer-${num}`} />
-                              <Label htmlFor={`peer-${num}`}>{num}</Label>
-                            </div>
-                          ))}
-                        </RadioGroup>
-                        <p className="text-sm text-gray-500 mt-1">
-                          1 = Significant difficulties, 5 = Age-appropriate relationships
-                        </p>
-                        <Textarea
-                          className="mt-2"
-                          placeholder="Describe peer relationship patterns and interactions..."
-                        />
-                      </div>
-                      <div>
-                        <Label>
-                          Adult Relationships (1-5 scale) <span className="text-red-500">*</span>
-                        </Label>
-                        <RadioGroup className="flex gap-4 mt-2">
-                          {[1, 2, 3, 4, 5].map((num) => (
-                            <div key={num} className="flex items-center space-x-2">
-                              <RadioGroupItem value={num.toString()} id={`adult-${num}`} />
-                              <Label htmlFor={`adult-${num}`}>{num}</Label>
-                            </div>
-                          ))}
-                        </RadioGroup>
-                        <p className="text-sm text-gray-500 mt-1">
-                          1 = Avoids/fears adults, 5 = Healthy adult relationships
-                        </p>
-                        <Textarea
-                          className="mt-2"
-                          placeholder="Describe relationships with caregivers, teachers, and other adults..."
-                        />
-                      </div>
-                      <div>
-                        <Label>Social Skills</Label>
-                        <div className="grid grid-cols-2 gap-2 mt-2">
-                          {[
-                            "Sharing",
-                            "Taking turns",
-                            "Following social cues",
-                            "Empathy/compassion",
-                            "Conflict resolution",
-                            "Communication skills",
-                            "Boundary respect",
-                            "Group participation",
-                          ].map((skill) => (
-                            <div key={skill} className="flex items-center space-x-2">
-                              <Checkbox id={skill} />
-                              <Label htmlFor={skill}>{skill}</Label>
-                            </div>
-                          ))}
+                  <Separator />
+
+                  <div>
+                    <h4 className="font-semibold mb-4">Information Review Checklist</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {[
+                        "Removal affidavit reviewed",
+                        "Previous placement history documented",
+                        "Trauma history assessed",
+                        "Medical history compiled",
+                        "Educational needs identified",
+                        "Cultural/religious factors noted",
+                        "Family connections mapped",
+                      ].map((item) => (
+                        <div key={item} className="flex items-center space-x-2">
+                          <Checkbox id={item} />
+                          <Label htmlFor={item}>{item}</Label>
                         </div>
-                      </div>
+                      ))}
                     </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                  </div>
+                </CardContent>
+              </Card>
 
-                {/* Educational/Cognitive */}
-                <Collapsible open={expandedSections["educational"]} onOpenChange={() => toggleSection("educational")}>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-between p-4 h-auto">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 bg-orange-500 rounded-full" />
-                        <span className="font-semibold">Educational/Cognitive</span>
-                        <Badge variant="outline">Required</Badge>
-                      </div>
-                      {expandedSections["educational"] ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="px-4 pb-4">
-                    <div className="space-y-4 mt-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Section 2: Comprehensive Assessment Areas */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Section 2: Comprehensive Assessment Areas</CardTitle>
+                  <CardDescription>Detailed evaluation across all developmental domains</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Physical Health & Development */}
+                  <Collapsible open={expandedSections["physical"]} onOpenChange={() => toggleSection("physical")}>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" className="w-full justify-between p-4 h-auto">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 bg-blue-500 rounded-full" />
+                          <span className="font-semibold">Physical Health & Development</span>
+                          <Badge variant="outline">Required</Badge>
+                        </div>
+                        {expandedSections["physical"] ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="px-4 pb-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                         <div>
-                          <Label htmlFor="current-grade">
-                            Current Grade/Placement <span className="text-red-500">*</span>
+                          <Label htmlFor="height">
+                            Height (inches) <span className="text-red-500">*</span>
                           </Label>
-                          <Input id="current-grade" placeholder="e.g., 8th grade, Pre-K" />
+                          <Input id="height" type="number" placeholder="Enter height" />
+                        </div>
+                        <div>
+                          <Label htmlFor="weight">
+                            Weight (lbs) <span className="text-red-500">*</span>
+                          </Label>
+                          <Input id="weight" type="number" placeholder="Enter weight" />
+                        </div>
+                        <div>
+                          <Label htmlFor="bmi">BMI (calculated)</Label>
+                          <Input id="bmi" disabled placeholder="Auto-calculated" />
+                        </div>
+                      </div>
+                      <div className="mt-4">
+                        <Label>
+                          Physical Development <span className="text-red-500">*</span>
+                        </Label>
+                        <Select>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Select development level" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="age-appropriate">Age Appropriate</SelectItem>
+                            <SelectItem value="delayed">Delayed</SelectItem>
+                            <SelectItem value="advanced">Advanced</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="mt-4">
+                        <Label htmlFor="chronic-conditions">Chronic Conditions</Label>
+                        <Textarea id="chronic-conditions" placeholder="List any chronic medical conditions..." />
+                      </div>
+                      <div className="mt-4">
+                        <Label htmlFor="physical-limitations">Physical Limitations</Label>
+                        <Textarea id="physical-limitations" placeholder="Describe any physical limitations..." />
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  {/* Emotional/Behavioral Functioning */}
+                  <Collapsible open={expandedSections["emotional"]} onOpenChange={() => toggleSection("emotional")}>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" className="w-full justify-between p-4 h-auto">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 bg-purple-500 rounded-full" />
+                          <span className="font-semibold">Emotional/Behavioral Functioning</span>
+                          <Badge variant="outline">Required</Badge>
+                        </div>
+                        {expandedSections["emotional"] ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="px-4 pb-4">
+                      <div className="space-y-4 mt-4">
+                        <div>
+                          <Label>
+                            Emotional Regulation (1-5 scale) <span className="text-red-500">*</span>
+                          </Label>
+                          <RadioGroup className="flex gap-4 mt-2">
+                            {[1, 2, 3, 4, 5].map((num) => (
+                              <div key={num} className="flex items-center space-x-2">
+                                <RadioGroupItem value={num.toString()} id={`emotion-${num}`} />
+                                <Label htmlFor={`emotion-${num}`}>{num}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                          <p className="text-sm text-gray-500 mt-1">1 = Poor regulation, 5 = Excellent regulation</p>
+                        </div>
+                        <div>
+                          <Label>Behavioral Patterns</Label>
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            {[
+                              "Aggression",
+                              "Self-harm",
+                              "Withdrawal",
+                              "Hyperactivity",
+                              "Defiance",
+                              "Anxiety behaviors",
+                              "Compulsive behaviors",
+                              "Sleep issues",
+                            ].map((behavior) => (
+                              <div key={behavior} className="flex items-center space-x-2">
+                                <Checkbox id={behavior} />
+                                <Label htmlFor={behavior}>{behavior}</Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="coping-strategies">Coping Strategies</Label>
+                          <Textarea id="coping-strategies" placeholder="Describe effective coping strategies..." />
+                        </div>
+                        <div>
+                          <Label>Trauma Responses</Label>
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            {[
+                              "Hypervigilance",
+                              "Flashbacks",
+                              "Nightmares",
+                              "Dissociation",
+                              "Emotional numbing",
+                              "Startle response",
+                              "Regression",
+                              "Somatic complaints",
+                            ].map((response) => (
+                              <div key={response} className="flex items-center space-x-2">
+                                <Checkbox id={response} />
+                                <Label htmlFor={response}>{response}</Label>
+                              </div>
+                            ))}
+                          </div>
+                          <Textarea className="mt-2" placeholder="Additional notes on trauma responses..." />
+                        </div>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  {/* Social Functioning */}
+                  <Collapsible open={expandedSections["social"]} onOpenChange={() => toggleSection("social")}>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" className="w-full justify-between p-4 h-auto">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 bg-green-500 rounded-full" />
+                          <span className="font-semibold">Social Functioning</span>
+                          <Badge variant="outline">Required</Badge>
+                        </div>
+                        {expandedSections["social"] ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="px-4 pb-4">
+                      <div className="space-y-4 mt-4">
+                        <div>
+                          <Label>
+                            Peer Relationships (1-5 scale) <span className="text-red-500">*</span>
+                          </Label>
+                          <RadioGroup className="flex gap-4 mt-2">
+                            {[1, 2, 3, 4, 5].map((num) => (
+                              <div key={num} className="flex items-center space-x-2">
+                                <RadioGroupItem value={num.toString()} id={`peer-${num}`} />
+                                <Label htmlFor={`peer-${num}`}>{num}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                          <p className="text-sm text-gray-500 mt-1">
+                            1 = Significant difficulties, 5 = Age-appropriate relationships
+                          </p>
+                          <Textarea
+                            className="mt-2"
+                            placeholder="Describe peer relationship patterns and interactions..."
+                          />
                         </div>
                         <div>
                           <Label>
-                            Academic Performance <span className="text-red-500">*</span>
+                            Adult Relationships (1-5 scale) <span className="text-red-500">*</span>
                           </Label>
-                          <Select>
-                            <SelectTrigger className="mt-1">
-                              <SelectValue placeholder="Select performance level" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="above-grade">Above Grade Level</SelectItem>
-                              <SelectItem value="at-grade">At Grade Level</SelectItem>
-                              <SelectItem value="below-grade">Below Grade Level</SelectItem>
-                              <SelectItem value="significantly-below">Significantly Below Grade Level</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <RadioGroup className="flex gap-4 mt-2">
+                            {[1, 2, 3, 4, 5].map((num) => (
+                              <div key={num} className="flex items-center space-x-2">
+                                <RadioGroupItem value={num.toString()} id={`adult-${num}`} />
+                                <Label htmlFor={`adult-${num}`}>{num}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                          <p className="text-sm text-gray-500 mt-1">
+                            1 = Avoids/fears adults, 5 = Healthy adult relationships
+                          </p>
+                          <Textarea
+                            className="mt-2"
+                            placeholder="Describe relationships with caregivers, teachers, and other adults..."
+                          />
                         </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="academic-notes">Academic Performance Notes</Label>
-                        <Textarea
-                          id="academic-notes"
-                          placeholder="Describe specific academic strengths and challenges..."
-                        />
-                      </div>
-                      <div>
-                        <Label>Learning Styles</Label>
-                        <div className="grid grid-cols-2 gap-2 mt-2">
-                          {[
-                            "Visual learner",
-                            "Auditory learner",
-                            "Kinesthetic learner",
-                            "Reading/writing learner",
-                            "Hands-on activities",
-                            "Group learning",
-                            "Independent study",
-                            "Technology-assisted",
-                          ].map((style) => (
-                            <div key={style} className="flex items-center space-x-2">
-                              <Checkbox id={style} />
-                              <Label htmlFor={style}>{style}</Label>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
-                        <Label>Special Education Needs</Label>
-                        <RadioGroup className="mt-2">
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="yes" id="special-ed-yes" />
-                            <Label htmlFor="special-ed-yes">Yes - has special education needs</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="no" id="special-ed-no" />
-                            <Label htmlFor="special-ed-no">No - does not require special education</Label>
-                          </div>
-                        </RadioGroup>
-                        <Textarea
-                          className="mt-2"
-                          placeholder="If yes, describe IEP/504 plan details, accommodations, and services..."
-                        />
-                      </div>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-
-                {/* Daily Living Skills */}
-                <Collapsible open={expandedSections["daily-living"]} onOpenChange={() => toggleSection("daily-living")}>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-between p-4 h-auto">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 bg-teal-500 rounded-full" />
-                        <span className="font-semibold">Daily Living Skills</span>
-                        <Badge variant="outline">Required</Badge>
-                      </div>
-                      {expandedSections["daily-living"] ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="px-4 pb-4">
-                    <div className="space-y-4 mt-4">
-                      <div>
-                        <Label>Age-Appropriate Skills</Label>
-                        <div className="grid grid-cols-2 gap-2 mt-2">
-                          {[
-                            "Personal hygiene",
-                            "Dressing independently",
-                            "Meal preparation",
-                            "Household chores",
-                            "Money management",
-                            "Time management",
-                            "Transportation skills",
-                            "Safety awareness",
-                          ].map((skill) => (
-                            <div key={skill} className="flex items-center space-x-2">
-                              <Checkbox id={skill} />
-                              <Label htmlFor={skill}>{skill}</Label>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      {childData.age >= 14 && (
                         <div>
-                          <Label>Independent Living Skills (Age 14+)</Label>
+                          <Label>Social Skills</Label>
                           <div className="grid grid-cols-2 gap-2 mt-2">
                             {[
-                              "Laundry skills",
-                              "Cooking meals",
-                              "Budgeting",
-                              "Job readiness",
-                              "Healthcare management",
-                              "Housing skills",
-                              "Community navigation",
-                              "Legal awareness",
+                              "Sharing",
+                              "Taking turns",
+                              "Following social cues",
+                              "Empathy/compassion",
+                              "Conflict resolution",
+                              "Communication skills",
+                              "Boundary respect",
+                              "Group participation",
                             ].map((skill) => (
                               <div key={skill} className="flex items-center space-x-2">
                                 <Checkbox id={skill} />
@@ -936,536 +839,689 @@ export default function AdmissionAssessmentPage() {
                             ))}
                           </div>
                         </div>
-                      )}
-                      <div>
-                        <Label>
-                          Supervision Needs (1-5 scale) <span className="text-red-500">*</span>
-                        </Label>
-                        <RadioGroup className="flex gap-4 mt-2">
-                          {[1, 2, 3, 4, 5].map((num) => (
-                            <div key={num} className="flex items-center space-x-2">
-                              <RadioGroupItem value={num.toString()} id={`supervision-${num}`} />
-                              <Label htmlFor={`supervision-${num}`}>{num}</Label>
-                            </div>
-                          ))}
-                        </RadioGroup>
-                        <p className="text-sm text-gray-500 mt-1">1 = Constant supervision, 5 = Independent</p>
                       </div>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                    </CollapsibleContent>
+                  </Collapsible>
 
-                {/* Cultural/Spiritual Identity */}
-                <Collapsible open={expandedSections["cultural"]} onOpenChange={() => toggleSection("cultural")}>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-between p-4 h-auto">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 bg-pink-500 rounded-full" />
-                        <span className="font-semibold">Cultural/Spiritual Identity</span>
-                        <Badge variant="outline">Required</Badge>
-                      </div>
-                      {expandedSections["cultural"] ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="px-4 pb-4">
-                    <div className="space-y-4 mt-4">
-                      <div>
-                        <Label htmlFor="cultural-identity">
-                          Cultural Identity <span className="text-red-500">*</span>
-                        </Label>
-                        <Textarea
-                          id="cultural-identity"
-                          placeholder="Describe the child's cultural background, heritage, and identity..."
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="languages-spoken">Languages Spoken</Label>
-                        <Input
-                          id="languages-spoken"
-                          placeholder="List all languages spoken by the child (e.g., English, Spanish, ASL)"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="religious-practices">Religious/Spiritual Practices</Label>
-                        <Textarea
-                          id="religious-practices"
-                          placeholder="Describe any religious or spiritual practices important to the child..."
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="cultural-placement-needs">Cultural Placement Needs</Label>
-                        <Textarea
-                          id="cultural-placement-needs"
-                          placeholder="Identify specific cultural considerations for placement (food, holidays, community connections, etc.)..."
-                        />
-                      </div>
-                      <div>
-                        <Label>Cultural Considerations</Label>
-                        <div className="grid grid-cols-2 gap-2 mt-2">
-                          {[
-                            "Dietary restrictions",
-                            "Holiday observances",
-                            "Community connections",
-                            "Traditional practices",
-                            "Language preservation",
-                            "Cultural mentorship",
-                            "Religious services",
-                            "Cultural education",
-                          ].map((consideration) => (
-                            <div key={consideration} className="flex items-center space-x-2">
-                              <Checkbox id={consideration} />
-                              <Label htmlFor={consideration}>{consideration}</Label>
-                            </div>
-                          ))}
+                  {/* Educational/Cognitive */}
+                  <Collapsible open={expandedSections["educational"]} onOpenChange={() => toggleSection("educational")}>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" className="w-full justify-between p-4 h-auto">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 bg-orange-500 rounded-full" />
+                          <span className="font-semibold">Educational/Cognitive</span>
+                          <Badge variant="outline">Required</Badge>
                         </div>
-                      </div>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* TBRI Tab */}
-        <TabsContent value="tbri">
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <div className="h-5 w-5 bg-gradient-to-r from-blue-500 to-purple-500 rounded" />
-                  TBRI® Components Assessment
-                </CardTitle>
-                <CardDescription>Trauma-Based Relational Intervention principles evaluation</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* CONNECTING Assessment */}
-                <Collapsible open={expandedSections["connecting"]} onOpenChange={() => toggleSection("connecting")}>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-between p-4 h-auto">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 bg-blue-500 rounded-full" />
-                        <span className="font-semibold">CONNECTING Assessment</span>
-                        <Badge variant="outline">Required</Badge>
-                      </div>
-                      {expandedSections["connecting"] ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="px-4 pb-4">
-                    <div className="space-y-4 mt-4">
-                      <div>
-                        <Label>
-                          Attachment Style <span className="text-red-500">*</span>
-                        </Label>
-                        <Select>
-                          <SelectTrigger className="mt-1">
-                            <SelectValue placeholder="Select attachment style" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="secure">Secure</SelectItem>
-                            <SelectItem value="anxious">Anxious-Ambivalent</SelectItem>
-                            <SelectItem value="avoidant">Avoidant</SelectItem>
-                            <SelectItem value="disorganized">Disorganized</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <div className="mt-2">
-                          <Label htmlFor="attachment-narrative">Attachment Behavior Narrative</Label>
+                        {expandedSections["educational"] ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="px-4 pb-4">
+                      <div className="space-y-4 mt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="current-grade">
+                              Current Grade/Placement <span className="text-red-500">*</span>
+                            </Label>
+                            <Input id="current-grade" placeholder="e.g., 8th grade, Pre-K" />
+                          </div>
+                          <div>
+                            <Label>
+                              Academic Performance <span className="text-red-500">*</span>
+                            </Label>
+                            <Select>
+                              <SelectTrigger className="mt-1">
+                                <SelectValue placeholder="Select performance level" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="above-grade">Above Grade Level</SelectItem>
+                                <SelectItem value="at-grade">At Grade Level</SelectItem>
+                                <SelectItem value="below-grade">Below Grade Level</SelectItem>
+                                <SelectItem value="significantly-below">Significantly Below Grade Level</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="academic-notes">Academic Performance Notes</Label>
                           <Textarea
-                            id="attachment-narrative"
-                            placeholder="Describe specific attachment behaviors, patterns, and responses observed..."
-                            rows={3}
+                            id="academic-notes"
+                            placeholder="Describe specific academic strengths and challenges..."
+                          />
+                        </div>
+                        <div>
+                          <Label>Learning Styles</Label>
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            {[
+                              "Visual learner",
+                              "Auditory learner",
+                              "Kinesthetic learner",
+                              "Reading/writing learner",
+                              "Hands-on activities",
+                              "Group learning",
+                              "Independent study",
+                              "Technology-assisted",
+                            ].map((style) => (
+                              <div key={style} className="flex items-center space-x-2">
+                                <Checkbox id={style} />
+                                <Label htmlFor={style}>{style}</Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <Label>Special Education Needs</Label>
+                          <RadioGroup className="mt-2">
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="yes" id="special-ed-yes" />
+                              <Label htmlFor="special-ed-yes">Yes - has special education needs</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="no" id="special-ed-no" />
+                              <Label htmlFor="special-ed-no">No - does not require special education</Label>
+                            </div>
+                          </RadioGroup>
+                          <Textarea
+                            className="mt-2"
+                            placeholder="If yes, describe IEP/504 plan details, accommodations, and services..."
                           />
                         </div>
                       </div>
-                      <div>
-                        <Label>
-                          Eye Contact Comfort (1-5 scale) <span className="text-red-500">*</span>
-                        </Label>
-                        <RadioGroup className="flex gap-4 mt-2">
-                          {[1, 2, 3, 4, 5].map((num) => (
-                            <div key={num} className="flex items-center space-x-2">
-                              <RadioGroupItem value={num.toString()} id={`eye-contact-${num}`} />
-                              <Label htmlFor={`eye-contact-${num}`}>{num}</Label>
-                            </div>
-                          ))}
-                        </RadioGroup>
-                        <p className="text-sm text-gray-500 mt-1">
-                          1 = Avoids all eye contact, 5 = Comfortable with appropriate eye contact
-                        </p>
-                      </div>
-                      <div>
-                        <Label htmlFor="physical-touch">Physical Touch Preferences</Label>
-                        <Textarea
-                          id="physical-touch"
-                          placeholder="Describe comfort level with physical touch, preferred types of touch, triggers to avoid..."
-                          rows={3}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="trust-building">Trust-Building Observations</Label>
-                        <Textarea
-                          id="trust-building"
-                          placeholder="Document trust-building behaviors, responses to new people, time needed to warm up, successful strategies..."
-                          rows={3}
-                        />
-                      </div>
-                      <div>
-                        <Label>Play/Interaction Styles</Label>
-                        <div className="grid grid-cols-2 gap-2 mt-2">
-                          {[
-                            "Parallel play",
-                            "Interactive play",
-                            "Solitary play preference",
-                            "Structured activities",
-                            "Free play",
-                            "Adult-directed activities",
-                            "Peer interaction",
-                            "Imaginative/pretend play",
-                            "Physical/active play",
-                            "Quiet/calm activities",
-                            "Competitive activities",
-                            "Cooperative activities",
-                          ].map((style) => (
-                            <div key={style} className="flex items-center space-x-2">
-                              <Checkbox id={style} />
-                              <Label htmlFor={style}>{style}</Label>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                    </CollapsibleContent>
+                  </Collapsible>
 
-                {/* EMPOWERING Assessment */}
-                <Collapsible open={expandedSections["empowering"]} onOpenChange={() => toggleSection("empowering")}>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-between p-4 h-auto">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 bg-green-500 rounded-full" />
-                        <span className="font-semibold">EMPOWERING Assessment</span>
-                        <Badge variant="outline">Required</Badge>
-                      </div>
-                      {expandedSections["empowering"] ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="px-4 pb-4">
-                    <div className="space-y-4 mt-4">
-                      <div>
-                        <Label>
-                          Sensory Needs <span className="text-red-500">*</span>
-                        </Label>
-                        <div className="grid grid-cols-2 gap-2 mt-2">
-                          {[
-                            "Auditory sensitivity",
-                            "Visual sensitivity",
-                            "Tactile sensitivity",
-                            "Vestibular needs",
-                            "Proprioceptive needs",
-                            "Oral sensory needs",
-                            "Olfactory sensitivity",
-                            "Temperature sensitivity",
-                            "Texture preferences",
-                            "Sound filtering needs",
-                            "Light sensitivity",
-                            "Movement seeking",
-                          ].map((need) => (
-                            <div key={need} className="flex items-center space-x-2">
-                              <Checkbox id={need} />
-                              <Label htmlFor={need}>{need}</Label>
-                            </div>
-                          ))}
+                  {/* Daily Living Skills */}
+                  <Collapsible
+                    open={expandedSections["daily-living"]}
+                    onOpenChange={() => toggleSection("daily-living")}
+                  >
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" className="w-full justify-between p-4 h-auto">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 bg-teal-500 rounded-full" />
+                          <span className="font-semibold">Daily Living Skills</span>
+                          <Badge variant="outline">Required</Badge>
                         </div>
-                        <Textarea
-                          className="mt-2"
-                          placeholder="Provide details about specific sensory needs, triggers, and accommodations..."
-                          rows={2}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {expandedSections["daily-living"] ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="px-4 pb-4">
+                      <div className="space-y-4 mt-4">
                         <div>
-                          <Label htmlFor="sleep-patterns">
-                            Sleep Patterns <span className="text-red-500">*</span>
-                          </Label>
-                          <div className="space-y-2 mt-1">
-                            <div className="grid grid-cols-2 gap-2">
-                              <div>
-                                <Label className="text-sm text-gray-500">Bedtime</Label>
-                                <Input type="time" placeholder="e.g., 21:00" />
+                          <Label>Age-Appropriate Skills</Label>
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            {[
+                              "Personal hygiene",
+                              "Dressing independently",
+                              "Meal preparation",
+                              "Household chores",
+                              "Money management",
+                              "Time management",
+                              "Transportation skills",
+                              "Safety awareness",
+                            ].map((skill) => (
+                              <div key={skill} className="flex items-center space-x-2">
+                                <Checkbox id={skill} />
+                                <Label htmlFor={skill}>{skill}</Label>
                               </div>
-                              <div>
-                                <Label className="text-sm text-gray-500">Wake Time</Label>
-                                <Input type="time" placeholder="e.g., 07:00" />
-                              </div>
-                            </div>
-                            <div>
-                              <Label className="text-sm text-gray-500">Sleep Quality</Label>
-                              <Select>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select quality" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="excellent">Excellent - sleeps through night</SelectItem>
-                                  <SelectItem value="good">Good - occasional wake-ups</SelectItem>
-                                  <SelectItem value="fair">Fair - frequent wake-ups</SelectItem>
-                                  <SelectItem value="poor">Poor - significant sleep disruption</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <Textarea
-                              placeholder="Describe sleep routines, difficulties, nightmares, bedtime behaviors..."
-                              rows={2}
-                            />
+                            ))}
                           </div>
                         </div>
-
-                        <div>
-                          <Label htmlFor="eating-patterns">
-                            Eating Patterns <span className="text-red-500">*</span>
-                          </Label>
-                          <div className="space-y-2 mt-1">
-                            <div>
-                              <Label className="text-sm text-gray-500">Appetite Level</Label>
-                              <Select>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select appetite" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="excellent">Excellent appetite</SelectItem>
-                                  <SelectItem value="good">Good appetite</SelectItem>
-                                  <SelectItem value="fair">Fair appetite</SelectItem>
-                                  <SelectItem value="poor">Poor appetite</SelectItem>
-                                  <SelectItem value="overeating">Tendency to overeat</SelectItem>
-                                </SelectContent>
-                              </Select>
+                        {childData.age >= 14 && (
+                          <div>
+                            <Label>Independent Living Skills (Age 14+)</Label>
+                            <div className="grid grid-cols-2 gap-2 mt-2">
+                              {[
+                                "Laundry skills",
+                                "Cooking meals",
+                                "Budgeting",
+                                "Job readiness",
+                                "Healthcare management",
+                                "Housing skills",
+                                "Community navigation",
+                                "Legal awareness",
+                              ].map((skill) => (
+                                <div key={skill} className="flex items-center space-x-2">
+                                  <Checkbox id={skill} />
+                                  <Label htmlFor={skill}>{skill}</Label>
+                                </div>
+                              ))}
                             </div>
-                            <div>
-                              <Label className="text-sm text-gray-500">Food Preferences/Restrictions</Label>
-                              <Input placeholder="e.g., vegetarian, allergies, textures" />
-                            </div>
-                            <Textarea
-                              placeholder="Describe eating behaviors, mealtime routines, food hoarding, etc..."
-                              rows={2}
-                            />
                           </div>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        )}
                         <div>
                           <Label>
-                            Hydration Habits <span className="text-red-500">*</span>
+                            Supervision Needs (1-5 scale) <span className="text-red-500">*</span>
+                          </Label>
+                          <RadioGroup className="flex gap-4 mt-2">
+                            {[1, 2, 3, 4, 5].map((num) => (
+                              <div key={num} className="flex items-center space-x-2">
+                                <RadioGroupItem value={num.toString()} id={`supervision-${num}`} />
+                                <Label htmlFor={`supervision-${num}`}>{num}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                          <p className="text-sm text-gray-500 mt-1">1 = Constant supervision, 5 = Independent</p>
+                        </div>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  {/* Cultural/Spiritual Identity */}
+                  <Collapsible open={expandedSections["cultural"]} onOpenChange={() => toggleSection("cultural")}>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" className="w-full justify-between p-4 h-auto">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 bg-pink-500 rounded-full" />
+                          <span className="font-semibold">Cultural/Spiritual Identity</span>
+                          <Badge variant="outline">Required</Badge>
+                        </div>
+                        {expandedSections["cultural"] ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="px-4 pb-4">
+                      <div className="space-y-4 mt-4">
+                        <div>
+                          <Label htmlFor="cultural-identity">
+                            Cultural Identity <span className="text-red-500">*</span>
+                          </Label>
+                          <Textarea
+                            id="cultural-identity"
+                            placeholder="Describe the child's cultural background, heritage, and identity..."
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="languages-spoken">Languages Spoken</Label>
+                          <Input
+                            id="languages-spoken"
+                            placeholder="List all languages spoken by the child (e.g., English, Spanish, ASL)"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="religious-practices">Religious/Spiritual Practices</Label>
+                          <Textarea
+                            id="religious-practices"
+                            placeholder="Describe any religious or spiritual practices important to the child..."
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="cultural-placement-needs">Cultural Placement Needs</Label>
+                          <Textarea
+                            id="cultural-placement-needs"
+                            placeholder="Identify specific cultural considerations for placement (food, holidays, community connections, etc.)..."
+                          />
+                        </div>
+                        <div>
+                          <Label>Cultural Considerations</Label>
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            {[
+                              "Dietary restrictions",
+                              "Holiday observances",
+                              "Community connections",
+                              "Traditional practices",
+                              "Language preservation",
+                              "Cultural mentorship",
+                              "Religious services",
+                              "Cultural education",
+                            ].map((consideration) => (
+                              <div key={consideration} className="flex items-center space-x-2">
+                                <Checkbox id={consideration} />
+                                <Label htmlFor={consideration}>{consideration}</Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {activeSection === "tbri" && (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <div className="h-5 w-5 bg-gradient-to-r from-blue-500 to-purple-500 rounded" />
+                    TBRI® Components Assessment
+                  </CardTitle>
+                  <CardDescription>Trauma-Based Relational Intervention principles evaluation</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* CONNECTING Assessment */}
+                  <Collapsible open={expandedSections["connecting"]} onOpenChange={() => toggleSection("connecting")}>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" className="w-full justify-between p-4 h-auto">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 bg-blue-500 rounded-full" />
+                          <span className="font-semibold">CONNECTING Assessment</span>
+                          <Badge variant="outline">Required</Badge>
+                        </div>
+                        {expandedSections["connecting"] ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="px-4 pb-4">
+                      <div className="space-y-4 mt-4">
+                        <div>
+                          <Label>
+                            Attachment Style <span className="text-red-500">*</span>
                           </Label>
                           <Select>
                             <SelectTrigger className="mt-1">
-                              <SelectValue placeholder="Select hydration level" />
+                              <SelectValue placeholder="Select attachment style" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="excellent">Excellent - drinks water regularly</SelectItem>
-                              <SelectItem value="good">Good - adequate water intake</SelectItem>
-                              <SelectItem value="fair">Fair - needs reminders to drink</SelectItem>
-                              <SelectItem value="poor">Poor - rarely drinks water</SelectItem>
-                              <SelectItem value="excessive">Excessive - drinks too much</SelectItem>
+                              <SelectItem value="secure">Secure</SelectItem>
+                              <SelectItem value="anxious">Anxious-Ambivalent</SelectItem>
+                              <SelectItem value="avoidant">Avoidant</SelectItem>
+                              <SelectItem value="disorganized">Disorganized</SelectItem>
                             </SelectContent>
                           </Select>
+                          <div className="mt-2">
+                            <Label htmlFor="attachment-narrative">Attachment Behavior Narrative</Label>
+                            <Textarea
+                              id="attachment-narrative"
+                              placeholder="Describe specific attachment behaviors, patterns, and responses observed..."
+                              rows={3}
+                            />
+                          </div>
                         </div>
-
                         <div>
-                          <Label htmlFor="physical-activity">Physical Activity Needs</Label>
+                          <Label>
+                            Eye Contact Comfort (1-5 scale) <span className="text-red-500">*</span>
+                          </Label>
+                          <RadioGroup className="flex gap-4 mt-2">
+                            {[1, 2, 3, 4, 5].map((num) => (
+                              <div key={num} className="flex items-center space-x-2">
+                                <RadioGroupItem value={num.toString()} id={`eye-contact-${num}`} />
+                                <Label htmlFor={`eye-contact-${num}`}>{num}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                          <p className="text-sm text-gray-500 mt-1">
+                            1 = Avoids all eye contact, 5 = Comfortable with appropriate eye contact
+                          </p>
+                        </div>
+                        <div>
+                          <Label htmlFor="physical-touch">Physical Touch Preferences</Label>
                           <Textarea
-                            id="physical-activity"
-                            className="mt-1"
-                            placeholder="Describe activity level, exercise needs, movement preferences, energy regulation..."
+                            id="physical-touch"
+                            placeholder="Describe comfort level with physical touch, preferred types of touch, triggers to avoid..."
+                            rows={3}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="trust-building">Trust-Building Observations</Label>
+                          <Textarea
+                            id="trust-building"
+                            placeholder="Document trust-building behaviors, responses to new people, time needed to warm up, successful strategies..."
+                            rows={3}
+                          />
+                        </div>
+                        <div>
+                          <Label>Play/Interaction Styles</Label>
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            {[
+                              "Parallel play",
+                              "Interactive play",
+                              "Solitary play preference",
+                              "Structured activities",
+                              "Free play",
+                              "Adult-directed activities",
+                              "Peer interaction",
+                              "Imaginative/pretend play",
+                              "Physical/active play",
+                              "Quiet/calm activities",
+                              "Competitive activities",
+                              "Cooperative activities",
+                            ].map((style) => (
+                              <div key={style} className="flex items-center space-x-2">
+                                <Checkbox id={style} />
+                                <Label htmlFor={style}>{style}</Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  {/* EMPOWERING Assessment */}
+                  <Collapsible open={expandedSections["empowering"]} onOpenChange={() => toggleSection("empowering")}>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" className="w-full justify-between p-4 h-auto">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 bg-green-500 rounded-full" />
+                          <span className="font-semibold">EMPOWERING Assessment</span>
+                          <Badge variant="outline">Required</Badge>
+                        </div>
+                        {expandedSections["empowering"] ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="px-4 pb-4">
+                      <div className="space-y-4 mt-4">
+                        <div>
+                          <Label>
+                            Sensory Needs <span className="text-red-500">*</span>
+                          </Label>
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            {[
+                              "Auditory sensitivity",
+                              "Visual sensitivity",
+                              "Tactile sensitivity",
+                              "Vestibular needs",
+                              "Proprioceptive needs",
+                              "Oral sensory needs",
+                              "Olfactory sensitivity",
+                              "Temperature sensitivity",
+                              "Texture preferences",
+                              "Sound filtering needs",
+                              "Light sensitivity",
+                              "Movement seeking",
+                            ].map((need) => (
+                              <div key={need} className="flex items-center space-x-2">
+                                <Checkbox id={need} />
+                                <Label htmlFor={need}>{need}</Label>
+                              </div>
+                            ))}
+                          </div>
+                          <Textarea
+                            className="mt-2"
+                            placeholder="Provide details about specific sensory needs, triggers, and accommodations..."
                             rows={2}
                           />
                         </div>
-                      </div>
 
-                      <div>
-                        <Label>Environmental Preferences</Label>
-                        <div className="grid grid-cols-2 gap-2 mt-2">
-                          {[
-                            "Quiet spaces",
-                            "Busy/stimulating environments",
-                            "Natural lighting",
-                            "Dim lighting",
-                            "Open spaces",
-                            "Cozy/enclosed spaces",
-                            "Organized environments",
-                            "Flexible spaces",
-                            "Indoor preferences",
-                            "Outdoor preferences",
-                            "Temperature control needs",
-                            "Noise level preferences",
-                          ].map((preference) => (
-                            <div key={preference} className="flex items-center space-x-2">
-                              <Checkbox id={preference} />
-                              <Label htmlFor={preference}>{preference}</Label>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-
-                {/* CORRECTING Assessment */}
-                <Collapsible open={expandedSections["correcting"]} onOpenChange={() => toggleSection("correcting")}>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-between p-4 h-auto">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 bg-orange-500 rounded-full" />
-                        <span className="font-semibold">CORRECTING Assessment</span>
-                        <Badge variant="outline">Required</Badge>
-                      </div>
-                      {expandedSections["correcting"] ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="px-4 pb-4">
-                    <div className="space-y-4 mt-4">
-                      <div>
-                        <Label>Current Survival Behaviors with Frequency</Label>
-                        <div className="space-y-3 mt-2">
-                          {[
-                            "Fight responses (aggression, defiance)",
-                            "Flight responses (running away, avoidance)",
-                            "Freeze responses (shutting down, dissociation)",
-                            "Fawn responses (people-pleasing, compliance)",
-                            "Lying/deception",
-                            "Stealing",
-                            "Hoarding (food, items)",
-                            "Control behaviors",
-                            "Self-harm behaviors",
-                            "Hypervigilance",
-                          ].map((behavior) => (
-                            <div key={behavior} className="grid grid-cols-1 md:grid-cols-3 gap-2 p-2 border rounded">
-                              <div className="flex items-center space-x-2">
-                                <Checkbox id={behavior} />
-                                <Label htmlFor={behavior} className="text-sm">
-                                  {behavior}
-                                </Label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="sleep-patterns">
+                              Sleep Patterns <span className="text-red-500">*</span>
+                            </Label>
+                            <div className="space-y-2 mt-1">
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <Label className="text-sm text-gray-500">Bedtime</Label>
+                                  <Input type="time" placeholder="e.g., 21:00" />
+                                </div>
+                                <div>
+                                  <Label className="text-sm text-gray-500">Wake Time</Label>
+                                  <Input type="time" placeholder="e.g., 07:00" />
+                                </div>
                               </div>
                               <div>
+                                <Label className="text-sm text-gray-500">Sleep Quality</Label>
                                 <Select>
-                                  <SelectTrigger className="h-8">
-                                    <SelectValue placeholder="Frequency" />
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select quality" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="daily">Daily</SelectItem>
-                                    <SelectItem value="weekly">Weekly</SelectItem>
-                                    <SelectItem value="monthly">Monthly</SelectItem>
-                                    <SelectItem value="rarely">Rarely</SelectItem>
+                                    <SelectItem value="excellent">Excellent - sleeps through night</SelectItem>
+                                    <SelectItem value="good">Good - occasional wake-ups</SelectItem>
+                                    <SelectItem value="fair">Fair - frequent wake-ups</SelectItem>
+                                    <SelectItem value="poor">Poor - significant sleep disruption</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <Textarea
+                                placeholder="Describe sleep routines, difficulties, nightmares, bedtime behaviors..."
+                                rows={2}
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <Label htmlFor="eating-patterns">
+                              Eating Patterns <span className="text-red-500">*</span>
+                            </Label>
+                            <div className="space-y-2 mt-1">
+                              <div>
+                                <Label className="text-sm text-gray-500">Appetite Level</Label>
+                                <Select>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select appetite" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="excellent">Excellent appetite</SelectItem>
+                                    <SelectItem value="good">Good appetite</SelectItem>
+                                    <SelectItem value="fair">Fair appetite</SelectItem>
+                                    <SelectItem value="poor">Poor appetite</SelectItem>
+                                    <SelectItem value="overeating">Tendency to overeat</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>
                               <div>
-                                <Input placeholder="Triggers/context" className="h-8 text-sm" />
+                                <Label className="text-sm text-gray-500">Food Preferences/Restrictions</Label>
+                                <Input placeholder="e.g., vegetarian, allergies, textures" />
                               </div>
+                              <Textarea
+                                placeholder="Describe eating behaviors, mealtime routines, food hoarding, etc..."
+                                rows={2}
+                              />
                             </div>
-                          ))}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label>
+                              Hydration Habits <span className="text-red-500">*</span>
+                            </Label>
+                            <Select>
+                              <SelectTrigger className="mt-1">
+                                <SelectValue placeholder="Select hydration level" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="excellent">Excellent - drinks water regularly</SelectItem>
+                                <SelectItem value="good">Good - adequate water intake</SelectItem>
+                                <SelectItem value="fair">Fair - needs reminders to drink</SelectItem>
+                                <SelectItem value="poor">Poor - rarely drinks water</SelectItem>
+                                <SelectItem value="excessive">Excessive - drinks too much</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <Label htmlFor="physical-activity">Physical Activity Needs</Label>
+                            <Textarea
+                              id="physical-activity"
+                              className="mt-1"
+                              placeholder="Describe activity level, exercise needs, movement preferences, energy regulation..."
+                              rows={2}
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label>Environmental Preferences</Label>
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            {[
+                              "Quiet spaces",
+                              "Busy/stimulating environments",
+                              "Natural lighting",
+                              "Dim lighting",
+                              "Open spaces",
+                              "Cozy/enclosed spaces",
+                              "Organized environments",
+                              "Flexible spaces",
+                              "Indoor preferences",
+                              "Outdoor preferences",
+                              "Temperature control needs",
+                              "Noise level preferences",
+                            ].map((preference) => (
+                              <div key={preference} className="flex items-center space-x-2">
+                                <Checkbox id={preference} />
+                                <Label htmlFor={preference}>{preference}</Label>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
+                    </CollapsibleContent>
+                  </Collapsible>
 
-                      <div>
-                        <Label htmlFor="redirection-strategies">Successful Redirection Strategies</Label>
-                        <Textarea
-                          id="redirection-strategies"
-                          placeholder="Document specific redirection techniques that work, de-escalation methods, calming strategies..."
-                          rows={3}
-                        />
-                      </div>
+                  {/* CORRECTING Assessment */}
+                  <Collapsible open={expandedSections["correcting"]} onOpenChange={() => toggleSection("correcting")}>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" className="w-full justify-between p-4 h-auto">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 bg-orange-500 rounded-full" />
+                          <span className="font-semibold">CORRECTING Assessment</span>
+                          <Badge variant="outline">Required</Badge>
+                        </div>
+                        {expandedSections["correcting"] ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="px-4 pb-4">
+                      <div className="space-y-4 mt-4">
+                        <div>
+                          <Label>Current Survival Behaviors with Frequency</Label>
+                          <div className="space-y-3 mt-2">
+                            {[
+                              "Fight responses (aggression, defiance)",
+                              "Flight responses (running away, avoidance)",
+                              "Freeze responses (shutting down, dissociation)",
+                              "Fawn responses (people-pleasing, compliance)",
+                              "Lying/deception",
+                              "Stealing",
+                              "Hoarding (food, items)",
+                              "Control behaviors",
+                              "Self-harm behaviors",
+                              "Hypervigilance",
+                            ].map((behavior) => (
+                              <div key={behavior} className="grid grid-cols-1 md:grid-cols-3 gap-2 p-2 border rounded">
+                                <div className="flex items-center space-x-2">
+                                  <Checkbox id={behavior} />
+                                  <Label htmlFor={behavior} className="text-sm">
+                                    {behavior}
+                                  </Label>
+                                </div>
+                                <div>
+                                  <Select>
+                                    <SelectTrigger className="h-8">
+                                      <SelectValue placeholder="Frequency" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="daily">Daily</SelectItem>
+                                      <SelectItem value="weekly">Weekly</SelectItem>
+                                      <SelectItem value="monthly">Monthly</SelectItem>
+                                      <SelectItem value="rarely">Rarely</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div>
+                                  <Input placeholder="Triggers/context" className="h-8 text-sm" />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
 
-                      <div>
-                        <Label>
-                          Response to Limits (1-5 scale) <span className="text-red-500">*</span>
-                        </Label>
-                        <RadioGroup className="flex gap-4 mt-2">
-                          {[1, 2, 3, 4, 5].map((num) => (
-                            <div key={num} className="flex items-center space-x-2">
-                              <RadioGroupItem value={num.toString()} id={`limits-${num}`} />
-                              <Label htmlFor={`limits-${num}`}>{num}</Label>
-                            </div>
-                          ))}
-                        </RadioGroup>
-                        <div className="text-sm text-gray-500 mt-1 space-y-1">
-                          <p>
-                            <strong>1:</strong> Extreme resistance - meltdowns, aggression, complete refusal
-                          </p>
-                          <p>
-                            <strong>3:</strong> Moderate resistance - argues, negotiates, eventual compliance
-                          </p>
-                          <p>
-                            <strong>5:</strong> Accepts limits well - understands and follows boundaries
-                          </p>
+                        <div>
+                          <Label htmlFor="redirection-strategies">Successful Redirection Strategies</Label>
+                          <Textarea
+                            id="redirection-strategies"
+                            placeholder="Document specific redirection techniques that work, de-escalation methods, calming strategies..."
+                            rows={3}
+                          />
+                        </div>
+
+                        <div>
+                          <Label>
+                            Response to Limits (1-5 scale) <span className="text-red-500">*</span>
+                          </Label>
+                          <RadioGroup className="flex gap-4 mt-2">
+                            {[1, 2, 3, 4, 5].map((num) => (
+                              <div key={num} className="flex items-center space-x-2">
+                                <RadioGroupItem value={num.toString()} id={`limits-${num}`} />
+                                <Label htmlFor={`limits-${num}`}>{num}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                          <div className="text-sm text-gray-500 mt-1 space-y-1">
+                            <p>
+                              <strong>1:</strong> Extreme resistance - meltdowns, aggression, complete refusal
+                            </p>
+                            <p>
+                              <strong>3:</strong> Moderate resistance - argues, negotiates, eventual compliance
+                            </p>
+                            <p>
+                              <strong>5:</strong> Accepts limits well - understands and follows boundaries
+                            </p>
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="teaching-moments">Teaching Moments Narrative</Label>
+                          <Textarea
+                            id="teaching-moments"
+                            placeholder="Describe opportunities for teaching life skills, emotional regulation, problem-solving. What situations provide the best learning opportunities?"
+                            rows={3}
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Skill-Building Opportunities</Label>
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            {[
+                              "Emotional regulation skills",
+                              "Problem-solving skills",
+                              "Communication skills",
+                              "Social skills",
+                              "Conflict resolution",
+                              "Self-advocacy skills",
+                              "Coping strategies",
+                              "Anger management",
+                              "Impulse control",
+                              "Decision-making skills",
+                              "Responsibility taking",
+                              "Empathy development",
+                            ].map((skill) => (
+                              <div key={skill} className="flex items-center space-x-2">
+                                <Checkbox id={skill} />
+                                <Label htmlFor={skill}>{skill}</Label>
+                              </div>
+                            ))}
+                          </div>
+                          <Textarea
+                            className="mt-2"
+                            placeholder="Describe specific skill-building goals and strategies for this child..."
+                            rows={2}
+                          />
                         </div>
                       </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
-                      <div>
-                        <Label htmlFor="teaching-moments">Teaching Moments Narrative</Label>
-                        <Textarea
-                          id="teaching-moments"
-                          placeholder="Describe opportunities for teaching life skills, emotional regulation, problem-solving. What situations provide the best learning opportunities?"
-                          rows={3}
-                        />
-                      </div>
-
-                      <div>
-                        <Label>Skill-Building Opportunities</Label>
-                        <div className="grid grid-cols-2 gap-2 mt-2">
-                          {[
-                            "Emotional regulation skills",
-                            "Problem-solving skills",
-                            "Communication skills",
-                            "Social skills",
-                            "Conflict resolution",
-                            "Self-advocacy skills",
-                            "Coping strategies",
-                            "Anger management",
-                            "Impulse control",
-                            "Decision-making skills",
-                            "Responsibility taking",
-                            "Empathy development",
-                          ].map((skill) => (
-                            <div key={skill} className="flex items-center space-x-2">
-                              <Checkbox id={skill} />
-                              <Label htmlFor={skill}>{skill}</Label>
-                            </div>
-                          ))}
-                        </div>
-                        <Textarea
-                          className="mt-2"
-                          placeholder="Describe specific skill-building goals and strategies for this child..."
-                          rows={2}
-                        />
-                      </div>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Package-Specific Tab */}
-        {childData.servicePackage !== "Basic" && (
-          <TabsContent value="package">
+          {childData.servicePackage !== "Basic" && activeSection === "package" && (
             <div className="space-y-6">
               {childData.servicePackage === "Mental & Behavioral Health" && (
                 <Card>
@@ -2075,375 +2131,460 @@ export default function AdmissionAssessmentPage() {
                 </Card>
               )}
             </div>
-          </TabsContent>
-        )}
+          )}
 
-        {/* Special Populations Tab */}
-        <TabsContent value="special">
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Special Populations Considerations</CardTitle>
-                <CardDescription>Additional assessments based on child characteristics</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Age 14+ Section */}
-                {childData.age >= 14 && (
-                  <div className="p-4 border-l-4 border-blue-500 bg-blue-50">
-                    <h4 className="font-semibold text-blue-800 mb-4">Age 14+ Considerations</h4>
-                    <div className="space-y-3">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox id="casey-life-skills" />
-                        <Label htmlFor="casey-life-skills">Casey Life Skills Assessment completed</Label>
-                      </div>
-                      <div>
-                        <Label htmlFor="life-skills-score">Assessment Score and Areas of Need</Label>
-                        <Textarea id="life-skills-score" placeholder="Document scores and identified needs..." />
-                      </div>
-                      <div>
-                        <Label htmlFor="independent-living-goals">Independent Living Goals</Label>
-                        <Textarea
-                          id="independent-living-goals"
-                          placeholder="List specific goals for independent living..."
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="transition-planning">Transition Planning Needs</Label>
-                        <Textarea id="transition-planning" placeholder="Document transition planning requirements..." />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Kinship Placement Section */}
-                {childData.isKinship && (
-                  <div className="p-4 border-l-4 border-green-500 bg-green-50">
-                    <h4 className="font-semibold text-green-800 mb-4">Kinship Placement Considerations</h4>
-                    <div className="space-y-3">
-                      <div>
-                        <Label htmlFor="prior-relationship">Prior Relationship Narrative</Label>
-                        <Textarea
-                          id="prior-relationship"
-                          placeholder="Describe the child's prior relationship with kinship caregiver..."
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="family-dynamics">Family Dynamics Evaluation</Label>
-                        <Textarea id="family-dynamics" placeholder="Assess family dynamics and relationships..." />
-                      </div>
-                      <div>
-                        <Label htmlFor="support-needs">Support Needs List</Label>
-                        <Textarea
-                          id="support-needs"
-                          placeholder="Identify specific support needs for kinship placement..."
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="relative-strengths">Relative Strengths</Label>
-                        <Textarea id="relative-strengths" placeholder="Document strengths of kinship caregiver..." />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Multiple Placements Section */}
-                {childData.placementHistoryCount >= 3 && (
-                  <div className="p-4 border-l-4 border-orange-500 bg-orange-50">
-                    <h4 className="font-semibold text-orange-800 mb-4">Multiple Placements (3+) Considerations</h4>
-                    <div className="space-y-3">
-                      <div>
-                        <Label htmlFor="placement-impact">Placement History Impact Assessment</Label>
-                        <Textarea id="placement-impact" placeholder="Assess impact of multiple placement changes..." />
-                      </div>
-                      <div>
-                        <Label htmlFor="trust-building-strategies">Trust-Building Strategies</Label>
-                        <Textarea
-                          id="trust-building-strategies"
-                          placeholder="Document specific trust-building approaches..."
-                        />
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox id="stability-plan" />
-                        <Label htmlFor="stability-plan">Stability plan developed</Label>
-                      </div>
-                      <div>
-                        <Label htmlFor="successful-strategies">Previous Successful Strategies</Label>
-                        <Textarea
-                          id="successful-strategies"
-                          placeholder="Document what has worked in previous placements..."
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Show message if no special populations apply */}
-                {childData.age < 14 && !childData.isKinship && childData.placementHistoryCount < 3 && (
-                  <div className="text-center py-8 text-gray-500">
-                    <p>No special population considerations apply to this child based on current data.</p>
-                    <p className="text-sm mt-2">
-                      This section will populate if the child meets special population criteria.
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Documents Tab */}
-        <TabsContent value="documents">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Upload className="h-5 w-5" />
-                Document Management
-              </CardTitle>
-              <CardDescription>Upload and organize all assessment-related documents</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Document Upload Area */}
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Upload Documents</h3>
-                <p className="text-gray-500 mb-4">Drag and drop files here, or click to browse</p>
-                <Button variant="outline">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Choose Files
-                </Button>
-              </div>
-
-              {/* Document Categories */}
-              <div>
-                <h4 className="font-semibold mb-4">Document Categories</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {[
-                    { category: "Assessment Forms", count: 3, color: "bg-blue-100 text-blue-800" },
-                    { category: "Medical Records", count: 2, color: "bg-green-100 text-green-800" },
-                    { category: "Educational Records", count: 1, color: "bg-purple-100 text-purple-800" },
-                    { category: "Previous Placements", count: 4, color: "bg-orange-100 text-orange-800" },
-                    { category: "Legal Documents", count: 2, color: "bg-red-100 text-red-800" },
-                    { category: "Other", count: 0, color: "bg-gray-100 text-gray-800" },
-                  ].map((cat) => (
-                    <div key={cat.category} className="p-4 border rounded-lg">
-                      <div className="flex justify-between items-center mb-2">
-                        <h5 className="font-medium">{cat.category}</h5>
-                        <Badge className={cat.color}>{cat.count}</Badge>
-                      </div>
-                      <Button variant="outline" size="sm" className="w-full bg-transparent">
-                        View Files
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Missing Documents Alert */}
-              <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Missing Required Documents</AlertTitle>
-                <AlertDescription>
-                  The following required documents are still needed:
-                  <ul className="list-disc list-inside mt-2">
-                    <li>DFPS removal affidavit</li>
-                    <li>Previous placement summary</li>
-                    <li>Current medical records</li>
-                  </ul>
-                </AlertDescription>
-              </Alert>
-
-              {/* Uploaded Documents List */}
-              <div>
-                <h4 className="font-semibold mb-4">Recently Uploaded</h4>
-                <div className="space-y-2">
-                  {[
-                    { name: "Medical_History_Jamie_Doe.pdf", size: "2.3 MB", date: "2 hours ago" },
-                    { name: "Educational_Records_2024.pdf", size: "1.8 MB", date: "1 day ago" },
-                    { name: "CANS_Assessment_Form.pdf", size: "856 KB", date: "2 days ago" },
-                  ].map((doc) => (
-                    <div key={doc.name} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <FileText className="h-5 w-5 text-gray-500" />
+          {activeSection === "special" && (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Special Populations Considerations</CardTitle>
+                  <CardDescription>Additional assessments based on child characteristics</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Age 14+ Section */}
+                  {childData.age >= 14 && (
+                    <div className="p-4 border-l-4 border-blue-500 bg-blue-50">
+                      <h4 className="font-semibold text-blue-800 mb-4">Age 14+ Considerations</h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="casey-life-skills" />
+                          <Label htmlFor="casey-life-skills">Casey Life Skills Assessment completed</Label>
+                        </div>
                         <div>
-                          <p className="font-medium">{doc.name}</p>
-                          <p className="text-sm text-gray-500">
-                            {doc.size} • {doc.date}
-                          </p>
+                          <Label htmlFor="life-skills-score">Assessment Score and Areas of Need</Label>
+                          <Textarea id="life-skills-score" placeholder="Document scores and identified needs..." />
+                        </div>
+                        <div>
+                          <Label htmlFor="independent-living-goals">Independent Living Goals</Label>
+                          <Textarea
+                            id="independent-living-goals"
+                            placeholder="List specific goals for independent living..."
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="transition-planning">Transition Planning Needs</Label>
+                          <Textarea
+                            id="transition-planning"
+                            placeholder="Document transition planning requirements..."
+                          />
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
-                          <Download className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          View
-                        </Button>
-                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                  )}
 
-        {/* Review & Submit Tab */}
-        <TabsContent value="review">
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Review & Submit Assessment</CardTitle>
-                <CardDescription>Final review and submission for supervisor approval</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <h4 className="font-semibold mb-4">Pre-submission Checklist</h4>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle2 className="h-5 w-5 text-green-600" />
-                        <span>All required sections complete</span>
+                  {/* Kinship Placement Section */}
+                  {childData.isKinship && (
+                    <div className="p-4 border-l-4 border-green-500 bg-green-50">
+                      <h4 className="font-semibold text-green-800 mb-4">Kinship Placement Considerations</h4>
+                      <div className="space-y-3">
+                        <div>
+                          <Label htmlFor="prior-relationship">Prior Relationship Narrative</Label>
+                          <Textarea
+                            id="prior-relationship"
+                            placeholder="Describe the child's prior relationship with kinship caregiver..."
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="family-dynamics">Family Dynamics Evaluation</Label>
+                          <Textarea id="family-dynamics" placeholder="Assess family dynamics and relationships..." />
+                        </div>
+                        <div>
+                          <Label htmlFor="support-needs">Support Needs List</Label>
+                          <Textarea
+                            id="support-needs"
+                            placeholder="Identify specific support needs for kinship placement..."
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="relative-strengths">Relative Strengths</Label>
+                          <Textarea id="relative-strengths" placeholder="Document strengths of kinship caregiver..." />
+                        </div>
                       </div>
-                      <Badge variant="secondary" className="bg-green-100 text-green-800">
-                        Complete
-                      </Badge>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-                      <div className="flex items-center space-x-2">
-                        <Clock className="h-5 w-5 text-yellow-600" />
-                        <span>Timeline requirements met</span>
-                      </div>
-                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                        In Progress
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle2 className="h-5 w-5 text-green-600" />
-                        <span>Supporting documents uploaded</span>
-                      </div>
-                      <Badge variant="secondary" className="bg-green-100 text-green-800">
-                        Complete
-                      </Badge>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="foster-input" />
-                      <Label htmlFor="foster-input">Foster parent input included</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="youth-voice" />
-                      <Label htmlFor="youth-voice">Youth voice included (if appropriate)</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="package-requirements" />
-                      <Label htmlFor="package-requirements">Package-specific requirements complete</Label>
-                    </div>
-                  </div>
-                </div>
+                  )}
 
-                <Separator />
-
-                <div>
-                  <h4 className="font-semibold mb-4">Assessment Summary</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                    <div className="text-center p-4 bg-blue-50 rounded-lg">
-                      <p className="text-2xl font-bold text-blue-600">85%</p>
-                      <p className="text-sm text-gray-600">Core Assessment</p>
-                    </div>
-                    <div className="text-center p-4 bg-purple-50 rounded-lg">
-                      <p className="text-2xl font-bold text-purple-600">90%</p>
-                      <p className="text-sm text-gray-600">TBRI® Components</p>
-                    </div>
-                    <div className="text-center p-4 bg-green-50 rounded-lg">
-                      <p className="text-2xl font-bold text-green-600">75%</p>
-                      <p className="text-sm text-gray-600">Package-Specific</p>
-                    </div>
-                    <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                      <p className="text-2xl font-bold text-yellow-600">100%</p>
-                      <p className="text-sm text-gray-600">Special Populations</p>
-                    </div>
-                  </div>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-2">
-                      <strong>Assessment Summary Report:</strong> Auto-generated report will include all completed
-                      sections, identified needs, recommendations, and required follow-up actions.
-                    </p>
-                    <Button variant="outline" size="sm">
-                      <FileText className="h-4 w-4 mr-2" />
-                      Preview Summary Report
-                    </Button>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div>
-                  <h4 className="font-semibold mb-4">Supervisor Review Section</h4>
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="review-notes">Review Notes for Supervisor</Label>
-                      <Textarea
-                        id="review-notes"
-                        placeholder="Add any notes, concerns, or questions for supervisor review..."
-                        className="mt-1"
-                        rows={4}
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="priority-concerns">Priority Concerns</Label>
-                        <Textarea
-                          id="priority-concerns"
-                          placeholder="Highlight any urgent concerns requiring immediate attention..."
-                          rows={3}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="recommended-actions">Recommended Next Actions</Label>
-                        <Textarea
-                          id="recommended-actions"
-                          placeholder="Suggest specific next steps or interventions..."
-                          rows={3}
-                        />
+                  {/* Multiple Placements Section */}
+                  {childData.placementHistoryCount >= 3 && (
+                    <div className="p-4 border-l-4 border-orange-500 bg-orange-50">
+                      <h4 className="font-semibold text-orange-800 mb-4">Multiple Placements (3+) Considerations</h4>
+                      <div className="space-y-3">
+                        <div>
+                          <Label htmlFor="placement-impact">Placement History Impact Assessment</Label>
+                          <Textarea
+                            id="placement-impact"
+                            placeholder="Assess impact of multiple placement changes..."
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="trust-building-strategies">Trust-Building Strategies</Label>
+                          <Textarea
+                            id="trust-building-strategies"
+                            placeholder="Document specific trust-building approaches..."
+                          />
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="stability-plan" />
+                          <Label htmlFor="stability-plan">Stability plan developed</Label>
+                        </div>
+                        <div>
+                          <Label htmlFor="successful-strategies">Previous Successful Strategies</Label>
+                          <Textarea
+                            id="successful-strategies"
+                            placeholder="Document what has worked in previous placements..."
+                          />
+                        </div>
                       </div>
                     </div>
-                    <div className="p-4 bg-blue-50 rounded-lg">
-                      <h5 className="font-medium text-blue-800 mb-2">Supervisor Approval Status</h5>
-                      <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 bg-yellow-500 rounded-full"></div>
-                        <span className="text-sm">Pending Review</span>
-                      </div>
-                      <p className="text-sm text-blue-700 mt-2">
-                        Assessment will be routed to supervisor upon submission for final approval.
+                  )}
+
+                  {/* Show message if no special populations apply */}
+                  {childData.age < 14 && !childData.isKinship && childData.placementHistoryCount < 3 && (
+                    <div className="text-center py-8 text-gray-500">
+                      <p>No special population considerations apply to this child based on current data.</p>
+                      <p className="text-sm mt-2">
+                        This section will populate if the child meets special population criteria.
                       </p>
                     </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {activeSection === "documents" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Upload className="h-5 w-5" />
+                  Document Management
+                </CardTitle>
+                <CardDescription>Upload and organize all assessment-related documents</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Document Upload Area */}
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                  <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Upload Documents</h3>
+                  <p className="text-gray-500 mb-4">Drag and drop files here, or click to browse</p>
+                  <Button variant="outline">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Choose Files
+                  </Button>
+                </div>
+
+                {/* Document Categories */}
+                <div>
+                  <h4 className="font-semibold mb-4">Document Categories</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[
+                      { category: "Assessment Forms", count: 3, color: "bg-blue-100 text-blue-800" },
+                      { category: "Medical Records", count: 2, color: "bg-green-100 text-green-800" },
+                      { category: "Educational Records", count: 1, color: "bg-purple-100 text-purple-800" },
+                      { category: "Previous Placements", count: 4, color: "bg-orange-100 text-orange-800" },
+                      { category: "Legal Documents", count: 2, color: "bg-red-100 text-red-800" },
+                      { category: "Other", count: 0, color: "bg-gray-100 text-gray-800" },
+                    ].map((cat) => (
+                      <div key={cat.category} className="p-4 border rounded-lg">
+                        <div className="flex justify-between items-center mb-2">
+                          <h5 className="font-medium">{cat.category}</h5>
+                          <Badge className={cat.color}>{cat.count}</Badge>
+                        </div>
+                        <Button variant="outline" size="sm" className="w-full bg-transparent">
+                          View Files
+                        </Button>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                <Separator />
+                {/* Missing Documents Alert */}
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Missing Required Documents</AlertTitle>
+                  <AlertDescription>
+                    The following required documents are still needed:
+                    <ul className="list-disc list-inside mt-2">
+                      <li>DFPS removal affidavit</li>
+                      <li>Previous placement summary</li>
+                      <li>Current medical records</li>
+                    </ul>
+                  </AlertDescription>
+                </Alert>
 
+                {/* Uploaded Documents List */}
                 <div>
-                  <h4 className="font-semibold mb-4">Missing Items Alert</h4>
+                  <h4 className="font-semibold mb-4">Recently Uploaded</h4>
                   <div className="space-y-2">
-                    <Alert variant="destructive">
-                      <AlertTriangle className="h-4 w-4" />
-                      <AlertTitle>Incomplete Sections</AlertTitle>
-                      <AlertDescription>
-                        The following sections need completion before submission:
-                        <ul className="list-disc list-inside mt-2">
-                          <li>Social Functioning Assessment (Core Assessment)</li>
-                          <li>Crisis Planning Documentation (Package-Specific)</li>
-                          <li>Foster Parent Input Form</li>
-                        </ul>
-                      </AlertDescription>
-                    </Alert>
+                    {[
+                      { name: "Medical_History_Jamie_Doe.pdf", size: "2.3 MB", date: "2 hours ago" },
+                      { name: "Educational_Records_2024.pdf", size: "1.8 MB", date: "1 day ago" },
+                      { name: "CANS_Assessment_Form.pdf", size: "856 KB", date: "2 days ago" },
+                    ].map((doc) => (
+                      <div key={doc.name} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <FileText className="h-5 w-5 text-gray-500" />
+                          <div>
+                            <p className="font-medium">{doc.name}</p>
+                            <p className="text-sm text-gray-500">
+                              {doc.size} • {doc.date}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm">
+                            <Download className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            View
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
+          )}
+
+          {activeSection === "review" && (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Review & Submit Assessment</CardTitle>
+                  <CardDescription>Final review and submission for supervisor approval</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div>
+                    <h4 className="font-semibold mb-4">Pre-submission Checklist</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                        <div className="flex items-center space-x-2">
+                          <CheckCircle2 className="h-5 w-5 text-green-600" />
+                          <span>All required sections complete</span>
+                        </div>
+                        <Badge variant="secondary" className="bg-green-100 text-green-800">
+                          Complete
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                        <div className="flex items-center space-x-2">
+                          <Clock className="h-5 w-5 text-yellow-600" />
+                          <span>Timeline requirements met</span>
+                        </div>
+                        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                          In Progress
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                        <div className="flex items-center space-x-2">
+                          <CheckCircle2 className="h-5 w-5 text-green-600" />
+                          <span>Supporting documents uploaded</span>
+                        </div>
+                        <Badge variant="secondary" className="bg-green-100 text-green-800">
+                          Complete
+                        </Badge>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="foster-input" />
+                        <Label htmlFor="foster-input">Foster parent input included</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="youth-voice" />
+                        <Label htmlFor="youth-voice">Youth voice included (if appropriate)</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="package-requirements" />
+                        <Label htmlFor="package-requirements">Package-specific requirements complete</Label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <h4 className="font-semibold mb-4">Assessment Summary</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                      <div className="text-center p-4 bg-blue-50 rounded-lg">
+                        <p className="text-2xl font-bold text-blue-600">85%</p>
+                        <p className="text-sm text-gray-600">Core Assessment</p>
+                      </div>
+                      <div className="text-center p-4 bg-purple-50 rounded-lg">
+                        <p className="text-2xl font-bold text-purple-600">90%</p>
+                        <p className="text-sm text-gray-600">TBRI® Components</p>
+                      </div>
+                      <div className="text-center p-4 bg-green-50 rounded-lg">
+                        <p className="text-2xl font-bold text-green-600">75%</p>
+                        <p className="text-sm text-gray-600">Package-Specific</p>
+                      </div>
+                      <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                        <p className="text-2xl font-bold text-yellow-600">100%</p>
+                        <p className="text-sm text-gray-600">Special Populations</p>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-2">
+                        <strong>Assessment Summary Report:</strong> Auto-generated report will include all completed
+                        sections, identified needs, recommendations, and required follow-up actions.
+                      </p>
+                      <Button variant="outline" size="sm">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Preview Summary Report
+                      </Button>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <h4 className="font-semibold mb-4">Supervisor Review Section</h4>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="review-notes">Review Notes for Supervisor</Label>
+                        <Textarea
+                          id="review-notes"
+                          placeholder="Add any notes, concerns, or questions for supervisor review..."
+                          className="mt-1"
+                          rows={4}
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="priority-concerns">Priority Concerns</Label>
+                          <Textarea
+                            id="priority-concerns"
+                            placeholder="Highlight any urgent concerns requiring immediate attention..."
+                            rows={3}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="recommended-actions">Recommended Next Actions</Label>
+                          <Textarea
+                            id="recommended-actions"
+                            placeholder="Suggest specific next steps or interventions..."
+                            rows={3}
+                          />
+                        </div>
+                      </div>
+                      <div className="p-4 bg-blue-50 rounded-lg">
+                        <h5 className="font-medium text-blue-800 mb-2">Supervisor Approval Status</h5>
+                        <div className="flex items-center gap-2">
+                          <div className="h-3 w-3 bg-yellow-500 rounded-full"></div>
+                          <span className="text-sm">Pending Review</span>
+                        </div>
+                        <p className="text-sm text-blue-700 mt-2">
+                          Assessment will be routed to supervisor upon submission for final approval.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <h4 className="font-semibold mb-4">Missing Items Alert</h4>
+                    <div className="space-y-2">
+                      <Alert variant="destructive">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle>Incomplete Sections</AlertTitle>
+                        <AlertDescription>
+                          The following sections need completion before submission:
+                          <ul className="list-disc list-inside mt-2">
+                            <li>Social Functioning Assessment (Core Assessment)</li>
+                            <li>Crisis Planning Documentation (Package-Specific)</li>
+                            <li>Foster Parent Input Form</li>
+                          </ul>
+                        </AlertDescription>
+                      </Alert>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Custom Sections */}
+          {customSections.map(
+            (section) =>
+              activeSection === section.id && (
+                <Card key={section.id}>
+                  <CardHeader>
+                    <CardTitle>{section.title}</CardTitle>
+                    <CardDescription>Custom assessment section</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <Textarea
+                        placeholder="Add your assessment content here..."
+                        value={section.content || ""}
+                        onChange={(e) => {
+                          setCustomSections((prev) =>
+                            prev.map((s) => (s.id === section.id ? { ...s, content: e.target.value } : s)),
+                          )
+                        }}
+                        rows={10}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              ),
+          )}
+
+          {/* Add Section Modal */}
+          {showAddSection && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <Card className="w-96">
+                <CardHeader>
+                  <CardTitle>Add New Section</CardTitle>
+                  <CardDescription>Create a custom assessment section</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="section-title">Section Title</Label>
+                    <Input
+                      id="section-title"
+                      placeholder="Enter section title..."
+                      value={newSectionTitle}
+                      onChange={(e) => setNewSectionTitle(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => {
+                        if (newSectionTitle.trim()) {
+                          const newSection = {
+                            id: `custom-${Date.now()}`,
+                            title: newSectionTitle,
+                            icon: FileText,
+                            progress: 0,
+                            content: "",
+                          }
+                          setCustomSections((prev) => [...prev, newSection])
+                          setActiveSection(newSection.id)
+                          setNewSectionTitle("")
+                          setShowAddSection(false)
+                        }
+                      }}
+                      className="flex-1"
+                    >
+                      Add Section
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowAddSection(false)
+                        setNewSectionTitle("")
+                      }}
+                      className="flex-1 bg-transparent"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Bottom Action Buttons */}
       <div className="mt-6 flex flex-wrap gap-4 justify-end">
