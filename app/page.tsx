@@ -86,6 +86,18 @@ export default function FormDirectory() {
     },
   ]
 
+  const servicePlanningForms = [
+    {
+      id: "enhanced-continued-stay",
+      title: "Enhanced Continued Stay Confirmation (Draft)",
+      description:
+        "90-day confirmation form for Mental & Behavioral Health and IDD/Autism service packages per T3C Blueprint requirements",
+      icon: FileCheck,
+      category: "Service Planning",
+      status: "draft",
+    },
+  ]
+
   const downloadForm = (formId: string) => {
     // Implement your download logic here
     alert(`Downloading form: ${formId}`)
@@ -238,9 +250,48 @@ export default function FormDirectory() {
           </div>
         </div>
 
+        {/* Service Planning Forms Section */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <FileCheck className="h-6 w-6" />
+            Service Planning
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {servicePlanningForms.map((form) => (
+              <Card key={form.id} className="hover:shadow-lg transition-shadow duration-200">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <form.icon className="h-8 w-8 text-blue-600 mb-2" />
+                    <Badge variant="secondary" className="bg-amber-100 text-amber-800">
+                      {form.status}
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-lg">{form.title}</CardTitle>
+                  <CardDescription className="text-sm">{form.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <Badge variant="outline">{form.category}</Badge>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => downloadForm(form.id)}>
+                        <Download className="h-4 w-4" />
+                      </Button>
+                      <Link href={`/forms/${form.id}`}>
+                        <Button variant="outline" size="sm">
+                          View Form
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
         {/* Footer */}
         <div className="text-center text-gray-500 text-sm">
-          <p>© 2024 Refuge House Form Directory. All forms are draft versions for evaluation purposes.</p>
+          <p>© 2025 Refuge House Form Directory. All forms are draft versions for evaluation purposes.</p>
         </div>
       </div>
     </div>

@@ -1252,7 +1252,6 @@ export default function AdmissionAssessmentPage() {
                             rows={2}
                           />
                         </div>
-
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="sleep-patterns">
@@ -1289,7 +1288,6 @@ export default function AdmissionAssessmentPage() {
                               />
                             </div>
                           </div>
-
                           <div>
                             <Label htmlFor="eating-patterns">
                               Eating Patterns <span className="text-red-500">*</span>
@@ -1321,7 +1319,6 @@ export default function AdmissionAssessmentPage() {
                             </div>
                           </div>
                         </div>
-
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <Label>
@@ -1340,7 +1337,6 @@ export default function AdmissionAssessmentPage() {
                               </SelectContent>
                             </Select>
                           </div>
-
                           <div>
                             <Label htmlFor="physical-activity">Physical Activity Needs</Label>
                             <Textarea
@@ -1351,7 +1347,6 @@ export default function AdmissionAssessmentPage() {
                             />
                           </div>
                         </div>
-
                         <div>
                           <Label>Environmental Preferences</Label>
                           <div className="grid grid-cols-2 gap-2 mt-2">
@@ -1440,7 +1435,6 @@ export default function AdmissionAssessmentPage() {
                             ))}
                           </div>
                         </div>
-
                         <div>
                           <Label htmlFor="redirection-strategies">Successful Redirection Strategies</Label>
                           <Textarea
@@ -1449,7 +1443,6 @@ export default function AdmissionAssessmentPage() {
                             rows={3}
                           />
                         </div>
-
                         <div>
                           <Label>
                             Response to Limits (1-5 scale) <span className="text-red-500">*</span>
@@ -1474,7 +1467,6 @@ export default function AdmissionAssessmentPage() {
                             </p>
                           </div>
                         </div>
-
                         <div>
                           <Label htmlFor="teaching-moments">Teaching Moments Narrative</Label>
                           <Textarea
@@ -1483,7 +1475,6 @@ export default function AdmissionAssessmentPage() {
                             rows={3}
                           />
                         </div>
-
                         <div>
                           <Label>Skill-Building Opportunities</Label>
                           <div className="grid grid-cols-2 gap-2 mt-2">
@@ -1544,7 +1535,6 @@ export default function AdmissionAssessmentPage() {
                           <Checkbox id="cans-review" />
                           <Label htmlFor="cans-review">CANS 3.0 Assessment reviewed</Label>
                         </div>
-
                         <div>
                           <Label htmlFor="dsm-diagnoses">DSM-5 Diagnoses with Dates</Label>
                           <div className="space-y-2 mt-1">
@@ -1559,7 +1549,6 @@ export default function AdmissionAssessmentPage() {
                             </Button>
                           </div>
                         </div>
-
                         <div>
                           <Label htmlFor="current-medications">Current Medications Detailed List</Label>
                           <div className="space-y-2 mt-1">
@@ -1576,7 +1565,6 @@ export default function AdmissionAssessmentPage() {
                             </Button>
                           </div>
                         </div>
-
                         <div>
                           <Label htmlFor="suicide-screening">Suicide/Self-Harm Screening Tool and Results</Label>
                           <div className="space-y-3 mt-1">
@@ -1605,7 +1593,6 @@ export default function AdmissionAssessmentPage() {
                             <Textarea placeholder="Detailed screening results and notes..." rows={3} />
                           </div>
                         </div>
-
                         <div>
                           <Label htmlFor="previous-hospitalizations">Previous Hospitalizations List</Label>
                           <div className="space-y-2 mt-1">
@@ -1621,7 +1608,6 @@ export default function AdmissionAssessmentPage() {
                             </Button>
                           </div>
                         </div>
-
                         <div>
                           <Label htmlFor="therapy-history">Therapy History</Label>
                           <div className="space-y-2 mt-1">
@@ -1655,7 +1641,6 @@ export default function AdmissionAssessmentPage() {
                           <Checkbox id="trauma-interview" />
                           <Label htmlFor="trauma-interview">Trauma-focused interview documented</Label>
                         </div>
-
                         <div>
                           <Label htmlFor="treatment-recommendations">Treatment Recommendations Form</Label>
                           <div className="space-y-3 mt-1">
@@ -1664,7 +1649,6 @@ export default function AdmissionAssessmentPage() {
                             <Textarea placeholder="Contraindications or concerns..." rows={2} />
                           </div>
                         </div>
-
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <Label>Therapy Frequency Recommendation</Label>
@@ -1702,7 +1686,6 @@ export default function AdmissionAssessmentPage() {
                           <Checkbox id="crisis-plan" />
                           <Label htmlFor="crisis-plan">Crisis response plan developed</Label>
                         </div>
-
                         <div>
                           <Label htmlFor="warning-signs">Early Warning Signs List</Label>
                           <div className="space-y-2 mt-1">
@@ -1711,7 +1694,6 @@ export default function AdmissionAssessmentPage() {
                             <Textarea placeholder="Physical warning signs..." rows={2} />
                           </div>
                         </div>
-
                         <div>
                           <Label htmlFor="deescalation">De-escalation Strategies List</Label>
                           <div className="space-y-2 mt-1">
@@ -1720,7 +1702,6 @@ export default function AdmissionAssessmentPage() {
                             <Textarea placeholder="Calming activities and interventions..." rows={2} />
                           </div>
                         </div>
-
                         <div>
                           <Label htmlFor="contact-protocols">24/7 Contact Protocols</Label>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
@@ -1742,7 +1723,6 @@ export default function AdmissionAssessmentPage() {
                             </div>
                           </div>
                         </div>
-
                         <div className="flex items-center space-x-2">
                           <Checkbox id="foster-trained" />
                           <Label htmlFor="foster-trained">Foster family trained on crisis protocols</Label>
@@ -1781,7 +1761,6 @@ export default function AdmissionAssessmentPage() {
                             </Button>
                           </div>
                         </div>
-
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="iq-scores">IQ/Adaptive Functioning Scores</Label>
@@ -1801,7 +1780,6 @@ export default function AdmissionAssessmentPage() {
                             />
                           </div>
                         </div>
-
                         <div>
                           <Label htmlFor="seizure-protocol">Seizure Protocol Upload</Label>
                           <div className="space-y-2 mt-1">
@@ -1815,7 +1793,6 @@ export default function AdmissionAssessmentPage() {
                             />
                           </div>
                         </div>
-
                         <div>
                           <Label>Equipment Needs Checklist</Label>
                           <div className="grid grid-cols-2 gap-2 mt-2">
@@ -1864,7 +1841,6 @@ export default function AdmissionAssessmentPage() {
                             </SelectContent>
                           </Select>
                         </div>
-
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="receptive-language">Receptive Language Levels</Label>
@@ -1903,7 +1879,6 @@ export default function AdmissionAssessmentPage() {
                             </div>
                           </div>
                         </div>
-
                         <div>
                           <Label>AAC Needs (Yes/No with details)</Label>
                           <RadioGroup className="mt-2">
@@ -1922,7 +1897,6 @@ export default function AdmissionAssessmentPage() {
                             rows={3}
                           />
                         </div>
-
                         <div>
                           <Label>Visual Supports Checklist</Label>
                           <div className="grid grid-cols-2 gap-2 mt-2">
@@ -1937,7 +1911,6 @@ export default function AdmissionAssessmentPage() {
                               "Task strips",
                               "Video modeling",
                               "Visual cues",
-                              "Symbol systems",
                               "Written instructions",
                             ].map((support) => (
                               <div key={support} className="flex items-center space-x-2">
@@ -1996,7 +1969,6 @@ export default function AdmissionAssessmentPage() {
                             ))}
                           </div>
                         </div>
-
                         <div>
                           <Label>Safety Awareness Scale</Label>
                           <RadioGroup className="flex gap-4 mt-2">
@@ -2016,7 +1988,6 @@ export default function AdmissionAssessmentPage() {
                             rows={2}
                           />
                         </div>
-
                         <div>
                           <Label htmlFor="educational-iep">Educational/IEP Review Summary</Label>
                           <div className="space-y-2 mt-1">
@@ -2026,7 +1997,6 @@ export default function AdmissionAssessmentPage() {
                             <Textarea placeholder="Recommended educational supports..." rows={2} />
                           </div>
                         </div>
-
                         <div>
                           <Label htmlFor="skill-goals">Skill Goals List</Label>
                           <div className="space-y-2 mt-1">
@@ -2046,7 +2016,6 @@ export default function AdmissionAssessmentPage() {
                           <Checkbox id="sensory-profile" />
                           <Label htmlFor="sensory-profile">Sensory profile completed</Label>
                         </div>
-
                         <div>
                           <Label htmlFor="environmental-modifications">Environmental Modifications List</Label>
                           <div className="grid grid-cols-2 gap-2 mt-2">
@@ -2076,7 +2045,6 @@ export default function AdmissionAssessmentPage() {
                             rows={2}
                           />
                         </div>
-
                         <div>
                           <Label>Elopement Risk Scale with Plan</Label>
                           <RadioGroup className="flex gap-4 mt-2">
@@ -2097,7 +2065,6 @@ export default function AdmissionAssessmentPage() {
                             <Textarea placeholder="Response plan if elopement occurs..." rows={2} />
                           </div>
                         </div>
-
                         <div>
                           <Label htmlFor="routine-requirements">Routine Requirements Form</Label>
                           <div className="space-y-3 mt-1">
@@ -2346,163 +2313,7 @@ export default function AdmissionAssessmentPage() {
             </Card>
           )}
 
-          {activeSection === "review" && (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Review & Submit Assessment</CardTitle>
-                  <CardDescription>Final review and submission for supervisor approval</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div>
-                    <h4 className="font-semibold mb-4">Pre-submission Checklist</h4>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                        <div className="flex items-center space-x-2">
-                          <CheckCircle2 className="h-5 w-5 text-green-600" />
-                          <span>All required sections complete</span>
-                        </div>
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">
-                          Complete
-                        </Badge>
-                      </div>
-                      <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-                        <div className="flex items-center space-x-2">
-                          <Clock className="h-5 w-5 text-yellow-600" />
-                          <span>Timeline requirements met</span>
-                        </div>
-                        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                          In Progress
-                        </Badge>
-                      </div>
-                      <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                        <div className="flex items-center space-x-2">
-                          <CheckCircle2 className="h-5 w-5 text-green-600" />
-                          <span>Supporting documents uploaded</span>
-                        </div>
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">
-                          Complete
-                        </Badge>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox id="foster-input" />
-                        <Label htmlFor="foster-input">Foster parent input included</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox id="youth-voice" />
-                        <Label htmlFor="youth-voice">Youth voice included (if appropriate)</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox id="package-requirements" />
-                        <Label htmlFor="package-requirements">Package-specific requirements complete</Label>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <h4 className="font-semibold mb-4">Assessment Summary</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                      <div className="text-center p-4 bg-blue-50 rounded-lg">
-                        <p className="text-2xl font-bold text-blue-600">85%</p>
-                        <p className="text-sm text-gray-600">Core Assessment</p>
-                      </div>
-                      <div className="text-center p-4 bg-purple-50 rounded-lg">
-                        <p className="text-2xl font-bold text-purple-600">90%</p>
-                        <p className="text-sm text-gray-600">TBRI® Components</p>
-                      </div>
-                      <div className="text-center p-4 bg-green-50 rounded-lg">
-                        <p className="text-2xl font-bold text-green-600">75%</p>
-                        <p className="text-sm text-gray-600">Package-Specific</p>
-                      </div>
-                      <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                        <p className="text-2xl font-bold text-yellow-600">100%</p>
-                        <p className="text-sm text-gray-600">Special Populations</p>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-2">
-                        <strong>Assessment Summary Report:</strong> Auto-generated report will include all completed
-                        sections, identified needs, recommendations, and required follow-up actions.
-                      </p>
-                      <Button variant="outline" size="sm">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Preview Summary Report
-                      </Button>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <h4 className="font-semibold mb-4">Supervisor Review Section</h4>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="review-notes">Review Notes for Supervisor</Label>
-                        <Textarea
-                          id="review-notes"
-                          placeholder="Add any notes, concerns, or questions for supervisor review..."
-                          className="mt-1"
-                          rows={4}
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="priority-concerns">Priority Concerns</Label>
-                          <Textarea
-                            id="priority-concerns"
-                            placeholder="Highlight any urgent concerns requiring immediate attention..."
-                            rows={3}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="recommended-actions">Recommended Next Actions</Label>
-                          <Textarea
-                            id="recommended-actions"
-                            placeholder="Suggest specific next steps or interventions..."
-                            rows={3}
-                          />
-                        </div>
-                      </div>
-                      <div className="p-4 bg-blue-50 rounded-lg">
-                        <h5 className="font-medium text-blue-800 mb-2">Supervisor Approval Status</h5>
-                        <div className="flex items-center gap-2">
-                          <div className="h-3 w-3 bg-yellow-500 rounded-full"></div>
-                          <span className="text-sm">Pending Review</span>
-                        </div>
-                        <p className="text-sm text-blue-700 mt-2">
-                          Assessment will be routed to supervisor upon submission for final approval.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <h4 className="font-semibold mb-4">Missing Items Alert</h4>
-                    <div className="space-y-2">
-                      <Alert variant="destructive">
-                        <AlertTriangle className="h-4 w-4" />
-                        <AlertTitle>Incomplete Sections</AlertTitle>
-                        <AlertDescription>
-                          The following sections need completion before submission:
-                          <ul className="list-disc list-inside mt-2">
-                            <li>Social Functioning Assessment (Core Assessment)</li>
-                            <li>Crisis Planning Documentation (Package-Specific)</li>
-                            <li>Foster Parent Input Form</li>
-                          </ul>
-                        </AlertDescription>
-                      </Alert>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Custom Sections */}
+          {/* -------- Custom Sections -------- */}
           {customSections.map(
             (section) =>
               activeSection === section.id && (
@@ -2512,69 +2323,63 @@ export default function AdmissionAssessmentPage() {
                     <CardDescription>Custom assessment section</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      <Textarea
-                        placeholder="Add your assessment content here..."
-                        value={section.content || ""}
-                        onChange={(e) => {
-                          setCustomSections((prev) =>
-                            prev.map((s) => (s.id === section.id ? { ...s, content: e.target.value } : s)),
-                          )
-                        }}
-                        rows={10}
-                      />
-                    </div>
+                    <Textarea
+                      rows={10}
+                      value={section.content ?? ""}
+                      placeholder="Add your assessment content here…"
+                      onChange={(e) =>
+                        setCustomSections((prev) =>
+                          prev.map((s) => (s.id === section.id ? { ...s, content: e.target.value } : s)),
+                        )
+                      }
+                    />
                   </CardContent>
                 </Card>
               ),
           )}
 
-          {/* Add Section Modal */}
+          {/* -------- Add Section Modal -------- */}
           {showAddSection && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <Card className="w-96">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+              <Card className="w-full max-w-sm">
                 <CardHeader>
                   <CardTitle>Add New Section</CardTitle>
-                  <CardDescription>Create a custom assessment section</CardDescription>
+                  <CardDescription>Create a custom assessment section.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
                     <Label htmlFor="section-title">Section Title</Label>
                     <Input
                       id="section-title"
-                      placeholder="Enter section title..."
                       value={newSectionTitle}
+                      placeholder="Enter section title…"
                       onChange={(e) => setNewSectionTitle(e.target.value)}
                     />
                   </div>
                   <div className="flex gap-2">
                     <Button
-                      onClick={() => {
-                        if (newSectionTitle.trim()) {
-                          const newSection = {
-                            id: `custom-${Date.now()}`,
-                            title: newSectionTitle,
-                            icon: FileText,
-                            progress: 0,
-                            content: "",
-                          }
-                          setCustomSections((prev) => [...prev, newSection])
-                          setActiveSection(newSection.id)
-                          setNewSectionTitle("")
-                          setShowAddSection(false)
-                        }
-                      }}
                       className="flex-1"
+                      onClick={() => {
+                        if (!newSectionTitle.trim()) return
+                        const id = `custom-${Date.now()}`
+                        setCustomSections((prev) => [
+                          ...prev,
+                          { id, title: newSectionTitle.trim(), icon: FileText, progress: 0, content: "" },
+                        ])
+                        setActiveSection(id)
+                        setNewSectionTitle("")
+                        setShowAddSection(false)
+                      }}
                     >
-                      Add Section
+                      Add
                     </Button>
                     <Button
                       variant="outline"
+                      className="flex-1 bg-transparent"
                       onClick={() => {
                         setShowAddSection(false)
                         setNewSectionTitle("")
                       }}
-                      className="flex-1 bg-transparent"
                     >
                       Cancel
                     </Button>
@@ -2586,29 +2391,29 @@ export default function AdmissionAssessmentPage() {
         </div>
       </div>
 
-      {/* Bottom Action Buttons */}
-      <div className="mt-6 flex flex-wrap gap-4 justify-end">
-        <Button variant="outline" onClick={saveDraft} className="flex items-center gap-2 bg-transparent">
-          <FileClock className="h-4 w-4" />
+      {/* -------- Bottom Action Buttons -------- */}
+      <div className="mt-6 flex flex-wrap justify-end gap-4">
+        <Button variant="outline" className="bg-transparent" onClick={saveDraft}>
+          <FileClock className="mr-2 h-4 w-4" />
           Save as Draft
         </Button>
-        <Button variant="outline" onClick={generatePDF} className="flex items-center gap-2 bg-transparent">
-          <Download className="h-4 w-4" />
+        <Button variant="outline" className="bg-transparent" onClick={generatePDF}>
+          <Download className="mr-2 h-4 w-4" />
           Generate PDF Report
         </Button>
         <Button
-          onClick={submitForReview}
           disabled={!allRequirementsMet()}
-          className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2"
+          onClick={submitForReview}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
         >
           <CheckCircle2 className="h-4 w-4" />
           Submit for Review
         </Button>
       </div>
 
-      {/* Auto-save indicator */}
+      {/* -------- Auto-save Indicator -------- */}
       {lastSaved && (
-        <div className="fixed bottom-4 right-4 bg-green-100 text-green-800 px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+        <div className="fixed bottom-4 right-4 flex items-center gap-2 rounded-lg bg-green-100 px-3 py-2 text-sm text-green-800">
           <CheckCircle2 className="h-4 w-4" />
           Last saved: {lastSaved.toLocaleTimeString()}
         </div>
