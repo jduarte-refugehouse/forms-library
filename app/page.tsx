@@ -133,14 +133,14 @@ export default function FormDirectory() {
           </div>
         </div>
 
-        {/* General Forms Section */}
+        {/* Intake and Placement Forms Section */}
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <Phone className="h-6 w-6" />
-            General Forms
+            <Home className="h-6 w-6" />
+            Intake and Placement
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {generalForms.map((form) => (
+            {intakePlacementForms.map((form) => (
               <Card key={form.id} className="hover:shadow-lg transition-shadow duration-200">
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -172,14 +172,14 @@ export default function FormDirectory() {
           </div>
         </div>
 
-        {/* Intake and Placement Forms Section */}
+        {/* Service Planning Forms Section */}
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <Home className="h-6 w-6" />
-            Intake and Placement
+            <FileCheck className="h-6 w-6" />
+            Service Planning
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {intakePlacementForms.map((form) => (
+            {servicePlanningForms.map((form) => (
               <Card key={form.id} className="hover:shadow-lg transition-shadow duration-200">
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -250,14 +250,14 @@ export default function FormDirectory() {
           </div>
         </div>
 
-        {/* Service Planning Forms Section */}
+        {/* General Forms Section */}
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <FileCheck className="h-6 w-6" />
-            Service Planning
+            <Phone className="h-6 w-6" />
+            General Forms
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {servicePlanningForms.map((form) => (
+            {generalForms.map((form) => (
               <Card key={form.id} className="hover:shadow-lg transition-shadow duration-200">
                 <CardHeader>
                   <div className="flex items-start justify-between">
