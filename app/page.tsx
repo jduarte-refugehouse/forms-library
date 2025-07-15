@@ -96,6 +96,15 @@ export default function FormDirectory() {
       category: "Service Planning",
       status: "draft",
     },
+    {
+      id: "cans-integration",
+      title: "CANS 3.0 Integration Section (Draft)",
+      description:
+        "Child welfare service plan component for CANS assessment integration, domain scoring, and service modifications based on assessment results",
+      icon: ClipboardList,
+      category: "Assessment Integration",
+      status: "draft",
+    },
   ]
 
   const downloadForm = (formId: string) => {
@@ -112,7 +121,6 @@ export default function FormDirectory() {
           <p className="text-xl text-gray-600 mb-6">
             Professional form components for services management - Draft versions for review and evaluation
           </p>
-
           {/* Draft Notice */}
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-8 max-w-4xl mx-auto">
             <div className="flex items-center justify-center gap-2 text-amber-800">
@@ -122,7 +130,6 @@ export default function FormDirectory() {
               </p>
             </div>
           </div>
-
           <div className="flex justify-center gap-4">
             <Link href="/download">
               <Button size="lg" className="gap-2">
