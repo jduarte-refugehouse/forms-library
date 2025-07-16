@@ -97,6 +97,15 @@ export default function FormDirectory() {
       status: "draft",
     },
     {
+      id: "service-authorization",
+      title: "Service Authorization Tracking (Draft)",
+      description:
+        "Comprehensive tracking system for service authorization requests, approvals, denials, and alternative arrangements with financial oversight",
+      icon: ClipboardList,
+      category: "Authorization",
+      status: "draft",
+    },
+    {
       id: "cans-integration",
       title: "CANS 3.0 Integration Section (Draft)",
       description:
