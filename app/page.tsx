@@ -14,6 +14,9 @@ import {
   Home,
   ListChecks,
   FileCheck,
+  BarChart3,
+  Shield,
+  Building,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -59,6 +62,18 @@ export default function FormDirectory() {
     },
   ]
 
+  const fosterHomeForms = [
+    {
+      id: "foster-home-quarterly-review?homeId=FH-2024-0156",
+      title: "Foster Home Quarterly Review (Draft)",
+      description:
+        "Comprehensive quarterly review integrating T3C credentialing requirements, training compliance, placement summaries, and TBRI® implementation evaluation",
+      icon: Building,
+      category: "Foster Home Management",
+      status: "draft",
+    },
+  ]
+
   const aftercareForms = [
     {
       id: "contact-log",
@@ -82,6 +97,14 @@ export default function FormDirectory() {
       description: "Comprehensive planning tool for developing individualized aftercare service strategies",
       icon: Users,
       category: "Planning",
+      status: "draft",
+    },
+    {
+      id: "aftercare-dashboard",
+      title: "Aftercare Monitoring Dashboard (New)",
+      description: "Dashboard for tracking children in aftercare status with summary statistics and data table.",
+      icon: BarChart3,
+      category: "Monitoring",
       status: "draft",
     },
   ]
@@ -112,6 +135,32 @@ export default function FormDirectory() {
         "Child welfare service plan component for CANS assessment integration, domain scoring, and service modifications based on assessment results",
       icon: ClipboardList,
       category: "Assessment Integration",
+      status: "draft",
+    },
+    {
+      id: "package-specific-monitoring?packageType=mental-behavioral&childId=sample-child-123",
+      title: "Package-Specific Monitoring Dashboard (Draft)",
+      description:
+        "Adaptive monitoring dashboard that provides specialized tracking for Mental & Behavioral Health or IDD/Autism service packages with data visualization and alerts",
+      icon: BarChart3,
+      category: "Monitoring",
+      status: "draft",
+    },
+    {
+      id: "foster-home-credential?childId=sample-child-123&homeId=FH-2024-0156",
+      title: "Foster Home Credential Verification (Draft)",
+      description:
+        "Comprehensive verification system for foster home credentials, compliance tracking, training requirements, and quarterly review management",
+      icon: Shield,
+      category: "Credential Verification",
+      status: "draft",
+    },
+    {
+      id: "service-plan-review-approval",
+      title: "Service Plan Review and Approval (New)",
+      description: "Comprehensive multi-tab form for managing service plan reviews, approvals, and participant input.",
+      icon: ClipboardList,
+      category: "Service Planning",
       status: "draft",
     },
   ]
@@ -235,6 +284,45 @@ export default function FormDirectory() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {aftercareForms.map((form) => (
+              <Card key={form.id} className="hover:shadow-lg transition-shadow duration-200">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <form.icon className="h-8 w-8 text-blue-600 mb-2" />
+                    <Badge variant="secondary" className="bg-amber-100 text-amber-800">
+                      {form.status}
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-lg">{form.title}</CardTitle>
+                  <CardDescription className="text-sm">{form.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <Badge variant="outline">{form.category}</Badge>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => downloadForm(form.id)}>
+                        <Download className="h-4 w-4" />
+                      </Button>
+                      <Link href={`/forms/${form.id}`}>
+                        <Button variant="outline" size="sm">
+                          View Form
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Foster Homes Section */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <Building className="h-6 w-6" />
+            Foster Homes
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {fosterHomeForms.map((form) => (
               <Card key={form.id} className="hover:shadow-lg transition-shadow duration-200">
                 <CardHeader>
                   <div className="flex items-start justify-between">

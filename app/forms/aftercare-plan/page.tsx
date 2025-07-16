@@ -43,6 +43,12 @@ export default function AftercarePlanForm() {
     addressVerified: false,
     preferredContactTimes: [],
 
+    // NEW FIELDS - Enhancement Requirements
+    aftercareStaffStartDate: "", // Required per Enhancement Request III.B.4.2
+    monthlySubmissionConfirmed: false,
+    lastMonthlySubmission: "",
+    activationDate: "", // Auto-set to 90 days before discharge
+
     // Package-specific fields
     // Mental & Behavioral Health
     therapistName: "",
@@ -138,15 +144,35 @@ export default function AftercarePlanForm() {
   const [showSuccess, setShowSuccess] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
 
-  // Set default discharge date to 30 days from today
+  // Set default discharge date to 30 days from today and calculate activation date
   useEffect(() => {
     const futureDate = new Date()
     futureDate.setDate(futureDate.getDate() + 30)
+
+    // Calculate activation date (90 days before discharge)
+    const activationDate = new Date(futureDate)
+    activationDate.setDate(activationDate.getDate() - 90)
+
     setFormData((prev) => ({
       ...prev,
       dischargeDate: futureDate.toISOString().split("T")[0],
+      activationDate: activationDate.toISOString().split("T")[0],
     }))
   }, [])
+
+  // Auto-calculate activation date when discharge date changes
+  useEffect(() => {
+    if (formData.dischargeDate) {
+      const dischargeDate = new Date(formData.dischargeDate)
+      const activationDate = new Date(dischargeDate)
+      activationDate.setDate(activationDate.getDate() - 90)
+
+      setFormData((prev) => ({
+        ...prev,
+        activationDate: activationDate.toISOString().split("T")[0],
+      }))
+    }
+  }, [formData.dischargeDate])
 
   // Auto-populate contact schedule based on package type
   useEffect(() => {
@@ -406,6 +432,10 @@ export default function AftercarePlanForm() {
     if (!formData.caseNumber) newErrors.caseNumber = "Case number is required"
     if (!formData.primaryContactMethod) newErrors.primaryContactMethod = "Primary contact method is required"
 
+    // NEW VALIDATION - Enhancement Requirements
+    if (!formData.aftercareStaffStartDate) newErrors.aftercareStaffStartDate = "Aftercare staff start date is required"
+    if (!formData.ssccContactEmail) newErrors.ssccContactEmail = "SSCC contact email is required"
+
     // Contact method specific validation
     if (formData.primaryContactMethod === "phone" && !formData.phoneNumber) {
       newErrors.phoneNumber = "Phone number is required"
@@ -496,7 +526,7 @@ export default function AftercarePlanForm() {
           <div className="flex items-center gap-3 mb-4">
             <Users className="h-8 w-8 text-blue-600" />
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Aftercare Services Plan (Draft)</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Aftercare Services Plan (Enhanced)</h1>
               <p className="text-gray-600">
                 Required for Mental & Behavioral Health, IDD/Autism Spectrum, and Treatment Foster Family Care packages
               </p>
@@ -507,7 +537,7 @@ export default function AftercarePlanForm() {
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
             <div className="flex items-center gap-2 text-amber-800">
               <AlertCircle className="h-5 w-5" />
-              <p className="font-medium">This is a draft form for review and evaluation purposes only.</p>
+              <p className="font-medium">This form includes enhanced requirements per Enhancement Request III.B.4.2</p>
             </div>
           </div>
         </div>
@@ -522,8 +552,8 @@ export default function AftercarePlanForm() {
                   packages (6 months, twice monthly contact minimum)
                 </p>
               </div>
-              <Badge variant="secondary" className="bg-amber-100 text-amber-800">
-                Draft
+              <Badge variant="secondary" className="bg-green-100 text-green-800">
+                Enhanced
               </Badge>
             </div>
 
@@ -632,6 +662,44 @@ export default function AftercarePlanForm() {
                       className={`w-full p-2 border rounded-md ${errors.dischargeDate ? "border-red-500" : "border-gray-300"}`}
                     />
                     {errors.dischargeDate && <p className="text-red-500 text-sm mt-1">{errors.dischargeDate}</p>}
+                  </div>
+                </div>
+              </section>
+
+              {/* NEW SECTION - Aftercare Program Information */}
+              <section className="space-y-4 bg-yellow-50 p-4 rounded-lg mb-6">
+                <h2 className="text-xl font-semibold text-yellow-800">Aftercare Program Information</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                      Aftercare Staff Start Date *
+                      <HelpTooltip text="Date when staff began aftercare duties (Enhancement Request III.B.4.2)" />
+                    </label>
+                    <input
+                      type="date"
+                      name="aftercareStaffStartDate"
+                      value={formData.aftercareStaffStartDate}
+                      onChange={handleInputChange}
+                      className={`w-full p-2 border rounded-md ${errors.aftercareStaffStartDate ? "border-red-500" : "border-gray-300"}`}
+                      required
+                    />
+                    {errors.aftercareStaffStartDate && (
+                      <p className="text-red-500 text-sm mt-1">{errors.aftercareStaffStartDate}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Plan Activation Date</label>
+                    <input
+                      type="date"
+                      name="activationDate"
+                      value={formData.activationDate}
+                      onChange={handleInputChange}
+                      className="w-full p-2 border border-gray-300 rounded-md bg-gray-50"
+                      readOnly
+                      title="Automatically set to 90 days before discharge"
+                    />
+                    <p className="text-sm text-gray-600 mt-1">Auto-calculated: 90 days before discharge</p>
                   </div>
                 </div>
               </section>
@@ -1695,19 +1763,37 @@ export default function AftercarePlanForm() {
                 </div>
               </section>
 
-              {/* SSCC/DFPS Documentation */}
-              <section className="space-y-4">
-                <h2 className="text-xl font-semibold text-gray-700">SSCC/DFPS Documentation</h2>
-
+              {/* ENHANCED SSCC/DFPS Documentation Section */}
+              <section className="space-y-4 bg-red-50 p-4 rounded-lg">
+                <h2 className="text-xl font-semibold text-red-800">SSCC/DFPS Monthly Documentation Requirements</h2>
+                <div className="bg-red-100 border border-red-300 rounded p-3 mb-4">
+                  <p className="text-sm text-red-800 font-medium">
+                    <AlertCircle className="inline h-4 w-4 mr-1" />
+                    CRITICAL: All aftercare documentation must be submitted to SSCC/DFPS at the end of EACH month
+                  </p>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">SSCC Contact Email</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">SSCC Contact Email *</label>
                     <input
                       type="email"
                       name="ssccContactEmail"
                       value={formData.ssccContactEmail}
                       onChange={handleInputChange}
-                      placeholder="SSCC contact for documentation submission"
+                      placeholder="SSCC contact for monthly documentation"
+                      className={`w-full p-2 border rounded-md ${errors.ssccContactEmail ? "border-red-500" : "border-gray-300"}`}
+                      required
+                    />
+                    {errors.ssccContactEmail && <p className="text-red-500 text-sm mt-1">{errors.ssccContactEmail}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Last Monthly Submission Date</label>
+                    <input
+                      type="date"
+                      name="lastMonthlySubmission"
+                      value={formData.lastMonthlySubmission}
+                      onChange={handleInputChange}
                       className="w-full p-2 border border-gray-300 rounded-md"
                     />
                   </div>
@@ -1740,6 +1826,21 @@ export default function AftercarePlanForm() {
                       <option value="fax">Fax</option>
                       <option value="mail">Mail</option>
                     </select>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="monthlySubmissionConfirmed"
+                        checked={formData.monthlySubmissionConfirmed}
+                        onChange={handleInputChange}
+                        className="mr-2"
+                      />
+                      <span className="text-sm font-medium text-gray-700">
+                        I confirm that monthly documentation submission requirements have been reviewed and understood
+                      </span>
+                    </label>
                   </div>
                 </div>
               </section>
