@@ -72,6 +72,15 @@ export default function FormDirectory() {
       category: "Foster Home Management",
       status: "draft",
     },
+    {
+      id: "foster-home-credentialing-assessment?homeId=FH-2024-0156",
+      title: "Foster Home Credentialing Assessment (New)",
+      description:
+        "Comprehensive assessment for foster family home credentialing, including eligibility, training, TBRI®, and specialized modules.",
+      icon: Shield,
+      category: "Credentialing",
+      status: "draft",
+    },
   ]
 
   const aftercareForms = [
