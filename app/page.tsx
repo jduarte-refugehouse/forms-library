@@ -83,6 +83,54 @@ export default function FormDirectory() {
     },
   ]
 
+  const resourceGuideForms = [
+    {
+      id: "kinship-caregiver-resource-dashboard",
+      title: "Kinship Caregiver Resource Dashboard (Draft)",
+      description:
+        "User-friendly portal for kinship families providing access to essential resources, benefit information, and support tools with mobile-first design",
+      icon: Users,
+      category: "Resource Portal",
+      status: "draft",
+    },
+    {
+      id: "staff-kinship-support-dashboard",
+      title: "Staff Support Dashboard for Kinship Placements (Draft)",
+      description:
+        "Comprehensive tool for staff supporting kinship placements with real-time information, benefit navigation, and case management resources",
+      icon: BarChart3,
+      category: "Staff Tools",
+      status: "draft",
+    },
+    {
+      id: "youth-transition-dashboard",
+      title: "Youth Transition Support Dashboard (Draft)",
+      description:
+        "Engaging, mobile-first platform for youth ages 14-22 to track transition progress, access resources, and plan for independence",
+      icon: Users,
+      category: "Youth Portal",
+      status: "draft",
+    },
+    {
+      id: "staff-transition-dashboard",
+      title: "Staff Transition Support Dashboard (Draft)",
+      description:
+        "Comprehensive case management tool for transition specialists supporting youth aging out of care with T3C compliance tracking",
+      icon: BarChart3,
+      category: "Staff Tools",
+      status: "draft",
+    },
+    {
+      id: "pregnant-parenting-youth-dashboard",
+      title: "Pregnant & Parenting Youth Resource Dashboard (Draft)",
+      description:
+        "Interactive, youth-friendly support portal for pregnant and parenting youth in foster care with comprehensive resources, benefit enrollment, and crisis support",
+      icon: Users,
+      category: "Youth Support",
+      status: "draft",
+    },
+  ]
+
   const aftercareForms = [
     {
       id: "contact-log",
@@ -332,6 +380,45 @@ export default function FormDirectory() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {fosterHomeForms.map((form) => (
+              <Card key={form.id} className="hover:shadow-lg transition-shadow duration-200">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <form.icon className="h-8 w-8 text-blue-600 mb-2" />
+                    <Badge variant="secondary" className="bg-amber-100 text-amber-800">
+                      {form.status}
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-lg">{form.title}</CardTitle>
+                  <CardDescription className="text-sm">{form.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <Badge variant="outline">{form.category}</Badge>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => downloadForm(form.id)}>
+                        <Download className="h-4 w-4" />
+                      </Button>
+                      <Link href={`/forms/${form.id}`}>
+                        <Button variant="outline" size="sm">
+                          View Form
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Resource Guides Section */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <FileText className="h-6 w-6" />
+            Resource Guides
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {resourceGuideForms.map((form) => (
               <Card key={form.id} className="hover:shadow-lg transition-shadow duration-200">
                 <CardHeader>
                   <div className="flex items-start justify-between">
