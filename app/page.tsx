@@ -85,6 +85,15 @@ export default function FormDirectory() {
 
   const resourceGuideForms = [
     {
+      id: "continued-stay-review-guide",
+      title: "Continued Stay Review Quick Reference Guide (New)",
+      description:
+        "Comprehensive compliance guide for Mental Health & IDD/Autism packages with step-by-step procedures, clinical criteria, and emergency protocols",
+      icon: FileCheck,
+      category: "Compliance Guide",
+      status: "draft",
+    },
+    {
       id: "kinship-caregiver-resource-dashboard",
       title: "Kinship Caregiver Resource Dashboard (Draft)",
       description:
