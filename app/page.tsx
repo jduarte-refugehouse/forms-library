@@ -94,6 +94,15 @@ export default function FormDirectory() {
       status: "draft",
     },
     {
+      id: "crisis-decision-tool",
+      title: "Crisis Decision Tool (help.refugehouse.org)",
+      description:
+        "Interactive 24/7 decision support tool for foster parents and treatment teams to navigate medical, behavioral, safety, and psychiatric emergencies with step-by-step guidance and emergency contacts",
+      icon: Shield,
+      category: "Crisis Support",
+      status: "active",
+    },
+    {
       id: "kinship-caregiver-resource-dashboard",
       title: "Kinship Caregiver Resource Dashboard (Draft)",
       description:
