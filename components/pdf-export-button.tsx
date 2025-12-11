@@ -74,6 +74,13 @@ export function PDFExportButton({
     const packageName = PACKAGE_CODES[selectedPackage] || "All Packages"
     const generatedAt = new Date()
     const formUrl = `https://previewforms.refugehouse.org${formPath}`
+    
+    // Generate a recommended filename and set as document title temporarily
+    const dateStr = new Date().toISOString().split("T")[0]
+    const sanitizedTitle = formTitle.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_")
+    const suggestedFilename = `${sanitizedTitle}_${selectedPackage}_${dateStr}`
+    const originalTitle = document.title
+    document.title = suggestedFilename
 
     // Create print-specific styles
     const printStyles = document.createElement("style")
@@ -188,6 +195,9 @@ export function PDFExportButton({
 
     // Clean up after print dialog closes
     setTimeout(() => {
+      // Restore original document title
+      document.title = originalTitle
+      
       const header = document.getElementById("pdf-print-header")
       if (header) {
         header.remove()
