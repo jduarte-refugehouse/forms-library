@@ -1,5 +1,6 @@
 "use client"
 
+import { useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -19,18 +20,31 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { PDFExportButton } from "@/components/pdf-export-button"
 
 export default function ShortTermAssessmentTreatmentModel() {
+  const contentRef = useRef<HTMLDivElement>(null)
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50" ref={contentRef}>
       <div className="bg-gradient-to-r from-[#5E3989] to-[#A90533] text-white">
         <div className="container mx-auto px-4 py-8">
-          <Link href="/">
-            <Button variant="ghost" className="mb-4 gap-2 text-white hover:bg-white/20">
-              <ArrowLeft className="h-4 w-4" />
-              Return to Dashboard
-            </Button>
-          </Link>
+          <div className="flex items-center justify-between mb-4">
+            <Link href="/">
+              <Button variant="ghost" className="gap-2 text-white hover:bg-white/20">
+                <ArrowLeft className="h-4 w-4" />
+                Return to Dashboard
+              </Button>
+            </Link>
+            <PDFExportButton
+              formTitle="STASS Treatment Model"
+              formPath="/forms/short-term-assessment-treatment-model"
+              contentRef={contentRef}
+              defaultPackage="STASS"
+              showPackageFilter={false}
+              className="border-white/30 text-gray-800"
+            />
+          </div>
 
           <div className="flex items-center gap-6 mb-6">
             <div className="bg-white rounded-full p-3">
