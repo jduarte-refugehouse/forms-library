@@ -31,14 +31,32 @@ import {
   AlertTriangle,
   Settings,
   Plus,
+  Heart,
+  Shield,
+  Pill,
+  Home,
+  Users,
+  XCircle,
 } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 
 // Mock current user
 const currentUser = { name: "Casey Worker", id: "worker-123" }
 
+// Service Package Configuration
+const SERVICE_PACKAGES = {
+  "Basic": { color: "bg-gray-100 text-gray-800", borderColor: "border-gray-500" },
+  "Mental & Behavioral Health": { color: "bg-purple-100 text-purple-800", borderColor: "border-purple-500" },
+  "IDD/Autism": { color: "bg-blue-100 text-blue-800", borderColor: "border-blue-500" },
+  "Substance Use": { color: "bg-amber-100 text-amber-800", borderColor: "border-amber-500" },
+  "Short-Term Assessment (STASS)": { color: "bg-cyan-100 text-cyan-800", borderColor: "border-cyan-500" },
+  "Treatment Foster Family Care (TFFC)": { color: "bg-rose-100 text-rose-800", borderColor: "border-rose-500" },
+} as const
+
+type ServicePackageType = keyof typeof SERVICE_PACKAGES
+
 // Sample Data for review purposes
-const getSampleData = (servicePackage = "Mental & Behavioral Health") => ({
+const getSampleData = (servicePackage: ServicePackageType = "Mental & Behavioral Health") => ({
   childId: "child-123-sample",
   placementId: "place-456-sample",
   registeredAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
@@ -68,7 +86,23 @@ export default function AdmissionAssessmentPage() {
   const [childData, setChildData] = useState<any>(null)
   const [placementData, setPlacementData] = useState<any>(null)
   const [assessmentId, setAssessmentId] = useState("")
-  const [selectedPackage, setSelectedPackage] = useState("Mental & Behavioral Health")
+  const [selectedPackage, setSelectedPackage] = useState<ServicePackageType>("Mental & Behavioral Health")
+  
+  // Add-on services state - disabled when STASS is selected
+  const [addOnServices, setAddOnServices] = useState<string[]>([])
+  const isSTASS = selectedPackage === "Short-Term Assessment (STASS)"
+  const isTFFC = selectedPackage === "Treatment Foster Family Care (TFFC)"
+  const isSubstanceUse = selectedPackage === "Substance Use"
+  
+  // Package-specific assessment state
+  const [substanceUseAssessment, setSubstanceUseAssessment] = useState<any>({})
+  const [stassAssessment, setStassAssessment] = useState<any>({
+    assessmentType: "standard",
+    placementStartDate: new Date().toISOString().split("T")[0],
+  })
+  const [tffcAssessment, setTffcAssessment] = useState<any>({
+    treatmentDirectorReview: "pending",
+  })
 
   // State for each form section
   const [coreAssessment, setCoreAssessment] = useState<any>({
@@ -131,13 +165,33 @@ export default function AdmissionAssessmentPage() {
   }, [selectedPackage])
 
   // Update sample data when package changes
-  const handlePackageChange = (newPackage: string) => {
+  const handlePackageChange = (newPackage: ServicePackageType) => {
+    setSelectedPackage(newPackage)
+    // Clear add-ons when STASS is selected (STASS not eligible for add-ons)
+    if (newPackage === "Short-Term Assessment (STASS)") {
+      setAddOnServices([])
+    }
     if (isSampleData) {
-      setSelectedPackage(newPackage)
       const sample = getSampleData(newPackage)
       setChildData(sample.childData)
     }
   }
+  
+  // Calculate STASS deadline
+  const calculateSTASSDeadline = (startDate: string, assessmentType: string) => {
+    const start = new Date(startDate)
+    const days = assessmentType === "extended" ? 45 : 30
+    start.setDate(start.getDate() + days)
+    return start
+  }
+  
+  const stassDeadline = stassAssessment.placementStartDate 
+    ? calculateSTASSDeadline(stassAssessment.placementStartDate, stassAssessment.assessmentType)
+    : null
+  
+  const stassDaysRemaining = stassDeadline 
+    ? Math.max(0, Math.ceil((stassDeadline.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
+    : 0
 
   const assessmentDeadline = useMemo(() => {
     if (!childData?.registeredAt) return null
@@ -170,16 +224,11 @@ export default function AdmissionAssessmentPage() {
   }, [isSampleData])
 
   const getServicePackageColor = (pkg: string) => {
-    switch (pkg) {
-      case "Mental & Behavioral Health":
-        return "bg-purple-100 text-purple-800"
-      case "IDD/Autism":
-        return "bg-blue-100 text-blue-800"
-      case "Basic":
-        return "bg-gray-100 text-gray-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
+    return SERVICE_PACKAGES[pkg as ServicePackageType]?.color || "bg-gray-100 text-gray-800"
+  }
+  
+  const getServicePackageBorderColor = (pkg: string) => {
+    return SERVICE_PACKAGES[pkg as ServicePackageType]?.borderColor || "border-gray-500"
   }
 
   const calculateProgress = () => {
@@ -284,14 +333,17 @@ export default function AdmissionAssessmentPage() {
               <Label htmlFor="package-select" className="text-sm font-medium">
                 Change Service Package:
               </Label>
-              <Select value={selectedPackage} onValueChange={handlePackageChange}>
-                <SelectTrigger className="w-48 h-8">
+              <Select value={selectedPackage} onValueChange={(v) => handlePackageChange(v as ServicePackageType)}>
+                <SelectTrigger className="w-64 h-8">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="Basic">Basic Foster Family Home</SelectItem>
                   <SelectItem value="Mental & Behavioral Health">Mental & Behavioral Health</SelectItem>
-                  <SelectItem value="IDD/Autism">IDD/Autism</SelectItem>
-                  <SelectItem value="Basic">Basic</SelectItem>
+                  <SelectItem value="IDD/Autism">IDD/Autism Support</SelectItem>
+                  <SelectItem value="Substance Use">Substance Use Support Services</SelectItem>
+                  <SelectItem value="Short-Term Assessment (STASS)">Short-Term Assessment (STASS)</SelectItem>
+                  <SelectItem value="Treatment Foster Family Care (TFFC)">Treatment Foster Family Care (TFFC)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -367,7 +419,12 @@ export default function AdmissionAssessmentPage() {
               { id: "core", title: "Core Assessment", icon: FileText, progress: 75 },
               { id: "tbri", title: "TBRI®", icon: CheckCircle2, progress: 60 },
               ...(childData.servicePackage !== "Basic"
-                ? [{ id: "package", title: "Package-Specific", icon: Settings, progress: 45 }]
+                ? [{ 
+                    id: "package", 
+                    title: isSTASS ? "STASS Assessment" : isTFFC ? "TFFC Clinical" : isSubstanceUse ? "Substance Use" : "Package-Specific", 
+                    icon: isSTASS ? Clock : isTFFC ? Heart : isSubstanceUse ? Pill : Settings, 
+                    progress: 45 
+                  }]
                 : []),
               { id: "special", title: "Special Populations", icon: AlertTriangle, progress: 80 },
               { id: "documents", title: "Documents", icon: Upload, progress: 90 },
@@ -2091,6 +2148,1035 @@ export default function AdmissionAssessmentPage() {
                             <Textarea placeholder="How does child respond to routine changes?" rows={2} />
                             <Textarea placeholder="Strategies for managing routine disruptions..." rows={2} />
                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* ========== SUBSTANCE USE SUPPORT SERVICES MODULE ========== */}
+              {childData.servicePackage === "Substance Use" && (
+                <Card className="border-l-4 border-amber-500">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Pill className="h-5 w-5 text-amber-600" />
+                      Substance Use Assessment
+                    </CardTitle>
+                    <CardDescription>
+                      Reference: FC-SU-01 Substance Use Support Services Policy
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Policy Banner */}
+                    <Alert className="bg-amber-50 border-amber-200">
+                      <AlertCircle className="h-4 w-4 text-amber-600" />
+                      <AlertTitle className="text-amber-800">Non-Punitive, Recovery-Focused Approach</AlertTitle>
+                      <AlertDescription className="text-amber-700">
+                        Per FC-SU-01 and TBRI® principles: Substance use is addressed as a health issue requiring 
+                        support, not punishment. Focus on recovery-oriented interventions and relapse as part of 
+                        the recovery process.
+                      </AlertDescription>
+                    </Alert>
+
+                    {/* Initial Substance Use Screening */}
+                    <div className="p-4 border-l-4 border-red-500 bg-red-50">
+                      <h4 className="font-semibold text-red-800 mb-4 flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4" />
+                        Initial Substance Use Screening
+                      </h4>
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Has child/youth been identified as having a substance use disorder? <span className="text-red-500">*</span></Label>
+                          <RadioGroup className="mt-2 space-y-2"
+                            value={substanceUseAssessment.identified || ""}
+                            onValueChange={(v) => setSubstanceUseAssessment((prev: any) => ({...prev, identified: v}))}>
+                            {["Yes - Diagnosed", "Yes - Suspected", "No", "Unknown"].map((opt) => (
+                              <div key={opt} className="flex items-center space-x-2">
+                                <RadioGroupItem value={opt} id={`su-identified-${opt}`} />
+                                <Label htmlFor={`su-identified-${opt}`}>{opt}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </div>
+                        
+                        <div>
+                          <Label>Is there documented history of substance use? <span className="text-red-500">*</span></Label>
+                          <RadioGroup className="mt-2 space-y-2"
+                            value={substanceUseAssessment.history || ""}
+                            onValueChange={(v) => setSubstanceUseAssessment((prev: any) => ({...prev, history: v}))}>
+                            {["Yes", "No", "Unknown"].map((opt) => (
+                              <div key={opt} className="flex items-center space-x-2">
+                                <RadioGroupItem value={opt} id={`su-history-${opt}`} />
+                                <Label htmlFor={`su-history-${opt}`}>{opt}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </div>
+
+                        {substanceUseAssessment.history === "Yes" && (
+                          <div className="mt-4 p-3 bg-white rounded border">
+                            <Label>Substances involved (check all that apply):</Label>
+                            <div className="grid grid-cols-2 gap-2 mt-2">
+                              {[
+                                "Alcohol",
+                                "Cannabis/Marijuana",
+                                "Opioids (prescription or illicit)",
+                                "Stimulants (cocaine, methamphetamine)",
+                                "Benzodiazepines",
+                                "Inhalants",
+                                "Other"
+                              ].map((substance) => (
+                                <div key={substance} className="flex items-center space-x-2">
+                                  <Checkbox id={`substance-${substance}`} />
+                                  <Label htmlFor={`substance-${substance}`}>{substance}</Label>
+                                </div>
+                              ))}
+                            </div>
+                            <Textarea className="mt-3" placeholder="If other, specify..." rows={2} />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Treatment History */}
+                    <div className="p-4 border-l-4 border-yellow-500 bg-yellow-50">
+                      <h4 className="font-semibold text-yellow-800 mb-4">Treatment History</h4>
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Previous substance use treatment?</Label>
+                          <RadioGroup className="mt-2 space-y-2"
+                            value={substanceUseAssessment.previousTreatment || ""}
+                            onValueChange={(v) => setSubstanceUseAssessment((prev: any) => ({...prev, previousTreatment: v}))}>
+                            {["Yes", "No", "Unknown"].map((opt) => (
+                              <div key={opt} className="flex items-center space-x-2">
+                                <RadioGroupItem value={opt} id={`su-prev-${opt}`} />
+                                <Label htmlFor={`su-prev-${opt}`}>{opt}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </div>
+
+                        {substanceUseAssessment.previousTreatment === "Yes" && (
+                          <div className="mt-4 p-3 bg-white rounded border space-y-3">
+                            <Label>Types of previous treatment:</Label>
+                            <div className="grid grid-cols-2 gap-2">
+                              {[
+                                "Outpatient counseling",
+                                "Intensive outpatient (IOP)",
+                                "Residential treatment",
+                                "Detoxification",
+                                "Medication-Assisted Treatment (MAT)",
+                                "Support groups (AA/NA)",
+                                "Other"
+                              ].map((tx) => (
+                                <div key={tx} className="flex items-center space-x-2">
+                                  <Checkbox id={`tx-${tx}`} />
+                                  <Label htmlFor={`tx-${tx}`}>{tx}</Label>
+                                </div>
+                              ))}
+                            </div>
+                            <Textarea placeholder="Treatment history details (dates, duration, outcomes)..." rows={3} />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Current Recovery Status */}
+                    <div className="p-4 border-l-4 border-green-500 bg-green-50">
+                      <h4 className="font-semibold text-green-800 mb-4">Current Recovery Status</h4>
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Current substance use status:</Label>
+                          <RadioGroup className="mt-2 space-y-2"
+                            value={substanceUseAssessment.currentStatus || ""}
+                            onValueChange={(v) => setSubstanceUseAssessment((prev: any) => ({...prev, currentStatus: v}))}>
+                            {[
+                              "Actively using",
+                              "In early recovery (< 90 days)",
+                              "In sustained recovery (90+ days)",
+                              "Unknown/Unable to assess"
+                            ].map((opt) => (
+                              <div key={opt} className="flex items-center space-x-2">
+                                <RadioGroupItem value={opt} id={`su-status-${opt}`} />
+                                <Label htmlFor={`su-status-${opt}`}>{opt}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </div>
+
+                        <div>
+                          <Label>Currently receiving MAT (Medication-Assisted Treatment)?</Label>
+                          <RadioGroup className="mt-2 space-y-2"
+                            value={substanceUseAssessment.currentMAT || ""}
+                            onValueChange={(v) => setSubstanceUseAssessment((prev: any) => ({...prev, currentMAT: v}))}>
+                            {["Yes", "No", "Unknown"].map((opt) => (
+                              <div key={opt} className="flex items-center space-x-2">
+                                <RadioGroupItem value={opt} id={`su-mat-${opt}`} />
+                                <Label htmlFor={`su-mat-${opt}`}>{opt}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </div>
+
+                        {substanceUseAssessment.currentMAT === "Yes" && (
+                          <div className="mt-4 p-3 bg-white rounded border grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                              <Label>MAT Medication</Label>
+                              <Input placeholder="e.g., Suboxone, Vivitrol, Methadone" className="mt-1" />
+                            </div>
+                            <div>
+                              <Label>Prescribing Provider</Label>
+                              <Input placeholder="Provider name" className="mt-1" />
+                            </div>
+                            <div>
+                              <Label>Pharmacy</Label>
+                              <Input placeholder="Pharmacy name" className="mt-1" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Risk Assessment */}
+                    <div className="p-4 border-l-4 border-red-600 bg-red-100">
+                      <h4 className="font-semibold text-red-800 mb-4 flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4" />
+                        Risk Indicators
+                      </h4>
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Current risk factors (check all that apply):</Label>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                            {[
+                              "Recent overdose (within 12 months)",
+                              "IV drug use history",
+                              "Co-occurring mental health diagnosis",
+                              "History of withdrawal complications",
+                              "Access to substances in current/previous placement",
+                              "Peer group actively using substances",
+                              "Family history of substance use disorders"
+                            ].map((risk) => (
+                              <div key={risk} className="flex items-center space-x-2">
+                                <Checkbox id={`risk-${risk}`} />
+                                <Label htmlFor={`risk-${risk}`} className="text-sm">{risk}</Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label>Overdose risk level: <span className="text-red-500">*</span></Label>
+                          <RadioGroup className="flex gap-4 mt-2"
+                            value={substanceUseAssessment.overdoseRisk || ""}
+                            onValueChange={(v) => setSubstanceUseAssessment((prev: any) => ({...prev, overdoseRisk: v}))}>
+                            {["High", "Moderate", "Low", "Unable to assess"].map((opt) => (
+                              <div key={opt} className="flex items-center space-x-2">
+                                <RadioGroupItem value={opt} id={`od-risk-${opt}`} />
+                                <Label htmlFor={`od-risk-${opt}`}>{opt}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </div>
+
+                        {(substanceUseAssessment.overdoseRisk === "High" || substanceUseAssessment.overdoseRisk === "Moderate") && (
+                          <div className="flex items-center space-x-2 p-3 bg-white rounded border">
+                            <Checkbox id="naloxone-required" defaultChecked />
+                            <Label htmlFor="naloxone-required" className="font-medium text-red-700">
+                              Naloxone (Narcan) should be available in foster home
+                            </Label>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Recovery Support Planning */}
+                    <div className="p-4 border-l-4 border-blue-500 bg-blue-50">
+                      <h4 className="font-semibold text-blue-800 mb-4">Recovery Support Planning</h4>
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Identified recovery strengths:</Label>
+                          <Textarea className="mt-1" placeholder="Motivation for change, support systems, previous successes..." rows={3} />
+                        </div>
+                        <div>
+                          <Label>Potential recovery barriers:</Label>
+                          <Textarea className="mt-1" placeholder="Triggers, high-risk situations, lack of support..." rows={3} />
+                        </div>
+                        <div>
+                          <Label>Recommended supports:</Label>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                            {[
+                              "Weekly individual therapy (minimum per T3C)",
+                              "Substance use-specific group therapy",
+                              "MAT evaluation/continuation",
+                              "Recovery mentor/sponsor connection",
+                              "Sober recreational activities",
+                              "Family therapy addressing substance use",
+                              "Peer support groups"
+                            ].map((support) => (
+                              <div key={support} className="flex items-center space-x-2">
+                                <Checkbox id={`support-${support}`} />
+                                <Label htmlFor={`support-${support}`} className="text-sm">{support}</Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Foster Home Requirements */}
+                    <div className="p-4 border-l-4 border-purple-500 bg-purple-50">
+                      <h4 className="font-semibold text-purple-800 mb-4 flex items-center gap-2">
+                        <Home className="h-4 w-4" />
+                        Foster Home Requirements
+                      </h4>
+                      <Alert className="mb-4 bg-purple-100 border-purple-300">
+                        <Info className="h-4 w-4 text-purple-600" />
+                        <AlertDescription className="text-purple-700">
+                          Per FC-SU-01: Foster home must be substance-free environment with secure medication storage. 
+                          Foster parents must complete Substance Use Support Services training.
+                        </AlertDescription>
+                      </Alert>
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="su-home-verified" />
+                          <Label htmlFor="su-home-verified">Foster home verified as substance-free environment <span className="text-red-500">*</span></Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="su-training-complete" />
+                          <Label htmlFor="su-training-complete">Foster parents completed SU-specific training <span className="text-red-500">*</span></Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="su-med-storage" />
+                          <Label htmlFor="su-med-storage">Medication storage security verified</Label>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* ========== SHORT-TERM ASSESSMENT (STASS) MODULE ========== */}
+              {childData.servicePackage === "Short-Term Assessment (STASS)" && (
+                <Card className="border-l-4 border-cyan-500">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-cyan-600" />
+                      Short-Term Assessment Coordination
+                    </CardTitle>
+                    <CardDescription>
+                      Reference: FC-STASS-01 Short-Term Assessment Support Services Policy
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Critical Timeline Alert */}
+                    <Alert variant="destructive" className="bg-red-50 border-red-300">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertTitle>CRITICAL TIMELINE REQUIREMENTS</AlertTitle>
+                      <AlertDescription>
+                        <ul className="list-disc list-inside mt-2 space-y-1">
+                          <li><strong>Standard Assessment:</strong> Maximum 30 days</li>
+                          <li><strong>Extended Assessment:</strong> Maximum 45 days (requires SSCC/DFPS approval)</li>
+                          <li><strong>Service Plan:</strong> Within 7 days (not standard 30)</li>
+                          <li><strong>Preliminary Personal Safety Plan:</strong> Within 72 hours</li>
+                        </ul>
+                      </AlertDescription>
+                    </Alert>
+
+                    {/* No Add-Ons Warning */}
+                    <Alert className="bg-amber-50 border-amber-200">
+                      <AlertCircle className="h-4 w-4 text-amber-600" />
+                      <AlertTitle className="text-amber-800">STASS is NOT Eligible for Add-On Services</AlertTitle>
+                      <AlertDescription className="text-amber-700">
+                        Per T3C Blueprint: Short-Term Assessment Support Services cannot include Transition, 
+                        Pregnant/Parenting Youth, or Kinship add-on services.
+                      </AlertDescription>
+                    </Alert>
+
+                    {/* Assessment Classification */}
+                    <div className="p-4 border-l-4 border-cyan-500 bg-cyan-50">
+                      <h4 className="font-semibold text-cyan-800 mb-4">Assessment Classification</h4>
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Assessment Type: <span className="text-red-500">*</span></Label>
+                          <RadioGroup className="mt-2 space-y-2"
+                            value={stassAssessment.assessmentType}
+                            onValueChange={(v) => setStassAssessment((prev: any) => ({...prev, assessmentType: v}))}>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="standard" id="stass-standard" />
+                              <Label htmlFor="stass-standard">Standard Assessment (30-day maximum)</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="extended" id="stass-extended" />
+                              <Label htmlFor="stass-extended">Extended Assessment (45-day maximum - requires approval)</Label>
+                            </div>
+                          </RadioGroup>
+                        </div>
+
+                        {stassAssessment.assessmentType === "extended" && (
+                          <div className="p-3 bg-white rounded border space-y-3">
+                            <div>
+                              <Label>Justification for extended assessment: <span className="text-red-500">*</span></Label>
+                              <Textarea className="mt-1" placeholder="Document complexity factors requiring additional time..." rows={3} />
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Checkbox id="sscc-approval" />
+                              <Label htmlFor="sscc-approval">SSCC/DFPS approval obtained</Label>
+                            </div>
+                            <div>
+                              <Label>Approval date:</Label>
+                              <Input type="date" className="mt-1 max-w-xs" />
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                          <div>
+                            <Label>Placement Start Date: <span className="text-red-500">*</span></Label>
+                            <Input type="date" className="mt-1"
+                              value={stassAssessment.placementStartDate}
+                              onChange={(e) => setStassAssessment((prev: any) => ({...prev, placementStartDate: e.target.value}))} />
+                          </div>
+                          <div>
+                            <Label>Assessment Deadline:</Label>
+                            <div className={`mt-1 p-3 rounded font-bold text-lg ${
+                              stassDaysRemaining <= 7 ? "bg-red-100 text-red-700" :
+                              stassDaysRemaining <= 14 ? "bg-yellow-100 text-yellow-700" :
+                              "bg-green-100 text-green-700"
+                            }`}>
+                              {stassDeadline?.toLocaleDateString()} ({stassDaysRemaining} days remaining)
+                              {stassDaysRemaining <= 7 && <span className="block text-sm">⚠️ DEADLINE APPROACHING</span>}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Assessment Reason and Goals */}
+                    <div className="p-4 border-l-4 border-blue-500 bg-blue-50">
+                      <h4 className="font-semibold text-blue-800 mb-4">Assessment Reason and Goals</h4>
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Primary reason for short-term assessment:</Label>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                            {[
+                              "Initial placement - comprehensive needs assessment",
+                              "Placement disruption - assess contributing factors",
+                              "Service package determination needed",
+                              "Transition planning from residential/other setting",
+                              "Reunification assessment",
+                              "Adoption readiness assessment",
+                              "Other (specify)"
+                            ].map((reason) => (
+                              <div key={reason} className="flex items-center space-x-2">
+                                <Checkbox id={`stass-reason-${reason}`} />
+                                <Label htmlFor={`stass-reason-${reason}`} className="text-sm">{reason}</Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <Label>Specific assessment objectives: <span className="text-red-500">*</span></Label>
+                          <Textarea className="mt-1" placeholder="What questions need to be answered during this assessment period?" rows={3} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Information Availability */}
+                    <div className="p-4 border-l-4 border-yellow-500 bg-yellow-50">
+                      <h4 className="font-semibold text-yellow-800 mb-4">Available History</h4>
+                      <Alert className="mb-4 bg-yellow-100 border-yellow-300">
+                        <AlertCircle className="h-4 w-4 text-yellow-600" />
+                        <AlertDescription className="text-yellow-700">
+                          STASS placements often have LIMITED history available. Document what IS known and 
+                          flag unknown areas for assessment focus.
+                        </AlertDescription>
+                      </Alert>
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Level of available history: <span className="text-red-500">*</span></Label>
+                          <RadioGroup className="mt-2 space-y-2"
+                            value={stassAssessment.historyLevel || ""}
+                            onValueChange={(v) => setStassAssessment((prev: any) => ({...prev, historyLevel: v}))}>
+                            {[
+                              "Comprehensive - detailed records available",
+                              "Partial - some history available",
+                              "Minimal - very limited information",
+                              "Unknown - new to system, no prior records"
+                            ].map((opt) => (
+                              <div key={opt} className="flex items-center space-x-2">
+                                <RadioGroupItem value={opt} id={`stass-history-${opt}`} />
+                                <Label htmlFor={`stass-history-${opt}`}>{opt}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </div>
+                        <div>
+                          <Label>History areas with GAPS (check all that apply):</Label>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+                            {[
+                              "Medical history",
+                              "Mental health history",
+                              "Trauma history",
+                              "Educational history",
+                              "Behavioral patterns",
+                              "Family history",
+                              "Previous placement history",
+                              "Substance use history"
+                            ].map((area) => (
+                              <div key={area} className="flex items-center space-x-2">
+                                <Checkbox id={`stass-gap-${area}`} />
+                                <Label htmlFor={`stass-gap-${area}`} className="text-sm">{area}</Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Initial 48-Hour Protocol */}
+                    <div className="p-4 border-l-4 border-red-500 bg-red-50">
+                      <h4 className="font-semibold text-red-800 mb-4">Initial 48-Hour Enhanced Monitoring</h4>
+                      <Alert className="mb-4 bg-red-100 border-red-300">
+                        <AlertTriangle className="h-4 w-4 text-red-600" />
+                        <AlertDescription className="text-red-700">
+                          Per FC-STASS-01: Daily foster parent check-ins required during first 48 hours.
+                          Preliminary Personal Safety Plan required within 72 hours.
+                        </AlertDescription>
+                      </Alert>
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="stass-48hr-protocol" />
+                          <Label htmlFor="stass-48hr-protocol">48-hour enhanced monitoring protocol initiated</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="stass-daily-checkin" />
+                          <Label htmlFor="stass-daily-checkin">Daily foster parent check-in schedule established</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="stass-crisis-reviewed" />
+                          <Label htmlFor="stass-crisis-reviewed">Crisis response protocols reviewed with foster family</Label>
+                        </div>
+                        <div>
+                          <Label>Personal Safety Plan due date:</Label>
+                          <Input type="date" className="mt-1 max-w-xs" disabled
+                            value={stassAssessment.placementStartDate ? 
+                              new Date(new Date(stassAssessment.placementStartDate).getTime() + 3*24*60*60*1000).toISOString().split("T")[0] : ""} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Assessment Coordination Plan */}
+                    <div className="p-4 border-l-4 border-green-500 bg-green-50">
+                      <h4 className="font-semibold text-green-800 mb-4">Assessment Coordination Plan</h4>
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Assessments to be completed during STASS period:</Label>
+                          <Textarea className="mt-1" placeholder="List specific assessments, evaluations, and their target completion dates..." rows={3} />
+                        </div>
+                        <div>
+                          <Label>Required assessments:</Label>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                            {[
+                              "Medical/dental screening (within 72 hours)",
+                              "CANS 3.0 initial assessment (within 14 days)",
+                              "Educational assessment coordination",
+                              "Behavioral observation documentation",
+                              "Trauma screening (as appropriate)",
+                              "Service package recommendation assessment"
+                            ].map((assessment) => (
+                              <div key={assessment} className="flex items-center space-x-2">
+                                <Checkbox id={`stass-req-${assessment}`} />
+                                <Label htmlFor={`stass-req-${assessment}`} className="text-sm">{assessment}</Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <Label>Licensed Therapist assigned for assessment:</Label>
+                          <Input className="mt-1" placeholder="Name of therapist" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Transition Planning */}
+                    <div className="p-4 border-l-4 border-purple-500 bg-purple-50">
+                      <h4 className="font-semibold text-purple-800 mb-4">Transition Planning</h4>
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Anticipated transition outcome:</Label>
+                          <RadioGroup className="mt-2 space-y-2"
+                            value={stassAssessment.transitionOutcome || ""}
+                            onValueChange={(v) => setStassAssessment((prev: any) => ({...prev, transitionOutcome: v}))}>
+                            {[
+                              "Transition to long-term foster placement (same home)",
+                              "Transition to long-term foster placement (different home)",
+                              "Transition to specialized service package",
+                              "Reunification",
+                              "Other permanency outcome",
+                              "To be determined through assessment"
+                            ].map((opt) => (
+                              <div key={opt} className="flex items-center space-x-2">
+                                <RadioGroupItem value={opt} id={`stass-transition-${opt}`} />
+                                <Label htmlFor={`stass-transition-${opt}`}>{opt}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </div>
+                        <div>
+                          <Label>Preliminary transition considerations:</Label>
+                          <Textarea className="mt-1" placeholder="Initial thoughts on appropriate next placement based on referral information..." rows={3} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Foster Home Requirements */}
+                    <div className="p-4 border-l-4 border-orange-500 bg-orange-50">
+                      <h4 className="font-semibold text-orange-800 mb-4 flex items-center gap-2">
+                        <Home className="h-4 w-4" />
+                        Foster Home Requirements
+                      </h4>
+                      <Alert variant="destructive" className="mb-4 bg-orange-100 border-orange-400">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle className="text-orange-800">Maximum 4 STASS children per foster home</AlertTitle>
+                      </Alert>
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="stass-training-complete" />
+                          <Label htmlFor="stass-training-complete">Foster parents completed STASS-specific training (4 hours) <span className="text-red-500">*</span></Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="stass-family-prepared" />
+                          <Label htmlFor="stass-family-prepared">Foster family prepared for short-term, assessment-focused placement</Label>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* ========== TREATMENT FOSTER FAMILY CARE (TFFC) MODULE ========== */}
+              {childData.servicePackage === "Treatment Foster Family Care (TFFC)" && (
+                <Card className="border-l-4 border-rose-500">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Heart className="h-5 w-5 text-rose-600" />
+                      Treatment Foster Family Care Clinical Assessment
+                    </CardTitle>
+                    <CardDescription>
+                      Reference: FC-TFFC-01 Treatment Foster Family Care Support Services Policy
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Critical Requirements Alert */}
+                    <Alert variant="destructive" className="bg-rose-50 border-rose-300">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertTitle>TFFC REQUIREMENTS</AlertTitle>
+                      <AlertDescription>
+                        <ul className="list-disc list-inside mt-2 space-y-1">
+                          <li><strong>Maximum 2 TFFC children per home</strong></li>
+                          <li><strong>Maximum 365 days</strong> length of service</li>
+                          <li><strong>60-day</strong> Service Plan reviews (not standard 90)</li>
+                          <li>Foster home must hold <strong>DUAL credentials</strong> (TFFC + Basic)</li>
+                          <li><strong>Treatment Director clinical review REQUIRED</strong></li>
+                          <li><strong>24/7 On-Call Licensed Therapist</strong> availability</li>
+                        </ul>
+                      </AlertDescription>
+                    </Alert>
+
+                    <Alert className="bg-rose-50 border-rose-200">
+                      <Info className="h-4 w-4 text-rose-600" />
+                      <AlertDescription className="text-rose-700">
+                        <strong>Regulatory Reference:</strong> Texas Family Code §264.1073; TAC §700.1335
+                      </AlertDescription>
+                    </Alert>
+
+                    {/* TFFC Eligibility Verification */}
+                    <div className="p-4 border-l-4 border-rose-500 bg-rose-50">
+                      <h4 className="font-semibold text-rose-800 mb-4 flex items-center gap-2">
+                        <Shield className="h-4 w-4" />
+                        TFFC Eligibility Verification
+                      </h4>
+                      <Alert className="mb-4 bg-rose-100 border-rose-300">
+                        <Info className="h-4 w-4 text-rose-600" />
+                        <AlertDescription className="text-rose-700">
+                          Per T3C Blueprint p.141-142: Child must have DSM-5 diagnosis of emotional, conduct, or 
+                          behavioral disorder AND meet 2+ additional criteria.
+                        </AlertDescription>
+                      </Alert>
+                      <div className="space-y-4">
+                        <div>
+                          <Label>DSM-5 diagnosis of emotional, conduct, or behavioral disorder? <span className="text-red-500">*</span></Label>
+                          <RadioGroup className="mt-2 space-y-2"
+                            value={tffcAssessment.dsmDiagnosis || ""}
+                            onValueChange={(v) => setTffcAssessment((prev: any) => ({...prev, dsmDiagnosis: v}))}>
+                            {["Yes - Verified", "Pending evaluation", "No"].map((opt) => (
+                              <div key={opt} className="flex items-center space-x-2">
+                                <RadioGroupItem value={opt} id={`tffc-dsm-${opt}`} />
+                                <Label htmlFor={`tffc-dsm-${opt}`}>{opt}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </div>
+
+                        {tffcAssessment.dsmDiagnosis === "Yes - Verified" && (
+                          <div className="p-3 bg-white rounded border grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                              <Label>Primary DSM-5 Diagnosis: <span className="text-red-500">*</span></Label>
+                              <Input className="mt-1" placeholder="Diagnosis" />
+                            </div>
+                            <div>
+                              <Label>Diagnosing Clinician:</Label>
+                              <Input className="mt-1" placeholder="Clinician name" />
+                            </div>
+                            <div>
+                              <Label>Diagnosis Date:</Label>
+                              <Input type="date" className="mt-1" />
+                            </div>
+                          </div>
+                        )}
+
+                        {tffcAssessment.dsmDiagnosis !== "No" && (
+                          <div className="p-3 bg-white rounded border">
+                            <Label className="font-semibold">Additional qualifying criteria (MUST select 2+): <span className="text-red-500">*</span></Label>
+                            <p className="text-sm text-gray-500 mb-3">At least 2 criteria required for TFFC eligibility</p>
+                            <div className="grid grid-cols-1 gap-2">
+                              {[
+                                "Suicide attempt within past 12 months",
+                                "Risk of harm to others requiring intensive supervision",
+                                "Co-occurring substance use disorder with severe impairment",
+                                "Multiple psychiatric hospitalizations",
+                                "Multiple placement disruptions due to behavioral issues",
+                                "Requires intensive behavioral intervention daily"
+                              ].map((criteria) => (
+                                <div key={criteria} className="flex items-center space-x-2">
+                                  <Checkbox id={`tffc-criteria-${criteria}`} />
+                                  <Label htmlFor={`tffc-criteria-${criteria}`}>{criteria}</Label>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        <div>
+                          <Label>Appropriate for family-based setting (vs. residential)? <span className="text-red-500">*</span></Label>
+                          <RadioGroup className="mt-2 space-y-2"
+                            value={tffcAssessment.familyBasedAppropriate || ""}
+                            onValueChange={(v) => setTffcAssessment((prev: any) => ({...prev, familyBasedAppropriate: v}))}>
+                            {["Yes", "No - Residential recommended", "Requires clinical review"].map((opt) => (
+                              <div key={opt} className="flex items-center space-x-2">
+                                <RadioGroupItem value={opt} id={`tffc-family-${opt}`} />
+                                <Label htmlFor={`tffc-family-${opt}`}>{opt}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Treatment Director Review - CRITICAL */}
+                    <div className="p-4 border-l-4 border-yellow-500 bg-yellow-50">
+                      <h4 className="font-semibold text-yellow-800 mb-4 flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4" />
+                        Treatment Director Clinical Review (REQUIRED)
+                      </h4>
+                      <Alert variant="destructive" className="mb-4 bg-yellow-100 border-yellow-400">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertDescription className="text-yellow-800">
+                          Treatment Director MUST review and approve TFFC eligibility per Texas Family Code §264.1073 
+                          and TAC §700.1335
+                        </AlertDescription>
+                      </Alert>
+                      <div className="space-y-4">
+                        <div className="p-3 bg-white rounded border">
+                          <Label className="text-gray-500">Treatment Director:</Label>
+                          <p className="font-semibold">Angel Wolfe, LMSW</p>
+                        </div>
+                        <div>
+                          <Label>Treatment Director Review Status: <span className="text-red-500">*</span></Label>
+                          <RadioGroup className="mt-2 space-y-2"
+                            value={tffcAssessment.treatmentDirectorReview}
+                            onValueChange={(v) => setTffcAssessment((prev: any) => ({...prev, treatmentDirectorReview: v}))}>
+                            {[
+                              "Approved - Meets TFFC criteria",
+                              "Pending - Additional information needed",
+                              "Not approved - Does not meet criteria",
+                              "Not approved - Residential level recommended"
+                            ].map((opt) => (
+                              <div key={opt} className="flex items-center space-x-2">
+                                <RadioGroupItem value={opt} id={`tffc-td-${opt}`} />
+                                <Label htmlFor={`tffc-td-${opt}`}>{opt}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </div>
+
+                        {tffcAssessment.treatmentDirectorReview === "Pending - Additional information needed" && (
+                          <div>
+                            <Label>Additional information needed: <span className="text-red-500">*</span></Label>
+                            <Textarea className="mt-1" placeholder="Specify what additional information is required..." rows={3} />
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label>Review Date: <span className="text-red-500">*</span></Label>
+                            <Input type="date" className="mt-1" />
+                          </div>
+                          <div>
+                            <Label>Treatment Director Signature/Initials: <span className="text-red-500">*</span></Label>
+                            <Input className="mt-1" placeholder="Initials" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Clinical Presentation */}
+                    <div className="p-4 border-l-4 border-purple-500 bg-purple-50">
+                      <h4 className="font-semibold text-purple-800 mb-4">Clinical Presentation</h4>
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Summary of serious emotional/behavioral challenges: <span className="text-red-500">*</span></Label>
+                          <Textarea className="mt-1" placeholder="Describe the specific behaviors, frequency, intensity, and impact..." rows={4} />
+                        </div>
+                        <div>
+                          <Label>Primary presenting concerns:</Label>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                            {[
+                              "Severe aggression (physical)",
+                              "Severe aggression (verbal)",
+                              "Self-harm behaviors",
+                              "Suicidal ideation/attempts",
+                              "Psychotic symptoms",
+                              "Severe anxiety/panic",
+                              "Severe depression",
+                              "Trauma responses/PTSD symptoms",
+                              "Attachment disruption",
+                              "Elopement/running away",
+                              "Property destruction",
+                              "Fire-setting",
+                              "Sexual acting out",
+                              "Substance use",
+                              "Eating disorder behaviors",
+                              "Other"
+                            ].map((concern) => (
+                              <div key={concern} className="flex items-center space-x-2">
+                                <Checkbox id={`tffc-concern-${concern}`} />
+                                <Label htmlFor={`tffc-concern-${concern}`} className="text-sm">{concern}</Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <Label>Crisis frequency (past 30 days):</Label>
+                          <RadioGroup className="flex flex-wrap gap-4 mt-2"
+                            value={tffcAssessment.crisisFrequency || ""}
+                            onValueChange={(v) => setTffcAssessment((prev: any) => ({...prev, crisisFrequency: v}))}>
+                            {["Daily", "Multiple times per week", "Weekly", "Less than weekly", "Unknown"].map((opt) => (
+                              <div key={opt} className="flex items-center space-x-2">
+                                <RadioGroupItem value={opt} id={`tffc-crisis-${opt}`} />
+                                <Label htmlFor={`tffc-crisis-${opt}`}>{opt}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Treatment History */}
+                    <div className="p-4 border-l-4 border-blue-500 bg-blue-50">
+                      <h4 className="font-semibold text-blue-800 mb-4">Treatment History</h4>
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Previous treatment settings:</Label>
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            {[
+                              "Outpatient therapy",
+                              "Intensive outpatient",
+                              "Partial hospitalization",
+                              "Inpatient psychiatric hospitalization",
+                              "Residential treatment center",
+                              "Therapeutic foster care (prior)",
+                              "Group home",
+                              "None documented"
+                            ].map((setting) => (
+                              <div key={setting} className="flex items-center space-x-2">
+                                <Checkbox id={`tffc-setting-${setting}`} />
+                                <Label htmlFor={`tffc-setting-${setting}`}>{setting}</Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label>Number of psychiatric hospitalizations:</Label>
+                            <Input type="number" className="mt-1" placeholder="0" />
+                          </div>
+                          <div>
+                            <Label>Number of previous placements:</Label>
+                            <Input type="number" className="mt-1" placeholder="0" />
+                          </div>
+                        </div>
+                        <div>
+                          <Label>Summary of previous treatment and outcomes:</Label>
+                          <Textarea className="mt-1" placeholder="What has worked? What hasn't? Patterns in placement disruptions..." rows={3} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Current Medications */}
+                    <div className="p-4 border-l-4 border-green-500 bg-green-50">
+                      <h4 className="font-semibold text-green-800 mb-4">Psychiatric Medications</h4>
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Currently prescribed psychiatric medications?</Label>
+                          <RadioGroup className="mt-2 space-y-2"
+                            value={tffcAssessment.hasMedications || ""}
+                            onValueChange={(v) => setTffcAssessment((prev: any) => ({...prev, hasMedications: v}))}>
+                            {["Yes", "No", "Unknown"].map((opt) => (
+                              <div key={opt} className="flex items-center space-x-2">
+                                <RadioGroupItem value={opt} id={`tffc-meds-${opt}`} />
+                                <Label htmlFor={`tffc-meds-${opt}`}>{opt}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </div>
+
+                        {tffcAssessment.hasMedications === "Yes" && (
+                          <div className="space-y-2">
+                            {[1, 2, 3].map((index) => (
+                              <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-2 p-2 bg-white rounded border">
+                                <Input placeholder="Medication Name" />
+                                <Input placeholder="Dosage" />
+                                <Input placeholder="Frequency" />
+                                <Input placeholder="Prescriber" />
+                                <Input placeholder="Target Symptoms" />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="tffc-med-appt" />
+                          <Label htmlFor="tffc-med-appt">Medication management appointment scheduled</Label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Step-Down Planning */}
+                    <div className="p-4 border-l-4 border-teal-500 bg-teal-50">
+                      <h4 className="font-semibold text-teal-800 mb-4">Step-Down Planning (Initial)</h4>
+                      <Alert className="mb-4 bg-teal-100 border-teal-300">
+                        <Info className="h-4 w-4 text-teal-600" />
+                        <AlertDescription className="text-teal-700">
+                          Per FC-TFFC-01: Step-down planning begins early. Goal is transition to less intensive 
+                          setting within 365-day maximum.
+                        </AlertDescription>
+                      </Alert>
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Initial step-down goals:</Label>
+                          <Textarea className="mt-1" placeholder="What needs to change for this child to step down to Basic or other package?" rows={3} />
+                        </div>
+                        <div>
+                          <Label>Potential step-down indicators to monitor:</Label>
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            {[
+                              "Reduced crisis frequency",
+                              "Improved emotional regulation",
+                              "Stable medication regimen",
+                              "Consistent school attendance",
+                              "Reduced need for intensive supervision",
+                              "Improved family relationships",
+                              "Development of coping skills",
+                              "Reduced self-harm/suicidal behaviors"
+                            ].map((indicator) => (
+                              <div key={indicator} className="flex items-center space-x-2">
+                                <Checkbox id={`tffc-indicator-${indicator}`} />
+                                <Label htmlFor={`tffc-indicator-${indicator}`} className="text-sm">{indicator}</Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <Label>Projected step-down timeline:</Label>
+                          <RadioGroup className="flex flex-wrap gap-4 mt-2"
+                            value={tffcAssessment.stepDownTimeline || ""}
+                            onValueChange={(v) => setTffcAssessment((prev: any) => ({...prev, stepDownTimeline: v}))}>
+                            {["3-6 months", "6-9 months", "9-12 months", "Unable to project at this time"].map((opt) => (
+                              <div key={opt} className="flex items-center space-x-2">
+                                <RadioGroupItem value={opt} id={`tffc-timeline-${opt}`} />
+                                <Label htmlFor={`tffc-timeline-${opt}`}>{opt}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Foster Home Requirements */}
+                    <div className="p-4 border-l-4 border-orange-500 bg-orange-50">
+                      <h4 className="font-semibold text-orange-800 mb-4 flex items-center gap-2">
+                        <Home className="h-4 w-4" />
+                        Foster Home Requirements
+                      </h4>
+                      <Alert variant="destructive" className="mb-4 bg-orange-100 border-orange-400">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle className="text-orange-800">Maximum 2 TFFC children per foster home</AlertTitle>
+                        <AlertDescription className="text-orange-700">
+                          Home must hold DUAL credentials: TFFC + Basic (for step-down in place)
+                        </AlertDescription>
+                      </Alert>
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="tffc-credential" />
+                          <Label htmlFor="tffc-credential">Foster home holds TFFC credential <span className="text-red-500">*</span></Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="tffc-basic-credential" />
+                          <Label htmlFor="tffc-basic-credential">Foster home holds Basic Foster Home credential (for step-down) <span className="text-red-500">*</span></Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="tffc-training" />
+                          <Label htmlFor="tffc-training">Foster parents completed 20-hour TFFC specialized training <span className="text-red-500">*</span></Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="tffc-intensive-prepared" />
+                          <Label htmlFor="tffc-intensive-prepared">Foster family prepared for intensive therapeutic environment</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="tffc-oncall-provided" />
+                          <Label htmlFor="tffc-oncall-provided">On-Call Licensed Therapist contact information provided to foster family <span className="text-red-500">*</span></Label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Service Intensity */}
+                    <div className="p-4 border-l-4 border-indigo-500 bg-indigo-50">
+                      <h4 className="font-semibold text-indigo-800 mb-4">Anticipated Service Intensity</h4>
+                      <Alert className="mb-4 bg-indigo-100 border-indigo-300">
+                        <Info className="h-4 w-4 text-indigo-600" />
+                        <AlertDescription className="text-indigo-700">
+                          TFFC ratios: 1:6 Case Manager, 1:11 Licensed Therapist, 1:6 BSS. 
+                          Weekly therapy minimum required.
+                        </AlertDescription>
+                      </Alert>
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="tffc-weekly-therapy" defaultChecked />
+                          <Label htmlFor="tffc-weekly-therapy">Weekly therapy scheduled <span className="text-red-500">*</span></Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="tffc-bss-assigned" />
+                          <Label htmlFor="tffc-bss-assigned">Behavioral Support Specialist assigned</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="tffc-psych-coordinated" />
+                          <Label htmlFor="tffc-psych-coordinated">Psychiatric services coordinated</Label>
+                        </div>
+                        <div>
+                          <Label>Additional intensive services needed:</Label>
+                          <Textarea className="mt-1" placeholder="Specialized therapies, wraparound services, etc." rows={2} />
                         </div>
                       </div>
                     </div>

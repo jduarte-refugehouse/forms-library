@@ -1160,7 +1160,7 @@ function RatioReferenceView() {
 // MAIN PAGE COMPONENT
 // ============================================================================
 export default function CaseloadCalculatorPage() {
-  const [activeTab, setActiveTab] = useState("calculator")
+  const [activeTab, setActiveTab] = useState("reference")
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100">
@@ -1201,6 +1201,10 @@ export default function CaseloadCalculatorPage() {
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 lg:max-w-xl lg:mx-auto">
+            <TabsTrigger value="reference" className="gap-2">
+              <BookOpen className="h-4 w-4" />
+              <span className="hidden sm:inline">Ratio Reference</span>
+            </TabsTrigger>
             <TabsTrigger value="calculator" className="gap-2">
               <Calculator className="h-4 w-4" />
               <span className="hidden sm:inline">Calculator</span>
@@ -1209,11 +1213,11 @@ export default function CaseloadCalculatorPage() {
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Team Dashboard</span>
             </TabsTrigger>
-            <TabsTrigger value="reference" className="gap-2">
-              <BookOpen className="h-4 w-4" />
-              <span className="hidden sm:inline">Ratio Reference</span>
-            </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="reference">
+            <RatioReferenceView />
+          </TabsContent>
 
           <TabsContent value="calculator">
             <CalculatorView />
@@ -1221,10 +1225,6 @@ export default function CaseloadCalculatorPage() {
 
           <TabsContent value="team">
             <TeamDashboardView />
-          </TabsContent>
-
-          <TabsContent value="reference">
-            <RatioReferenceView />
           </TabsContent>
         </Tabs>
 
