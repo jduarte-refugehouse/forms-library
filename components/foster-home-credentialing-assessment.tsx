@@ -155,6 +155,74 @@ const initialFormData = {
         packageSpecificModulesCompleted: false,
       },
     },
+    substanceUse: {
+      selected: false,
+      recoveryCapabilities: [
+        { area: "Recovery-informed approach", competency: "", evidence: "" },
+        { area: "Relapse recognition and response", competency: "", evidence: "" },
+        { area: "MAT medication management", competency: "", evidence: "" },
+        { area: "Harm reduction strategies", competency: "", evidence: "" },
+        { area: "Crisis intervention for SU", competency: "", evidence: "" },
+      ],
+      additionalTraining: {
+        substanceUseAwareness: null,
+        matOverview: null,
+        relapsePrevention: null,
+        recoverySupport: null,
+      },
+      placementOutcomes: {
+        sustainedRecovery: "",
+        treatmentCompletionRate: "",
+        relapseManagement: "",
+      },
+    },
+    stass: {
+      selected: false,
+      assessmentCapabilities: [
+        { area: "Unknown history management", competency: "", evidence: "" },
+        { area: "Detailed behavioral observation", competency: "", evidence: "" },
+        { area: "Rapid safety planning", competency: "", evidence: "" },
+        { area: "Neutral assessment environment", competency: "", evidence: "" },
+        { area: "Coordination with assessment providers", competency: "", evidence: "" },
+      ],
+      additionalTraining: {
+        unknownHistoryProtocols: null,
+        assessmentDocumentation: null,
+        expeditedSafetyPlanning: null,
+      },
+      assessmentOutcomes: {
+        assessmentCompletion: "",
+        accurateRecommendations: "",
+        timelineAdherence: "",
+      },
+    },
+    tffc: {
+      selected: false,
+      tffcCapabilities: [
+        { area: "High-acuity crisis management", competency: "", evidence: "" },
+        { area: "Intensive therapy coordination", competency: "", evidence: "" },
+        { area: "On-Call Therapist collaboration", competency: "", evidence: "" },
+        { area: "Step-down planning", competency: "", evidence: "" },
+        { area: "60-day review compliance", competency: "", evidence: "" },
+        { area: "365-day timeline management", competency: "", evidence: "" },
+      ],
+      additionalTraining: {
+        tffcInitialTraining: null, // 20 hours required
+        crisisIntervention: null,
+        intensiveTbriApplication: null,
+        stepDownPlanning: null,
+      },
+      placementOutcomes: {
+        crisisReductionRate: "",
+        hospitalizationsPrevented: "",
+        successfulStepDowns: "",
+        therapyEngagementRate: "",
+      },
+      tffcLimits: {
+        maxTffcChildren: "2",
+        dualCredentialedForBasic: false,
+      },
+    },
   },
   qualityIndicators: {
     familyEngagement: {
@@ -172,6 +240,9 @@ const initialFormData = {
     additionalPackagesApproved: {
       mentalBehavioralHealth: false,
       iddAutismSpectrumDisorder: false,
+      substanceUse: false,
+      stass: false,
+      tffc: false,
       respiteProvider: false,
     },
     respitePackages: "",
@@ -1046,6 +1117,271 @@ export function FosterHomeCredentialingAssessment({
                   </div>
                 </div>
               )}
+
+              {/* SUBSTANCE USE MODULE */}
+              {renderField(
+                "SUBSTANCE USE SUPPORT SERVICES MODULE",
+                formData.specializedModules.substanceUse.selected,
+                "specializedModules.substanceUse.selected",
+                "checkbox",
+              )}
+              {formData.specializedModules.substanceUse.selected && (
+                <div className="ml-4 border-l pl-4 space-y-4 border-amber-300">
+                  <h4 className="font-medium mb-2 text-amber-700">Recovery-Focused Capabilities</h4>
+                  {renderTable(
+                    formData.specializedModules.substanceUse.recoveryCapabilities,
+                    [
+                      { key: "area", label: "Area", type: "text" },
+                      {
+                        key: "competency",
+                        label: "Competency Level",
+                        type: "select",
+                        options: ["Basic", "Proficient", "Advanced"],
+                      },
+                      { key: "evidence", label: "Evidence", type: "textarea" },
+                    ],
+                    "specializedModules.substanceUse.recoveryCapabilities",
+                  )}
+                  <h4 className="font-medium mt-4 mb-2">Additional SU Training</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {renderField(
+                      "Substance Use Awareness (Date)",
+                      formData.specializedModules.substanceUse.additionalTraining.substanceUseAwareness,
+                      "specializedModules.substanceUse.additionalTraining.substanceUseAwareness",
+                      "date",
+                    )}
+                    {renderField(
+                      "MAT Overview (Date)",
+                      formData.specializedModules.substanceUse.additionalTraining.matOverview,
+                      "specializedModules.substanceUse.additionalTraining.matOverview",
+                      "date",
+                    )}
+                    {renderField(
+                      "Relapse Prevention (Date)",
+                      formData.specializedModules.substanceUse.additionalTraining.relapsePrevention,
+                      "specializedModules.substanceUse.additionalTraining.relapsePrevention",
+                      "date",
+                    )}
+                    {renderField(
+                      "Recovery Support (Date)",
+                      formData.specializedModules.substanceUse.additionalTraining.recoverySupport,
+                      "specializedModules.substanceUse.additionalTraining.recoverySupport",
+                      "date",
+                    )}
+                  </div>
+                  <h4 className="font-medium mt-4 mb-2">SU Placement Outcomes (from previous experience)</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {renderField(
+                      "Youth with sustained recovery",
+                      formData.specializedModules.substanceUse.placementOutcomes.sustainedRecovery,
+                      "specializedModules.substanceUse.placementOutcomes.sustainedRecovery",
+                      "text",
+                    )}
+                    {renderField(
+                      "Treatment completion rate (%)",
+                      formData.specializedModules.substanceUse.placementOutcomes.treatmentCompletionRate,
+                      "specializedModules.substanceUse.placementOutcomes.treatmentCompletionRate",
+                      "text",
+                    )}
+                    {renderField(
+                      "Relapses managed appropriately",
+                      formData.specializedModules.substanceUse.placementOutcomes.relapseManagement,
+                      "specializedModules.substanceUse.placementOutcomes.relapseManagement",
+                      "radio",
+                      ["Yes", "No", "N/A"],
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* STASS MODULE */}
+              {renderField(
+                "SHORT-TERM ASSESSMENT SUPPORT SERVICES (STASS) MODULE",
+                formData.specializedModules.stass.selected,
+                "specializedModules.stass.selected",
+                "checkbox",
+              )}
+              {formData.specializedModules.stass.selected && (
+                <div className="ml-4 border-l pl-4 space-y-4 border-gray-400">
+                  <Alert className="bg-yellow-50 border-yellow-300">
+                    <AlertCircle className="h-4 w-4 text-yellow-600" />
+                    <AlertTitle className="text-yellow-800">STASS Placement Note</AlertTitle>
+                    <AlertDescription className="text-yellow-700">
+                      STASS placements are time-limited (30-45 days max) for assessment purposes. 
+                      Homes must be prepared for children with unknown histories.
+                    </AlertDescription>
+                  </Alert>
+                  <h4 className="font-medium mb-2">Assessment Capabilities</h4>
+                  {renderTable(
+                    formData.specializedModules.stass.assessmentCapabilities,
+                    [
+                      { key: "area", label: "Area", type: "text" },
+                      {
+                        key: "competency",
+                        label: "Competency Level",
+                        type: "select",
+                        options: ["Basic", "Proficient", "Advanced"],
+                      },
+                      { key: "evidence", label: "Evidence", type: "textarea" },
+                    ],
+                    "specializedModules.stass.assessmentCapabilities",
+                  )}
+                  <h4 className="font-medium mt-4 mb-2">STASS-Specific Training</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {renderField(
+                      "Unknown History Protocols (Date)",
+                      formData.specializedModules.stass.additionalTraining.unknownHistoryProtocols,
+                      "specializedModules.stass.additionalTraining.unknownHistoryProtocols",
+                      "date",
+                    )}
+                    {renderField(
+                      "Assessment Documentation (Date)",
+                      formData.specializedModules.stass.additionalTraining.assessmentDocumentation,
+                      "specializedModules.stass.additionalTraining.assessmentDocumentation",
+                      "date",
+                    )}
+                    {renderField(
+                      "Expedited Safety Planning (Date)",
+                      formData.specializedModules.stass.additionalTraining.expeditedSafetyPlanning,
+                      "specializedModules.stass.additionalTraining.expeditedSafetyPlanning",
+                      "date",
+                    )}
+                  </div>
+                  <h4 className="font-medium mt-4 mb-2">Assessment Outcomes (from previous experience)</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {renderField(
+                      "Assessment completion within timeline",
+                      formData.specializedModules.stass.assessmentOutcomes.assessmentCompletion,
+                      "specializedModules.stass.assessmentOutcomes.assessmentCompletion",
+                      "radio",
+                      ["Yes", "No", "N/A"],
+                    )}
+                    {renderField(
+                      "Accurate recommendations rate (%)",
+                      formData.specializedModules.stass.assessmentOutcomes.accurateRecommendations,
+                      "specializedModules.stass.assessmentOutcomes.accurateRecommendations",
+                      "text",
+                    )}
+                    {renderField(
+                      "Timeline adherence",
+                      formData.specializedModules.stass.assessmentOutcomes.timelineAdherence,
+                      "specializedModules.stass.assessmentOutcomes.timelineAdherence",
+                      "radio",
+                      ["Excellent", "Good", "Needs Improvement"],
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* TFFC MODULE */}
+              {renderField(
+                "TREATMENT FOSTER FAMILY CARE (TFFC) MODULE",
+                formData.specializedModules.tffc.selected,
+                "specializedModules.tffc.selected",
+                "checkbox",
+              )}
+              {formData.specializedModules.tffc.selected && (
+                <div className="ml-4 border-l pl-4 space-y-4 border-purple-400">
+                  <Alert className="bg-purple-50 border-purple-300">
+                    <AlertCircle className="h-4 w-4 text-purple-600" />
+                    <AlertTitle className="text-purple-800">TFFC Requirements</AlertTitle>
+                    <AlertDescription className="text-purple-700">
+                      <ul className="list-disc list-inside mt-1 space-y-1">
+                        <li><strong>20 hours</strong> initial TFFC training required (TAC §749.863(c))</li>
+                        <li><strong>Maximum 2</strong> TFFC children per home</li>
+                        <li><strong>60-day</strong> review cycle (not 90-day)</li>
+                        <li><strong>365-day</strong> maximum placement duration</li>
+                        <li>Access to <strong>On-Call Licensed Therapist</strong> 24/7</li>
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
+                  <h4 className="font-medium mb-2 text-purple-700">TFFC Capabilities</h4>
+                  {renderTable(
+                    formData.specializedModules.tffc.tffcCapabilities,
+                    [
+                      { key: "area", label: "Area", type: "text" },
+                      {
+                        key: "competency",
+                        label: "Competency Level",
+                        type: "select",
+                        options: ["Basic", "Proficient", "Advanced"],
+                      },
+                      { key: "evidence", label: "Evidence", type: "textarea" },
+                    ],
+                    "specializedModules.tffc.tffcCapabilities",
+                  )}
+                  <h4 className="font-medium mt-4 mb-2">TFFC Training Requirements</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {renderField(
+                      "TFFC Initial Training (20 hrs) Date",
+                      formData.specializedModules.tffc.additionalTraining.tffcInitialTraining,
+                      "specializedModules.tffc.additionalTraining.tffcInitialTraining",
+                      "date",
+                    )}
+                    {renderField(
+                      "Crisis Intervention (Date)",
+                      formData.specializedModules.tffc.additionalTraining.crisisIntervention,
+                      "specializedModules.tffc.additionalTraining.crisisIntervention",
+                      "date",
+                    )}
+                    {renderField(
+                      "Intensive TBRI® Application (Date)",
+                      formData.specializedModules.tffc.additionalTraining.intensiveTbriApplication,
+                      "specializedModules.tffc.additionalTraining.intensiveTbriApplication",
+                      "date",
+                    )}
+                    {renderField(
+                      "Step-Down Planning (Date)",
+                      formData.specializedModules.tffc.additionalTraining.stepDownPlanning,
+                      "specializedModules.tffc.additionalTraining.stepDownPlanning",
+                      "date",
+                    )}
+                  </div>
+                  <h4 className="font-medium mt-4 mb-2">TFFC Placement Outcomes (from previous experience)</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {renderField(
+                      "Crisis reduction rate (%)",
+                      formData.specializedModules.tffc.placementOutcomes.crisisReductionRate,
+                      "specializedModules.tffc.placementOutcomes.crisisReductionRate",
+                      "text",
+                    )}
+                    {renderField(
+                      "Hospitalizations prevented",
+                      formData.specializedModules.tffc.placementOutcomes.hospitalizationsPrevented,
+                      "specializedModules.tffc.placementOutcomes.hospitalizationsPrevented",
+                      "text",
+                    )}
+                    {renderField(
+                      "Successful step-downs",
+                      formData.specializedModules.tffc.placementOutcomes.successfulStepDowns,
+                      "specializedModules.tffc.placementOutcomes.successfulStepDowns",
+                      "text",
+                    )}
+                    {renderField(
+                      "Therapy engagement rate (%)",
+                      formData.specializedModules.tffc.placementOutcomes.therapyEngagementRate,
+                      "specializedModules.tffc.placementOutcomes.therapyEngagementRate",
+                      "text",
+                    )}
+                  </div>
+                  <h4 className="font-medium mt-4 mb-2">TFFC Capacity Limits</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {renderField(
+                      "Maximum TFFC Children",
+                      formData.specializedModules.tffc.tffcLimits.maxTffcChildren,
+                      "specializedModules.tffc.tffcLimits.maxTffcChildren",
+                      "select",
+                      ["1", "2"],
+                    )}
+                    {renderField(
+                      "Dual Credentialed for Basic (can step-down in same home)",
+                      formData.specializedModules.tffc.tffcLimits.dualCredentialedForBasic,
+                      "specializedModules.tffc.tffcLimits.dualCredentialedForBasic",
+                      "checkbox",
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -1122,6 +1458,24 @@ export function FosterHomeCredentialingAssessment({
                 "IDD/Autism Spectrum Disorder Support Services",
                 formData.credentialingDetermination.additionalPackagesApproved.iddAutismSpectrumDisorder,
                 "credentialingDetermination.additionalPackagesApproved.iddAutismSpectrumDisorder",
+                "checkbox",
+              )}
+              {renderField(
+                "Substance Use Support Services",
+                formData.credentialingDetermination.additionalPackagesApproved.substanceUse,
+                "credentialingDetermination.additionalPackagesApproved.substanceUse",
+                "checkbox",
+              )}
+              {renderField(
+                "Short-Term Assessment Support Services (STASS)",
+                formData.credentialingDetermination.additionalPackagesApproved.stass,
+                "credentialingDetermination.additionalPackagesApproved.stass",
+                "checkbox",
+              )}
+              {renderField(
+                "Treatment Foster Family Care (TFFC)",
+                formData.credentialingDetermination.additionalPackagesApproved.tffc,
+                "credentialingDetermination.additionalPackagesApproved.tffc",
                 "checkbox",
               )}
               {renderField(

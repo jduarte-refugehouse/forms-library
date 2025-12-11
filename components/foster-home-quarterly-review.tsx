@@ -362,21 +362,24 @@ export function FosterHomeQuarterlyReview({
             <Label>Service Packages Home is Credentialed For</Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
               {[
-                "T3C Basic",
-                "Mental & Behavioral Health",
-                "IDD/Autism",
-                "Respite",
-                "Transition Support",
-                "Kinship Support",
+                { name: "T3C Basic", color: "bg-green-100" },
+                { name: "Mental & Behavioral Health", color: "bg-blue-100" },
+                { name: "IDD/Autism", color: "bg-teal-100" },
+                { name: "Substance Use Support", color: "bg-amber-100" },
+                { name: "Short-Term Assessment (STASS)", color: "bg-gray-100" },
+                { name: "Treatment Foster Family Care (TFFC)", color: "bg-purple-100" },
+                { name: "Respite", color: "bg-pink-100" },
+                { name: "Transition Support", color: "bg-indigo-100" },
+                { name: "Kinship Support", color: "bg-orange-100" },
               ].map((pkg) => (
-                <div key={pkg} className="flex items-center space-x-2">
+                <div key={pkg.name} className={`flex items-center space-x-2 p-2 rounded ${pkg.color}`}>
                   <Checkbox
-                    id={pkg}
-                    defaultChecked={currentHomeData.servicePackages.includes(pkg)}
+                    id={pkg.name}
+                    defaultChecked={currentHomeData.servicePackages.includes(pkg.name)}
                     disabled={viewMode === "view"}
                   />
-                  <Label htmlFor={pkg} className="text-sm">
-                    {pkg}
+                  <Label htmlFor={pkg.name} className="text-sm">
+                    {pkg.name}
                   </Label>
                 </div>
               ))}
@@ -534,30 +537,165 @@ export function FosterHomeQuarterlyReview({
           {currentHomeData.servicePackages.includes("Mental & Behavioral Health") && (
             <div>
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Brain className="h-5 w-5" />
+                <Brain className="h-5 w-5 text-blue-600" />
                 Mental & Behavioral Health Training
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center justify-between p-3 border rounded-lg border-blue-200 bg-blue-50">
                   <div>
                     <div className="font-medium">Mental Health First Aid</div>
                     <div className="text-sm text-gray-600">Date: 2024-08-15</div>
                   </div>
                   {getStatusBadge("Current")}
                 </div>
-                <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center justify-between p-3 border rounded-lg border-blue-200 bg-blue-50">
                   <div>
                     <div className="font-medium">Crisis Prevention (CPI)</div>
                     <div className="text-sm text-gray-600">Date: 2024-09-20</div>
                   </div>
                   {getStatusBadge("Current")}
                 </div>
-                <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center justify-between p-3 border rounded-lg border-blue-200 bg-blue-50">
                   <div>
                     <div className="font-medium">Trauma-Focused Interventions</div>
                     <div className="text-sm text-gray-600">Date: 2024-07-10</div>
                   </div>
                   {getStatusBadge("Current")}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Substance Use Training */}
+          {currentHomeData.servicePackages.includes("Substance Use Support") && (
+            <div>
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Heart className="h-5 w-5 text-amber-600" />
+                Substance Use Support Training
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center justify-between p-3 border rounded-lg border-amber-200 bg-amber-50">
+                  <div>
+                    <div className="font-medium">Substance Use Awareness</div>
+                    <div className="text-sm text-gray-600">Date: --</div>
+                  </div>
+                  {getStatusBadge("Current")}
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg border-amber-200 bg-amber-50">
+                  <div>
+                    <div className="font-medium">MAT Overview</div>
+                    <div className="text-sm text-gray-600">Date: --</div>
+                  </div>
+                  {getStatusBadge("Current")}
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg border-amber-200 bg-amber-50">
+                  <div>
+                    <div className="font-medium">Relapse Prevention</div>
+                    <div className="text-sm text-gray-600">Date: --</div>
+                  </div>
+                  {getStatusBadge("Current")}
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg border-amber-200 bg-amber-50">
+                  <div>
+                    <div className="font-medium">Recovery Support</div>
+                    <div className="text-sm text-gray-600">Date: --</div>
+                  </div>
+                  {getStatusBadge("Current")}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STASS Training */}
+          {currentHomeData.servicePackages.includes("Short-Term Assessment (STASS)") && (
+            <div>
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Clock className="h-5 w-5 text-gray-600" />
+                STASS-Specific Training
+              </h3>
+              <Alert className="mb-4 bg-yellow-50 border-yellow-300">
+                <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                <AlertDescription className="text-yellow-700">
+                  STASS placements require readiness for children with unknown histories (30-45 day maximum)
+                </AlertDescription>
+              </Alert>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center justify-between p-3 border rounded-lg border-gray-300 bg-gray-50">
+                  <div>
+                    <div className="font-medium">Unknown History Protocols</div>
+                    <div className="text-sm text-gray-600">Date: --</div>
+                  </div>
+                  {getStatusBadge("Current")}
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg border-gray-300 bg-gray-50">
+                  <div>
+                    <div className="font-medium">Assessment Documentation</div>
+                    <div className="text-sm text-gray-600">Date: --</div>
+                  </div>
+                  {getStatusBadge("Current")}
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg border-gray-300 bg-gray-50">
+                  <div>
+                    <div className="font-medium">Expedited Safety Planning</div>
+                    <div className="text-sm text-gray-600">Date: --</div>
+                  </div>
+                  {getStatusBadge("Current")}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TFFC Training */}
+          {currentHomeData.servicePackages.includes("Treatment Foster Family Care (TFFC)") && (
+            <div>
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Shield className="h-5 w-5 text-purple-600" />
+                TFFC Training Requirements
+              </h3>
+              <Alert className="mb-4 bg-purple-50 border-purple-300">
+                <AlertTriangle className="h-4 w-4 text-purple-600" />
+                <AlertDescription className="text-purple-700">
+                  TFFC requires 20 hours initial training + 8 hours annual refresher. Maximum 2 TFFC children per home.
+                </AlertDescription>
+              </Alert>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center justify-between p-3 border rounded-lg border-purple-300 bg-purple-50">
+                  <div>
+                    <div className="font-medium">TFFC Initial Training (20 hrs)</div>
+                    <div className="text-sm text-gray-600">Date: --</div>
+                  </div>
+                  {getStatusBadge("Current")}
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg border-purple-300 bg-purple-50">
+                  <div>
+                    <div className="font-medium">Crisis Intervention (Advanced)</div>
+                    <div className="text-sm text-gray-600">Date: --</div>
+                  </div>
+                  {getStatusBadge("Current")}
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg border-purple-300 bg-purple-50">
+                  <div>
+                    <div className="font-medium">Intensive TBRI® Application</div>
+                    <div className="text-sm text-gray-600">Date: --</div>
+                  </div>
+                  {getStatusBadge("Current")}
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg border-purple-300 bg-purple-50">
+                  <div>
+                    <div className="font-medium">Step-Down Planning</div>
+                    <div className="text-sm text-gray-600">Date: --</div>
+                  </div>
+                  {getStatusBadge("Current")}
+                </div>
+              </div>
+              <div className="mt-4 p-3 bg-purple-100 rounded-lg">
+                <div className="text-sm">
+                  <strong>TFFC Capacity:</strong> Current TFFC children: 0 / Maximum: 2
+                </div>
+                <div className="text-sm mt-1">
+                  <strong>Dual Credential:</strong> 
+                  <Checkbox className="ml-2" disabled={viewMode === "view"} />
+                  <span className="ml-1">Also credentialed for Basic (allows in-home step-down)</span>
                 </div>
               </div>
             </div>
@@ -860,6 +998,9 @@ export function FosterHomeQuarterlyReview({
                 "T3C Basic Foster Family Home",
                 "Mental & Behavioral Health Support Services",
                 "IDD/Autism Spectrum Disorder Support Services",
+                "Substance Use Support Services",
+                "Short-Term Assessment Support Services (STASS)",
+                "Treatment Foster Family Care (TFFC)",
                 "Respite Provider",
               ].map((credential, index) => (
                 <div key={index} className="flex items-center space-x-2">

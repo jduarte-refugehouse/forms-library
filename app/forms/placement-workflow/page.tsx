@@ -29,6 +29,51 @@ const sampleChildData = {
   placementStart: new Date().toISOString(),
 }
 
+// Package-specific intake tasks
+const packageSpecificTasks = {
+  "Mental & Behavioral Health": [
+    "Crisis plan from previous placement reviewed",
+    "Current psychotropic medications verified and supply confirmed",
+    "Therapy appointment scheduling initiated",
+    "24/7 support line information provided to foster family",
+    "Mental health contact at school identified (if applicable)",
+  ],
+  "IDD/Autism": [
+    "Communication method/device identified",
+    "Sensory accommodations documented",
+    "Current therapy schedule obtained (OT, PT, Speech)",
+    "IEP/ARD information collected",
+    "Special equipment needs verified",
+  ],
+  "Substance Use Support Services": [
+    "Recovery status documented",
+    "Current MAT medications verified (if applicable)",
+    "Treatment provider/counselor information obtained",
+    "Relapse prevention plan reviewed",
+    "Recovery-informed expectations discussed with foster family",
+    "Sober support network contacts identified",
+  ],
+  "Short-Term Assessment (STASS)": [
+    "Unknown history protocols activated",
+    "72-hour assessment timeline documented",
+    "Heightened observation period initiated",
+    "Assessment coordination checklist started",
+    "Foster family briefed on neutral observation approach",
+    "Expedited safety plan due date noted",
+  ],
+  "Treatment Foster Family Care": [
+    "TFFC intake protocol activated",
+    "On-Call Therapist contact provided to foster family",
+    "Intensive therapy scheduling initiated",
+    "365-day placement countdown started",
+    "60-day review cycle documented",
+    "Crisis management resources verified",
+    "Treatment Director notified",
+    "Step-down planning considerations documented",
+  ],
+  "T3C Basic": [],
+}
+
 const allTasks = {
   safety: [
     "Child physically arrived at placement",
@@ -419,6 +464,74 @@ function PlacementWorkflowForm() {
                   <AccordionContent className="px-6 pb-4">{allTasks.support.map(renderTaskItem)}</AccordionContent>
                 </AccordionItem>
               </Card>
+
+              {/* Section F: Package-Specific Requirements */}
+              {childData.servicePackage && packageSpecificTasks[childData.servicePackage]?.length > 0 && (
+                <Card className={
+                  childData.servicePackage === "Mental & Behavioral Health" ? "border-blue-300 bg-blue-50/50" :
+                  childData.servicePackage === "IDD/Autism" ? "border-teal-300 bg-teal-50/50" :
+                  childData.servicePackage === "Substance Use Support Services" ? "border-amber-300 bg-amber-50/50" :
+                  childData.servicePackage === "Short-Term Assessment (STASS)" ? "border-gray-400 bg-gray-50/50" :
+                  childData.servicePackage === "Treatment Foster Family Care" ? "border-purple-300 bg-purple-50/50" :
+                  ""
+                }>
+                  <AccordionItem value="package" className="border-b-0">
+                    <AccordionTrigger className="px-6 py-4">
+                      <h3 className="font-semibold text-lg flex items-center gap-2">
+                        F: Package-Specific Requirements
+                        <Badge variant="secondary" className={
+                          childData.servicePackage === "Mental & Behavioral Health" ? "bg-blue-100 text-blue-800" :
+                          childData.servicePackage === "IDD/Autism" ? "bg-teal-100 text-teal-800" :
+                          childData.servicePackage === "Substance Use Support Services" ? "bg-amber-100 text-amber-800" :
+                          childData.servicePackage === "Short-Term Assessment (STASS)" ? "bg-gray-200 text-gray-800" :
+                          childData.servicePackage === "Treatment Foster Family Care" ? "bg-purple-100 text-purple-800" :
+                          ""
+                        }>
+                          {childData.servicePackage}
+                        </Badge>
+                      </h3>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-6 pb-4">
+                      {/* STASS Alert */}
+                      {childData.servicePackage === "Short-Term Assessment (STASS)" && (
+                        <Alert className="mb-4 bg-yellow-50 border-yellow-300">
+                          <Info className="h-4 w-4 text-yellow-600" />
+                          <AlertTitle className="text-yellow-800">STASS Placement</AlertTitle>
+                          <AlertDescription className="text-yellow-700">
+                            This is a time-limited assessment placement (30-45 days max). 
+                            Child may have unknown history - apply heightened vigilance protocols.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                      
+                      {/* TFFC Alert */}
+                      {childData.servicePackage === "Treatment Foster Family Care" && (
+                        <Alert className="mb-4 bg-purple-50 border-purple-300">
+                          <Info className="h-4 w-4 text-purple-600" />
+                          <AlertTitle className="text-purple-800">TFFC Placement</AlertTitle>
+                          <AlertDescription className="text-purple-700">
+                            Treatment Foster Family Care requires 60-day review cycles (not 90-day) 
+                            and has a 365-day maximum placement duration. On-Call Therapist access 24/7.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                      
+                      {/* SU Alert */}
+                      {childData.servicePackage === "Substance Use Support Services" && (
+                        <Alert className="mb-4 bg-amber-50 border-amber-300">
+                          <Info className="h-4 w-4 text-amber-600" />
+                          <AlertTitle className="text-amber-800">Substance Use Support</AlertTitle>
+                          <AlertDescription className="text-amber-700">
+                            Apply recovery-informed, non-punitive approach. Document any MAT medications carefully.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                      
+                      {packageSpecificTasks[childData.servicePackage].map(renderTaskItem)}
+                    </AccordionContent>
+                  </AccordionItem>
+                </Card>
+              )}
             </Accordion>
           </div>
 

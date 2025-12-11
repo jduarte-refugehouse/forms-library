@@ -54,6 +54,8 @@ interface Contact {
   followUpNeeded: string
 }
 
+type ServicePackage = "Basic" | "MH" | "IDD" | "SU" | "STASS" | "TFFC"
+
 interface AftercareChild {
   id: string
   name: string
@@ -69,6 +71,7 @@ interface AftercareChild {
   complianceStatus: ComplianceStatus
   servicesDeclined: boolean
   dischargeType: DischargeType
+  servicePackage: ServicePackage // Added for package tracking
   contactSchedule: {
     [month: string]: {
       required: number
@@ -78,6 +81,9 @@ interface AftercareChild {
       days?: { completed: boolean; scheduled: boolean; missed: boolean }[] // For twice monthly
     }
   }
+  // SU-specific fields
+  recoveryStatus?: "stable" | "challenges" | "relapse-reengaged" | "active-concerns"
+  daysSober?: number
 }
 
 const mockChildrenData: AftercareChild[] = [
@@ -120,6 +126,7 @@ const mockChildrenData: AftercareChild[] = [
     complianceStatus: "on-track",
     servicesDeclined: false,
     dischargeType: "successful",
+    servicePackage: "MH",
     contactSchedule: {
       "1": {
         required: 2,
@@ -214,6 +221,9 @@ const mockChildrenData: AftercareChild[] = [
     complianceStatus: "behind",
     servicesDeclined: true,
     dischargeType: "unsuccessful",
+    servicePackage: "SU",
+    recoveryStatus: "challenges",
+    daysSober: 45,
     contactSchedule: {
       "1": {
         required: 2,
@@ -306,6 +316,7 @@ const mockChildrenData: AftercareChild[] = [
     complianceStatus: "on-track",
     servicesDeclined: false,
     dischargeType: "successful",
+    servicePackage: "Basic",
     contactSchedule: {
       "1": {
         required: 2,
@@ -360,6 +371,7 @@ const mockChildrenData: AftercareChild[] = [
     complianceStatus: "non-compliant",
     servicesDeclined: false,
     dischargeType: "successful",
+    servicePackage: "TFFC",
     contactSchedule: {
       "1": {
         required: 2,
@@ -424,6 +436,18 @@ const mockChildrenData: AftercareChild[] = [
     },
   },
 ]
+
+const getPackageBadge = (pkg: ServicePackage) => {
+  const colors: Record<ServicePackage, string> = {
+    "Basic": "bg-green-100 text-green-800",
+    "MH": "bg-blue-100 text-blue-800",
+    "IDD": "bg-teal-100 text-teal-800",
+    "SU": "bg-amber-100 text-amber-800",
+    "STASS": "bg-gray-200 text-gray-800", 
+    "TFFC": "bg-purple-100 text-purple-800",
+  }
+  return <Badge className={colors[pkg]}>{pkg}</Badge>
+}
 
 const getContactIcon = (type: ContactType) => {
   switch (type) {
@@ -697,6 +721,19 @@ export default function AftercareDashboard() {
             Track and manage children in aftercare status, monitor compliance, and generate reports.
           </p>
 
+          {/* STASS Exclusion Note */}
+          <div className="bg-gray-100 border-l-4 border-gray-500 p-4 rounded print:hidden">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-gray-600" />
+              <span className="font-semibold text-gray-700">STASS Exclusion Note</span>
+            </div>
+            <p className="text-sm text-gray-600 mt-1">
+              Children discharged from <strong>Short-Term Assessment Support Services (STASS)</strong> placements 
+              are not included in aftercare tracking. STASS is a time-limited assessment placement (30-45 days) 
+              and children transition directly to their recommended Service Package, which handles aftercare.
+            </p>
+          </div>
+
           {/* Summary Statistics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 print:grid-cols-2">
             <Card className="bg-blue-50 border-blue-200">
@@ -920,6 +957,7 @@ export default function AftercareDashboard() {
                     <TableHead onClick={() => requestSort("caseNumber")} className="cursor-pointer">
                       Case # {getSortIndicator("caseNumber")}
                     </TableHead>
+                    <TableHead>Package</TableHead>
                     <TableHead onClick={() => requestSort("dischargeDate")} className="cursor-pointer">
                       Discharge Date {getSortIndicator("dischargeDate")}
                     </TableHead>
@@ -943,7 +981,7 @@ export default function AftercareDashboard() {
                 <TableBody>
                   {filteredChildren.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={10} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={11} className="text-center py-8 text-gray-500">
                         No matching records found.
                       </TableCell>
                     </TableRow>
@@ -960,6 +998,12 @@ export default function AftercareDashboard() {
                             </Link>
                           </TableCell>
                           <TableCell>{child.caseNumber}</TableCell>
+                          <TableCell>
+                            {getPackageBadge(child.servicePackage)}
+                            {child.servicePackage === "SU" && child.daysSober && (
+                              <div className="text-xs text-amber-600 mt-1">{child.daysSober} days sober</div>
+                            )}
+                          </TableCell>
                           <TableCell>{format(parseISO(child.dischargeDate), "MMM dd, yyyy")}</TableCell>
                           <TableCell>
                             {child.currentAftercareMonth} of {child.aftercareMonths}
@@ -1022,7 +1066,7 @@ export default function AftercareDashboard() {
                         </TableRow>
                         {/* Contact Frequency Tracker (Vertical Alignment) */}
                         <TableRow className="bg-gray-50 print:hidden">
-                          <TableCell colSpan={10} className="py-2">
+                          <TableCell colSpan={11} className="py-2">
                             <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600">
                               <span className="font-semibold w-full mb-1">Contact Schedule:</span>
                               {Object.entries(child.contactSchedule).map(([month, schedule]) => (

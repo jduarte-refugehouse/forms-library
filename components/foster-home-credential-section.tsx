@@ -5,14 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertTriangle, ChevronDown, ChevronUp, ExternalLink, Shield } from "lucide-react"
+import { AlertTriangle, ChevronDown, ChevronUp, ExternalLink, Shield, Users, Clock, Info } from "lucide-react"
 import Link from "next/link"
+
+type ServicePackageType = "mental-behavioral" | "idd-autism" | "basic" | "substance-use" | "stass" | "tffc"
 
 interface FosterHomeCredentialSectionProps {
   childData?: {
     id: string
     name: string
-    servicePackage: "mental-behavioral" | "idd-autism" | "basic"
+    servicePackage: ServicePackageType
     addOnServices?: string[]
   }
   sectionData?: {
@@ -20,11 +22,22 @@ interface FosterHomeCredentialSectionProps {
       familyName: string
       homeId: string
       licenseNumber: string
+      currentCapacity?: number
+      maxCapacity?: number
     }
     credentials?: {
       t3cBasic: { status: "current" | "expiring" | "expired"; expiration: string }
       servicePackage: { status: "current" | "expiring" | "expired"; expiration: string }
       addOns?: Array<{ name: string; status: "current" | "expiring" | "expired"; expiration: string }>
+      // TFFC dual credentialing
+      tffcCredential?: { status: "current" | "expiring" | "expired"; expiration: string }
+      basicCredential?: { status: "current" | "expiring" | "expired"; expiration: string }
+    }
+    // TFFC specific
+    tffcLimits?: {
+      maxTffcChildren: number
+      currentTffcCount: number
+      dualCredentialed: boolean
     }
   }
   onUpdate?: (data: any) => void
@@ -114,8 +127,31 @@ export function FosterHomeCredentialSection({
         return "IDD/Autism Services"
       case "basic":
         return "Basic Foster Care"
+      case "substance-use":
+        return "Substance Use Support Services"
+      case "stass":
+        return "Short-Term Assessment (STASS)"
+      case "tffc":
+        return "Treatment Foster Family Care"
       default:
         return packageType
+    }
+  }
+
+  const getPackageColor = (packageType: string) => {
+    switch (packageType) {
+      case "mental-behavioral":
+        return "bg-blue-100 text-blue-800"
+      case "idd-autism":
+        return "bg-teal-100 text-teal-800"
+      case "substance-use":
+        return "bg-amber-100 text-amber-800"
+      case "stass":
+        return "bg-gray-100 text-gray-800"
+      case "tffc":
+        return "bg-purple-100 text-purple-800"
+      default:
+        return "bg-gray-100 text-gray-800"
     }
   }
 
@@ -163,13 +199,82 @@ export function FosterHomeCredentialSection({
       {isExpanded && (
         <CardContent>
           <div className="bg-white p-4 rounded-lg border">
-            <h3 className="font-semibold mb-2">Foster Home Credentials</h3>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span>Home: {sectionData.homeInfo?.familyName}</span>
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="font-semibold">Foster Home Credentials</h3>
+                <p className="text-sm text-gray-600">Home: {sectionData.homeInfo?.familyName}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge className={getPackageColor(childData.servicePackage)}>
+                  {getPackageName(childData.servicePackage)}
+                </Badge>
                 {getStatusBadge(overallStatus)}
               </div>
+            </div>
 
+            {/* Capacity Information */}
+            {sectionData.homeInfo?.maxCapacity && (
+              <div className="bg-gray-50 p-3 rounded mb-4 flex items-center gap-4">
+                <Users className="h-5 w-5 text-gray-500" />
+                <div className="flex-1">
+                  <div className="text-sm font-medium">Capacity</div>
+                  <div className="text-sm text-gray-600">
+                    {sectionData.homeInfo.currentCapacity || 0} / {sectionData.homeInfo.maxCapacity} children
+                  </div>
+                </div>
+                {(sectionData.homeInfo.currentCapacity || 0) >= sectionData.homeInfo.maxCapacity && (
+                  <Badge className="bg-red-100 text-red-800">At Capacity</Badge>
+                )}
+              </div>
+            )}
+
+            {/* TFFC Specific Section */}
+            {childData.servicePackage === "tffc" && (
+              <div className="bg-purple-50 p-3 rounded mb-4 border border-purple-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <Shield className="h-4 w-4 text-purple-600" />
+                  <span className="font-medium text-purple-800">TFFC Credentialing</span>
+                </div>
+                
+                {sectionData.tffcLimits?.dualCredentialed && (
+                  <div className="flex items-center gap-2 text-sm text-purple-700 mb-2">
+                    <Info className="h-4 w-4" />
+                    <span>Dual Credentialed (TFFC + Basic)</span>
+                  </div>
+                )}
+                
+                <div className="text-sm space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">TFFC Limit:</span>
+                    <span className="font-medium">
+                      {sectionData.tffcLimits?.currentTffcCount || 0} / {sectionData.tffcLimits?.maxTffcChildren || 2} TFFC children max
+                    </span>
+                  </div>
+                  {(sectionData.tffcLimits?.currentTffcCount || 0) >= (sectionData.tffcLimits?.maxTffcChildren || 2) && (
+                    <Alert className="mt-2 border-purple-300 bg-purple-50">
+                      <AlertTriangle className="h-4 w-4 text-purple-600" />
+                      <AlertDescription className="text-purple-700">
+                        At TFFC capacity - cannot accept additional TFFC placements
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* STASS Note */}
+            {childData.servicePackage === "stass" && (
+              <div className="bg-yellow-50 p-3 rounded mb-4 border border-yellow-200">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-yellow-600" />
+                  <span className="text-sm text-yellow-800">
+                    <strong>STASS:</strong> Time-limited assessment placement (30-45 days max)
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2">
               <div className="text-sm text-gray-600 space-y-1">
                 <p className="flex items-center gap-2">
                   <span>T3C Basic:</span>
@@ -188,6 +293,18 @@ export function FosterHomeCredentialSection({
                     {formatExpirationDate(sectionData.credentials?.servicePackage.expiration || "")}
                   </span>
                 </p>
+
+                {/* Show TFFC-specific credentials */}
+                {childData.servicePackage === "tffc" && sectionData.credentials?.tffcCredential && (
+                  <p className="flex items-center gap-2">
+                    <span>TFFC Credential:</span>
+                    <span>{getStatusIcon(sectionData.credentials.tffcCredential.status)}</span>
+                    <span>
+                      {sectionData.credentials.tffcCredential.status === "current" ? "Current" : "Expires"}{" "}
+                      {formatExpirationDate(sectionData.credentials.tffcCredential.expiration)}
+                    </span>
+                  </p>
+                )}
 
                 {sectionData.credentials?.addOns?.map((addon, index) => (
                   <p key={index} className="flex items-center gap-2">

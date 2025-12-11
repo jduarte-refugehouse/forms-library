@@ -20,6 +20,11 @@ import {
   FileText,
   Eye,
   Lightbulb,
+  FlaskConical,
+  Search,
+  Phone,
+  Calendar,
+  HeartPulse,
 } from "lucide-react"
 
 const CrisisDecisionTool = () => {
@@ -136,6 +141,20 @@ const CrisisDecisionTool = () => {
       color: "pink",
       when: "Immediate suicide risk, need professional help",
     },
+    tffcOnCallTherapist: {
+      number: "Check On-Call Schedule",
+      label: "TFFC On-Call Licensed Therapist",
+      icon: Phone,
+      color: "purple",
+      when: "TFFC-specific crisis requiring clinical consultation - 24/7 availability",
+    },
+    substanceUseCrisis: {
+      number: "1-800-662-4357",
+      label: "SAMHSA National Helpline",
+      icon: HeartPulse,
+      color: "amber",
+      when: "Substance use crisis, relapse support, withdrawal concerns",
+    },
   }
 
   // Decision tree logic
@@ -152,6 +171,10 @@ const CrisisDecisionTool = () => {
       setCurrentStep("safetyAssessment")
     } else if (type === "psychiatric") {
       setCurrentStep("psychiatricAssessment")
+    } else if (type === "substance") {
+      setCurrentStep("substanceAssessment")
+    } else if (type === "unknown-history") {
+      setCurrentStep("unknownHistoryAssessment")
     }
   }
 
@@ -167,20 +190,49 @@ const CrisisDecisionTool = () => {
   const handleBehavioralAssessment = (severity) => {
     setHistory([...history, currentStep])
     if (severity === "danger") {
+      const followUpItems = [
+        "Ensure safety of all household members",
+        "Call case manager within 2 hours of restraint",
+        "Complete Physical Restraint Form within 24 hours",
+        "Conduct child processing session within 24 hours",
+        "Monitor child for 15 minutes post-restraint minimum",
+        "Check if this is 4th+ restraint in 7 days (triggers service plan review)",
+        "Document all TBRI interventions attempted before restraint",
+        "Note restraint duration (15-minute maximum for personal restraint)",
+      ]
+      
+      // TFFC-specific follow-up items
+      if (servicePackage === "tffc") {
+        followUpItems.push(
+          "Contact On-Call Therapist for clinical debrief",
+          "Document crisis for 60-day Crisis Pattern Analysis",
+          "Assess impact on step-down readiness"
+        )
+      }
+      
+      // STASS-specific follow-up items
+      if (servicePackage === "stass") {
+        followUpItems.push(
+          "Document behavioral pattern for assessment team",
+          "Update expedited safety plan within 72 hours",
+          "Note observations for Service Package Recommendation"
+        )
+      }
+      
+      // Substance Use specific follow-up items
+      if (servicePackage === "substance-use") {
+        followUpItems.push(
+          "Assess if substance use was a contributing factor",
+          "Use recovery-focused language in documentation",
+          "Update recovery support plan if needed"
+        )
+      }
+      
       setRecommendation({
         primary: resources.emergency,
-        secondary: resources.refugeHouse,
+        secondary: servicePackage === "tffc" ? resources.tffcOnCallTherapist : resources.refugeHouse,
         action: "Call 911 for immediate safety",
-        followUp: [
-          "Ensure safety of all household members",
-          "Call case manager within 2 hours of restraint",
-          "Complete Physical Restraint Form within 24 hours",
-          "Conduct child processing session within 24 hours",
-          "Monitor child for 15 minutes post-restraint minimum",
-          "Check if this is 4th+ restraint in 7 days (triggers service plan review)",
-          "Document all TBRI interventions attempted before restraint",
-          "Note restraint duration (15-minute maximum for personal restraint)",
-        ],
+        followUp: followUpItems,
       })
       setCurrentStep("postCrisisDocumentation")
     } else if (severity === "escalating") {
@@ -424,11 +476,11 @@ const CrisisDecisionTool = () => {
           </div>
         )}
 
-        {/* ... existing service package selection ... */}
+        {/* Service Package Selection */}
         {currentStep === "initial" && (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
             <h2 className="text-xl font-semibold mb-4">Which service package does this child receive?</h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               <button
                 onClick={() => setServicePackage("basic")}
                 className={`p-4 rounded-lg border-2 transition-all ${
@@ -470,6 +522,90 @@ const CrisisDecisionTool = () => {
                 <div className="font-medium">Both MH & IDD</div>
               </button>
             </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <button
+                onClick={() => setServicePackage("substance-use")}
+                className={`p-4 rounded-lg border-2 transition-all ${
+                  servicePackage === "substance-use"
+                    ? "border-amber-500 bg-amber-50"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                <FlaskConical className="mx-auto mb-2 text-amber-600" />
+                <div className="font-medium">Substance Use</div>
+                <div className="text-xs text-gray-500 mt-1">Recovery Support Services</div>
+              </button>
+              <button
+                onClick={() => setServicePackage("stass")}
+                className={`p-4 rounded-lg border-2 transition-all ${
+                  servicePackage === "stass"
+                    ? "border-teal-500 bg-teal-50"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                <Search className="mx-auto mb-2 text-teal-600" />
+                <div className="font-medium">STASS</div>
+                <div className="text-xs text-gray-500 mt-1">Short-Term Assessment</div>
+              </button>
+              <button
+                onClick={() => setServicePackage("tffc")}
+                className={`p-4 rounded-lg border-2 transition-all ${
+                  servicePackage === "tffc"
+                    ? "border-purple-500 bg-purple-50"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                <Shield className="mx-auto mb-2 text-purple-600" />
+                <div className="font-medium">TFFC</div>
+                <div className="text-xs text-gray-500 mt-1">Treatment Foster Family Care</div>
+              </button>
+            </div>
+            
+            {/* Package-Specific Alerts */}
+            {servicePackage === "stass" && (
+              <div className="mt-4 p-4 bg-teal-50 border-l-4 border-teal-500 rounded-r-lg">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="text-teal-600 mt-0.5 flex-shrink-0" size={20} />
+                  <div>
+                    <h4 className="font-semibold text-teal-800">STASS: Unknown History Considerations</h4>
+                    <p className="text-sm text-teal-700 mt-1">
+                      Children in STASS often have limited or unknown histories. Heightened vigilance 
+                      and expedited safety planning may be needed. Observe for undisclosed trauma triggers.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {servicePackage === "tffc" && (
+              <div className="mt-4 p-4 bg-purple-50 border-l-4 border-purple-500 rounded-r-lg">
+                <div className="flex items-start gap-2">
+                  <Phone className="text-purple-600 mt-0.5 flex-shrink-0" size={20} />
+                  <div>
+                    <h4 className="font-semibold text-purple-800">TFFC: On-Call Therapist Available 24/7</h4>
+                    <p className="text-sm text-purple-700 mt-1">
+                      Treatment Foster Family Care includes access to a TBRI®-trained Licensed Therapist 
+                      for crisis consultation. Contact On-Call Schedule for therapist support before escalating.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {servicePackage === "substance-use" && (
+              <div className="mt-4 p-4 bg-amber-50 border-l-4 border-amber-500 rounded-r-lg">
+                <div className="flex items-start gap-2">
+                  <HeartPulse className="text-amber-600 mt-0.5 flex-shrink-0" size={20} />
+                  <div>
+                    <h4 className="font-semibold text-amber-800">Substance Use: Recovery-Focused Response</h4>
+                    <p className="text-sm text-amber-700 mt-1">
+                      Approach substance-related crises with non-punitive, recovery-focused framing. 
+                      Watch for withdrawal symptoms and relapse risk factors.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -504,6 +640,11 @@ const CrisisDecisionTool = () => {
                   <div className="text-sm text-gray-600">
                     Physical injury, illness, medication questions, medical emergency
                   </div>
+                  {servicePackage === "substance-use" && (
+                    <div className="text-xs text-amber-600 mt-1 font-medium">
+                      ⚠️ Includes withdrawal symptom assessment
+                    </div>
+                  )}
                 </button>
                 <button
                   onClick={() => handleInitialSelection("behavioral")}
@@ -513,6 +654,11 @@ const CrisisDecisionTool = () => {
                   <div className="font-semibold text-lg">Behavioral Crisis</div>
                   <div className="text-sm text-gray-600">Aggression, property destruction, self-harm behaviors</div>
                   <div className="text-xs text-green-600 mt-1 font-medium">✓ Includes TBRI® Assessment</div>
+                  {servicePackage === "tffc" && (
+                    <div className="text-xs text-purple-600 font-medium">
+                      ✓ On-Call Therapist available
+                    </div>
+                  )}
                 </button>
                 <button
                   onClick={() => handleInitialSelection("safety")}
@@ -521,6 +667,11 @@ const CrisisDecisionTool = () => {
                   <Shield className="text-blue-500 mb-2" size={32} />
                   <div className="font-semibold text-lg">Safety Concern</div>
                   <div className="text-sm text-gray-600">Runaway, abuse/neglect suspicion, environmental danger</div>
+                  {servicePackage === "stass" && (
+                    <div className="text-xs text-teal-600 mt-1 font-medium">
+                      ⚠️ Unknown history - heightened vigilance
+                    </div>
+                  )}
                 </button>
                 <button
                   onClick={() => handleInitialSelection("psychiatric")}
@@ -530,6 +681,40 @@ const CrisisDecisionTool = () => {
                   <div className="font-semibold text-lg">Psychiatric Emergency</div>
                   <div className="text-sm text-gray-600">Suicidal thoughts, psychosis, severe mental health crisis</div>
                 </button>
+                
+                {/* Substance Use Specific Option */}
+                {servicePackage === "substance-use" && (
+                  <button
+                    onClick={() => handleInitialSelection("substance")}
+                    className="p-6 rounded-lg border-2 border-amber-300 bg-amber-50 hover:border-amber-400 hover:bg-amber-100 transition-all text-left md:col-span-2"
+                  >
+                    <FlaskConical className="text-amber-600 mb-2" size={32} />
+                    <div className="font-semibold text-lg text-amber-800">Substance-Related Crisis</div>
+                    <div className="text-sm text-amber-700">
+                      Relapse, active use, withdrawal symptoms, overdose risk, recovery support needed
+                    </div>
+                    <div className="text-xs text-amber-600 mt-1 font-medium">
+                      ✓ Recovery-focused non-punitive approach
+                    </div>
+                  </button>
+                )}
+                
+                {/* STASS Unknown History Option */}
+                {servicePackage === "stass" && (
+                  <button
+                    onClick={() => handleInitialSelection("unknown-history")}
+                    className="p-6 rounded-lg border-2 border-teal-300 bg-teal-50 hover:border-teal-400 hover:bg-teal-100 transition-all text-left md:col-span-2"
+                  >
+                    <Search className="text-teal-600 mb-2" size={32} />
+                    <div className="font-semibold text-lg text-teal-800">Unknown History Emergency</div>
+                    <div className="text-sm text-teal-700">
+                      Unexpected reaction, undisclosed trauma trigger, behavior pattern unclear
+                    </div>
+                    <div className="text-xs text-teal-600 mt-1 font-medium">
+                      ✓ Expedited safety planning included
+                    </div>
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -848,6 +1033,40 @@ const CrisisDecisionTool = () => {
                 </div>
               </div>
 
+              {/* TFFC On-Call Therapist Option */}
+              {servicePackage === "tffc" && (
+                <div className="mt-6 p-4 bg-purple-50 border-2 border-purple-300 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Phone className="text-purple-600" size={20} />
+                    <h4 className="font-semibold text-purple-800">TFFC: On-Call Therapist Support</h4>
+                  </div>
+                  <p className="text-sm text-purple-700 mb-3">
+                    If interventions aren't working but the situation isn't yet dangerous, 
+                    consider calling the On-Call Therapist for real-time clinical guidance.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setRecommendation({
+                        primary: resources.tffcOnCallTherapist,
+                        secondary: resources.refugeHouse,
+                        action: "Call On-Call Therapist for clinical consultation",
+                        followUp: [
+                          "Describe current situation and interventions attempted",
+                          "Follow therapist guidance for de-escalation",
+                          "Document therapist recommendations",
+                          "Therapist may coordinate with Treatment Director",
+                          "Continue monitoring - call 911 if danger increases",
+                        ],
+                      })
+                      setCurrentStep("recommendation")
+                    }}
+                    className="w-full p-3 rounded-lg bg-purple-600 text-white font-semibold hover:bg-purple-700 transition-colors"
+                  >
+                    Contact On-Call Therapist Now
+                  </button>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                 <button
                   onClick={() => setCurrentStep("postCrisisRecovery")}
@@ -858,16 +1077,20 @@ const CrisisDecisionTool = () => {
                 </button>
                 <button
                   onClick={() => {
+                    const followUpItems = [
+                      "Ensure safety of others in home",
+                      "Request CIT officer if available",
+                      "Notify Refuge House on-call",
+                      "Document TBRI interventions attempted",
+                    ]
+                    if (servicePackage === "tffc") {
+                      followUpItems.push("Contact On-Call Therapist for debrief after emergency")
+                    }
                     setRecommendation({
                       primary: resources.emergency,
-                      secondary: resources.refugeHouse,
+                      secondary: servicePackage === "tffc" ? resources.tffcOnCallTherapist : resources.refugeHouse,
                       action: "Call 911 - situation unsafe",
-                      followUp: [
-                        "Ensure safety of others in home",
-                        "Request CIT officer if available",
-                        "Notify Refuge House on-call",
-                        "Document TBRI interventions attempted",
-                      ],
+                      followUp: followUpItems,
                     })
                     setCurrentStep("postCrisisDocumentation")
                   }}
@@ -1162,6 +1385,95 @@ const CrisisDecisionTool = () => {
                   </div>
                 </div>
 
+                {/* TFFC-Specific Documentation */}
+                {servicePackage === "tffc" && (
+                  <div className="p-4 bg-purple-50 rounded-lg border-2 border-purple-300 mt-4">
+                    <h4 className="font-semibold text-purple-800 mb-3 flex items-center gap-2">
+                      <Calendar className="text-purple-600" size={20} />
+                      TFFC Crisis Pattern Analysis Documentation
+                    </h4>
+                    <p className="text-sm text-purple-700 mb-3">
+                      Per FC-TFFC-01 §13.4: This crisis must be documented for the 60-Day Crisis Pattern Analysis review.
+                    </p>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-start gap-2">
+                        <CheckCircle className="text-purple-600 mt-0.5 flex-shrink-0" size={16} />
+                        <span>Document trigger patterns observed</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle className="text-purple-600 mt-0.5 flex-shrink-0" size={16} />
+                        <span>Note crisis intensity level</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle className="text-purple-600 mt-0.5 flex-shrink-0" size={16} />
+                        <span>Record interventions and effectiveness</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle className="text-purple-600 mt-0.5 flex-shrink-0" size={16} />
+                        <span>Assess impact on step-down readiness</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Phone className="text-purple-600 mt-0.5 flex-shrink-0" size={16} />
+                        <span>Contact On-Call Therapist for clinical debrief</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* STASS-Specific Documentation */}
+                {servicePackage === "stass" && (
+                  <div className="p-4 bg-teal-50 rounded-lg border-2 border-teal-300 mt-4">
+                    <h4 className="font-semibold text-teal-800 mb-3 flex items-center gap-2">
+                      <Search className="text-teal-600" size={20} />
+                      STASS Assessment Documentation
+                    </h4>
+                    <p className="text-sm text-teal-700 mb-3">
+                      All behavioral observations inform the Service Package Recommendation.
+                    </p>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-start gap-2">
+                        <CheckCircle className="text-teal-600 mt-0.5 flex-shrink-0" size={16} />
+                        <span>Document detailed behavioral observations</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle className="text-teal-600 mt-0.5 flex-shrink-0" size={16} />
+                        <span>Update expedited safety plan within 72 hours</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle className="text-teal-600 mt-0.5 flex-shrink-0" size={16} />
+                        <span>Share observations with assessment team</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Substance Use-Specific Documentation */}
+                {servicePackage === "substance-use" && (
+                  <div className="p-4 bg-amber-50 rounded-lg border-2 border-amber-300 mt-4">
+                    <h4 className="font-semibold text-amber-800 mb-3 flex items-center gap-2">
+                      <HeartPulse className="text-amber-600" size={20} />
+                      Substance Use Documentation Guidance
+                    </h4>
+                    <p className="text-sm text-amber-700 mb-3">
+                      Use recovery-focused, non-punitive language in all documentation.
+                    </p>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-start gap-2">
+                        <CheckCircle className="text-amber-600 mt-0.5 flex-shrink-0" size={16} />
+                        <span>Assess if substance use was a contributing factor</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle className="text-amber-600 mt-0.5 flex-shrink-0" size={16} />
+                        <span>Update recovery support plan if needed</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle className="text-amber-600 mt-0.5 flex-shrink-0" size={16} />
+                        <span>Notify substance use treatment provider</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <button
                   onClick={() => setCurrentStep("recommendation")}
                   className="w-full p-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
@@ -1180,6 +1492,24 @@ const CrisisDecisionTool = () => {
                 <p className="font-medium">Current Situation Check:</p>
                 <p className="text-sm mt-2">Assess the immediate safety of the child and others in the home.</p>
               </div>
+
+              {/* TFFC On-Call Therapist Alert */}
+              {servicePackage === "tffc" && (
+                <div className="bg-purple-50 border-2 border-purple-300 rounded-lg p-4 mb-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Phone className="text-purple-600" size={24} />
+                    <h3 className="font-semibold text-purple-800">TFFC: On-Call Therapist Available</h3>
+                  </div>
+                  <p className="text-sm text-purple-700">
+                    Treatment Foster Family Care includes 24/7 access to a TBRI®-trained Licensed Therapist. 
+                    For escalating situations, consider calling the On-Call Therapist for clinical guidance 
+                    before the situation becomes dangerous.
+                  </p>
+                  <div className="mt-2 p-2 bg-purple-100 rounded text-sm font-medium text-purple-800">
+                    Check On-Call Schedule for therapist contact
+                  </div>
+                </div>
+              )}
 
               <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4 mb-4">
                 <div className="flex items-center gap-2 mb-3">
@@ -1236,6 +1566,11 @@ const CrisisDecisionTool = () => {
                   <div className="text-sm text-orange-600 mt-1">
                     Verbal threats, throwing objects, but can potentially de-escalate
                   </div>
+                  {servicePackage === "tffc" && (
+                    <div className="text-xs text-purple-600 mt-1">
+                      Consider On-Call Therapist consultation
+                    </div>
+                  )}
                 </button>
                 <button
                   onClick={() => handleBehavioralAssessment("stable")}
@@ -1426,6 +1761,272 @@ const CrisisDecisionTool = () => {
               >
                 Got it - Continue to Recommendations
               </button>
+            </div>
+          )}
+
+          {/* Substance Use Assessment - NEW */}
+          {currentStep === "substanceAssessment" && (
+            <div className="space-y-4">
+              <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+                <FlaskConical className="text-amber-600" />
+                Substance-Related Crisis Assessment
+              </h2>
+              
+              <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mb-4">
+                <div className="flex items-start gap-2">
+                  <HeartPulse className="text-amber-600 mt-0.5 flex-shrink-0" size={20} />
+                  <div>
+                    <p className="font-semibold text-amber-800">Recovery-Focused Approach Required</p>
+                    <p className="text-sm text-amber-700 mt-1">
+                      Per FC-SU-01: All substance-related interventions must use non-punitive, 
+                      recovery-focused framing. Relapse is part of recovery, not failure.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  onClick={() => {
+                    setRecommendation({
+                      primary: resources.emergency,
+                      secondary: resources.refugeHouse,
+                      action: "Call 911 - Suspected overdose or medical emergency",
+                      followUp: [
+                        "Request Narcan/naloxone administration if available and trained",
+                        "Stay with youth until emergency services arrive",
+                        "Provide substance information to emergency responders",
+                        "Notify Refuge House on-call immediately after",
+                        "Document without judgment - focus on medical facts",
+                        "Prepare for recovery-focused conversation when stable",
+                      ],
+                    })
+                    setCurrentStep("recommendation")
+                  }}
+                  className="w-full p-4 rounded-lg border-2 border-red-400 bg-red-50 hover:bg-red-100 transition-all text-left"
+                >
+                  <div className="font-semibold text-red-700">Suspected Overdose</div>
+                  <div className="text-sm text-red-600 mt-1">
+                    Unresponsive, difficulty breathing, blue lips, pinpoint pupils
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setRecommendation({
+                      primary: resources.nurseLineIDD,
+                      secondary: resources.refugeHouse,
+                      action: "Call Superior Nurse Line for withdrawal assessment",
+                      followUp: [
+                        "Monitor for severe withdrawal symptoms (seizures, hallucinations)",
+                        "Follow nurse guidance for symptom management",
+                        "Ensure hydration and comfort",
+                        "Contact case manager and treatment team",
+                        "Update MAT provider if applicable",
+                        "Document symptoms in non-judgmental language",
+                      ],
+                    })
+                    setCurrentStep("recommendation")
+                  }}
+                  className="w-full p-4 rounded-lg border-2 border-orange-400 bg-orange-50 hover:bg-orange-100 transition-all text-left"
+                >
+                  <div className="font-semibold text-orange-700">Withdrawal Symptoms</div>
+                  <div className="text-sm text-orange-600 mt-1">
+                    Shaking, sweating, nausea, anxiety, agitation, insomnia
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setRecommendation({
+                      primary: resources.substanceUseCrisis,
+                      secondary: resources.refugeHouse,
+                      action: "Connect with SAMHSA Helpline for relapse support",
+                      followUp: [
+                        "Use non-judgmental, recovery-focused language",
+                        "Affirm that relapse is part of recovery for many",
+                        "Focus on re-engagement, not punishment",
+                        "Contact substance use treatment provider",
+                        "Review and adjust recovery support plan",
+                        "Schedule therapy session ASAP",
+                        "Document relapse circumstances for treatment planning",
+                      ],
+                    })
+                    setCurrentStep("recommendation")
+                  }}
+                  className="w-full p-4 rounded-lg border-2 border-yellow-400 bg-yellow-50 hover:bg-yellow-100 transition-all text-left"
+                >
+                  <div className="font-semibold text-yellow-700">Relapse or Active Use</div>
+                  <div className="text-sm text-yellow-600 mt-1">
+                    Youth has used substances but is medically stable
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setRecommendation({
+                      primary: resources.refugeHouse,
+                      secondary: resources.substanceUseCrisis,
+                      action: "Contact Refuge House for recovery support consultation",
+                      followUp: [
+                        "Listen without judgment",
+                        "Validate struggles while supporting recovery",
+                        "Engage youth in recovery support activities",
+                        "Review coping skills and triggers",
+                        "Notify treatment team of increased support needs",
+                        "Consider peer support or sponsor connection",
+                      ],
+                    })
+                    setCurrentStep("recommendation")
+                  }}
+                  className="w-full p-4 rounded-lg border-2 border-green-400 bg-green-50 hover:bg-green-100 transition-all text-left"
+                >
+                  <div className="font-semibold text-green-700">Craving or Urge Support</div>
+                  <div className="text-sm text-green-600 mt-1">
+                    Youth expressing strong urges or struggling with cravings
+                  </div>
+                </button>
+              </div>
+
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                  <Info className="text-blue-600" size={18} />
+                  MAT Compliance Check
+                </h4>
+                <p className="text-sm text-blue-700">
+                  If youth is on Medication-Assisted Treatment (MAT), verify compliance status. 
+                  MAT non-compliance may indicate relapse risk or barrier to care that needs addressing.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* STASS Unknown History Assessment - NEW */}
+          {currentStep === "unknownHistoryAssessment" && (
+            <div className="space-y-4">
+              <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+                <Search className="text-teal-600" />
+                Unknown History Crisis Assessment
+              </h2>
+              
+              <div className="bg-teal-50 border-l-4 border-teal-400 p-4 mb-4">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="text-teal-600 mt-0.5 flex-shrink-0" size={20} />
+                  <div>
+                    <p className="font-semibold text-teal-800">STASS: Limited History Available</p>
+                    <p className="text-sm text-teal-700 mt-1">
+                      Children in Short-Term Assessment often have unknown trauma histories. 
+                      Assume potential for undisclosed trauma and proceed with heightened caution.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                <p className="font-semibold text-yellow-800">First 72 Hours - Enhanced Monitoring Period</p>
+                <p className="text-sm text-yellow-700 mt-1">
+                  If this child is within first 72 hours of placement, expedited safety planning 
+                  and heightened observation are required.
+                </p>
+              </div>
+
+              <div className="space-y-3 mt-4">
+                <button
+                  onClick={() => {
+                    setRecommendation({
+                      primary: resources.emergency,
+                      secondary: resources.refugeHouse,
+                      action: "Call 911 - Unknown trigger causing dangerous behavior",
+                      followUp: [
+                        "Do not attempt to restrain unless SAMA-trained and immediate danger",
+                        "Clear area of other children and hazards",
+                        "Request CIT (Crisis Intervention Team) if available",
+                        "Document all behaviors objectively for assessment",
+                        "Notify Refuge House on-call immediately",
+                        "Prepare detailed incident description for treatment team",
+                      ],
+                    })
+                    setCurrentStep("recommendation")
+                  }}
+                  className="w-full p-4 rounded-lg border-2 border-red-400 bg-red-50 hover:bg-red-100 transition-all text-left"
+                >
+                  <div className="font-semibold text-red-700">Severe Unexpected Reaction</div>
+                  <div className="text-sm text-red-600 mt-1">
+                    Intense aggression, severe dissociation, or danger to self/others with unclear cause
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => setCurrentStep("preCrisisAssessment")}
+                  className="w-full p-4 rounded-lg border-2 border-orange-400 bg-orange-50 hover:bg-orange-100 transition-all text-left"
+                >
+                  <div className="font-semibold text-orange-700">Apparent Trauma Trigger</div>
+                  <div className="text-sm text-orange-600 mt-1">
+                    Something seems to have triggered a trauma response - needs assessment
+                  </div>
+                  <div className="text-xs text-green-600 mt-1">→ Continue to TBRI® Assessment</div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setRecommendation({
+                      primary: resources.refugeHouse,
+                      secondary: resources.mentalHealthSupport,
+                      action: "Contact Refuge House for rapid safety planning consultation",
+                      followUp: [
+                        "Create or update expedited safety plan within 72 hours",
+                        "Document behavioral observations in detail",
+                        "Note any patterns, triggers, or calming strategies observed",
+                        "Share information with assessment team for service package recommendation",
+                        "Maintain heightened supervision until patterns understood",
+                        "Use TBRI® proactive strategies for felt safety",
+                      ],
+                    })
+                    setCurrentStep("recommendation")
+                  }}
+                  className="w-full p-4 rounded-lg border-2 border-yellow-400 bg-yellow-50 hover:bg-yellow-100 transition-all text-left"
+                >
+                  <div className="font-semibold text-yellow-700">Emerging Pattern Unclear</div>
+                  <div className="text-sm text-yellow-600 mt-1">
+                    Behaviors are concerning but not immediately dangerous - need guidance
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setRecommendation({
+                      primary: resources.nurseLineIDD,
+                      secondary: resources.refugeHouse,
+                      action: "Call Superior Nurse Line for undisclosed medical/health assessment",
+                      followUp: [
+                        "Describe symptoms/behaviors to nurse",
+                        "Ask about potential medical causes for behavior",
+                        "Follow nurse guidance for evaluation",
+                        "Document for assessment team",
+                        "Schedule medical evaluation if recommended",
+                      ],
+                    })
+                    setCurrentStep("recommendation")
+                  }}
+                  className="w-full p-4 rounded-lg border-2 border-blue-400 bg-blue-50 hover:bg-blue-100 transition-all text-left"
+                >
+                  <div className="font-semibold text-blue-700">Possible Medical/Physical Cause</div>
+                  <div className="text-sm text-blue-600 mt-1">
+                    Behaviors may indicate undisclosed medical condition
+                  </div>
+                </button>
+              </div>
+
+              <div className="mt-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                <h4 className="font-semibold text-purple-800 mb-2 flex items-center gap-2">
+                  <FileText className="text-purple-600" size={18} />
+                  Assessment Documentation
+                </h4>
+                <p className="text-sm text-purple-700">
+                  All behavioral observations during STASS placement inform the Service Package 
+                  Recommendation. Document patterns objectively for the assessment team.
+                </p>
+              </div>
             </div>
           )}
 

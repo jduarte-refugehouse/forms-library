@@ -6,25 +6,63 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Settings, Eye, Edit, RefreshCw, BarChart3 } from "lucide-react"
+import { ArrowLeft, Settings, Eye, Edit, RefreshCw, BarChart3, Clock, AlertTriangle } from "lucide-react"
 import Link from "next/link"
 import { PackageSpecificMonitoringSection } from "@/components/package-specific-monitoring-section"
+
+// Package configuration
+const PACKAGES = {
+  'mental-behavioral': {
+    label: 'Mental & Behavioral Health',
+    cycle: 90,
+    color: 'bg-blue-100 text-blue-800',
+    borderColor: 'border-blue-500',
+  },
+  'idd-autism': {
+    label: 'IDD/Autism Services',
+    cycle: 90,
+    color: 'bg-teal-100 text-teal-800',
+    borderColor: 'border-teal-500',
+  },
+  'substance-use': {
+    label: 'Substance Use Support Services',
+    cycle: 90,
+    color: 'bg-amber-100 text-amber-800',
+    borderColor: 'border-amber-500',
+  },
+  'stass': {
+    label: 'Short-Term Assessment (STASS)',
+    cycle: null, // No continued stay
+    color: 'bg-gray-100 text-gray-800',
+    borderColor: 'border-gray-500',
+  },
+  'tffc': {
+    label: 'Treatment Foster Family Care',
+    cycle: 60,
+    color: 'bg-purple-100 text-purple-800',
+    borderColor: 'border-purple-500',
+  },
+} as const
+
+type PackageKey = keyof typeof PACKAGES
 
 export default function PackageSpecificMonitoringPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const [packageType, setPackageType] = useState(searchParams.get("packageType") || "mental-behavioral")
+  const [packageType, setPackageType] = useState<PackageKey>((searchParams.get("packageType") as PackageKey) || "mental-behavioral")
   const [viewMode, setViewMode] = useState<"edit" | "view">((searchParams.get("viewMode") as "edit" | "view") || "edit")
   const [childId] = useState(searchParams.get("childId") || "sample-child-123")
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
+
+  const currentPackage = PACKAGES[packageType]
 
   // Sample child data
   const childData = {
     id: childId,
     name: "Sample Child",
     age: 12,
-    servicePackage: packageType === "mental-behavioral" ? "Mental & Behavioral Health" : "IDD/Autism Services",
+    servicePackage: currentPackage.label,
     placementDate: "2024-01-15",
     caseWorker: "Jane Smith, LCSW",
   }
@@ -47,7 +85,7 @@ export default function PackageSpecificMonitoringPage() {
   }, [packageType, viewMode, childId, router])
 
   const handlePackageChange = (newPackage: string) => {
-    setPackageType(newPackage)
+    setPackageType(newPackage as PackageKey)
     setSectionData((prev) => ({
       ...prev,
       packageType: newPackage,
@@ -81,14 +119,15 @@ export default function PackageSpecificMonitoringPage() {
     }))
   }
 
-  const getPackageColor = (pkg: string) => {
-    return pkg === "mental-behavioral" ? "bg-purple-100 text-purple-800" : "bg-green-100 text-green-800"
-  }
-
-  const getPackageDescription = (pkg: string) => {
-    return pkg === "mental-behavioral"
-      ? "Comprehensive monitoring for therapy, crisis management, medication compliance, and 24/7 support utilization"
-      : "Specialized tracking for therapy schedules, IEP/ARD meetings, behavioral data, and skill development"
+  const getPackageDescription = (pkg: PackageKey) => {
+    const descriptions: Record<PackageKey, string> = {
+      'mental-behavioral': 'Comprehensive monitoring for therapy, crisis management, medication compliance, and 24/7 support utilization',
+      'idd-autism': 'Specialized tracking for therapy schedules, IEP/ARD meetings, behavioral data, and skill development',
+      'substance-use': 'Recovery-focused monitoring for treatment engagement, MAT compliance, relapse prevention, and sobriety milestones',
+      'stass': 'Assessment timeline tracking, deadline monitoring, and placement recommendation documentation (30-45 day limit)',
+      'tffc': '60-day review cycle, crisis pattern analysis, On-Call Therapist logs, step-down readiness, and 365-day countdown',
+    }
+    return descriptions[pkg]
   }
 
   return (
@@ -123,12 +162,15 @@ export default function PackageSpecificMonitoringPage() {
                 <Settings className="h-4 w-4 text-gray-500" />
                 <span className="text-sm font-medium text-gray-700">Package:</span>
                 <Select value={packageType} onValueChange={handlePackageChange}>
-                  <SelectTrigger className="w-64">
+                  <SelectTrigger className="w-72">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="mental-behavioral">Mental & Behavioral Health</SelectItem>
                     <SelectItem value="idd-autism">IDD/Autism Services</SelectItem>
+                    <SelectItem value="substance-use">Substance Use Support Services</SelectItem>
+                    <SelectItem value="stass">Short-Term Assessment (STASS)</SelectItem>
+                    <SelectItem value="tffc">Treatment Foster Family Care</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -170,16 +212,31 @@ export default function PackageSpecificMonitoringPage() {
       </div>
 
       {/* Package Information Banner */}
-      <div className={`px-4 py-3 ${getPackageColor(packageType)}`}>
+      <div className={`px-4 py-3 ${currentPackage.color}`}>
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="font-semibold">
-                {packageType === "mental-behavioral"
-                  ? "Mental & Behavioral Health Package"
-                  : "IDD/Autism Services Package"}
-              </h2>
-              <p className="text-sm opacity-90">{getPackageDescription(packageType)}</p>
+              <div className="flex items-center gap-2">
+                <h2 className="font-semibold">{currentPackage.label}</h2>
+                {currentPackage.cycle && (
+                  <Badge variant="secondary" className="bg-white/40 text-current">
+                    <Clock className="h-3 w-3 mr-1" />
+                    {currentPackage.cycle}-Day Cycle
+                  </Badge>
+                )}
+                {packageType === 'stass' && (
+                  <Badge variant="secondary" className="bg-yellow-200 text-yellow-800">
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    30-45 Day Limit
+                  </Badge>
+                )}
+                {packageType === 'tffc' && (
+                  <Badge variant="secondary" className="bg-purple-200 text-purple-800">
+                    365-Day Maximum
+                  </Badge>
+                )}
+              </div>
+              <p className="text-sm opacity-90 mt-1">{getPackageDescription(packageType)}</p>
             </div>
             <Badge variant="secondary" className="bg-white/20">
               {viewMode === "edit" ? "Editing" : "Viewing"}
