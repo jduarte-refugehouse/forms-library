@@ -2,69 +2,101 @@
 
 import type React from "react"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { AlertCircle, FileCheck, Save, Send, ArrowLeft, Clock, AlertTriangle, Heart, Shield, CheckCircle2, XCircle, Calendar, TrendingUp, TrendingDown } from "lucide-react"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { 
+  AlertCircle, 
+  FileCheck, 
+  Save, 
+  Send, 
+  ArrowLeft, 
+  Clock, 
+  AlertTriangle,
+  Heart,
+  Pill,
+  Shield,
+  XCircle,
+  CheckCircle,
+  TrendingDown,
+  Calendar,
+  Info
+} from "lucide-react"
+import Link from "next/link"
 
 // Package configuration
 const PACKAGES = {
-  'mental-behavioral': {
-    label: 'Mental & Behavioral Health (90-day)',
-    fullLabel: 'Mental & Behavioral Health Support Services',
+  "mental-behavioral": {
+    label: "Mental & Behavioral Health Support Services",
+    shortLabel: "Mental Health",
     cycle: 90,
-    color: 'blue',
+    color: "blue",
+    bgColor: "bg-blue-50",
+    borderColor: "border-blue-500",
+    textColor: "text-blue-800",
     requiresContinuedStay: true,
-    policyRef: 'FC-MH-01',
-    blueprintPage: 'p.85'
+    policyRef: "FC-MH-01",
+    blueprintPage: "p.85"
   },
-  'idd-autism': {
-    label: 'IDD/Autism Spectrum Disorder (90-day)',
-    fullLabel: 'IDD/Autism Spectrum Disorder Support Services',
+  "idd-autism": {
+    label: "IDD/Autism Spectrum Disorder Support Services",
+    shortLabel: "IDD/Autism",
     cycle: 90,
-    color: 'teal',
+    color: "teal",
+    bgColor: "bg-teal-50",
+    borderColor: "border-teal-500",
+    textColor: "text-teal-800",
     requiresContinuedStay: true,
-    policyRef: 'FC-IDD-01',
-    blueprintPage: 'p.133-134'
+    policyRef: "FC-IDD-01",
+    blueprintPage: "p.133-134"
   },
-  'substance-use': {
-    label: 'Substance Use Support Services (90-day)',
-    fullLabel: 'Substance Use Support Services',
+  "substance-use": {
+    label: "Substance Use Support Services",
+    shortLabel: "Substance Use",
     cycle: 90,
-    color: 'amber',
+    color: "amber",
+    bgColor: "bg-amber-50",
+    borderColor: "border-amber-500",
+    textColor: "text-amber-800",
     requiresContinuedStay: true,
-    policyRef: 'FC-SU-01',
-    blueprintPage: 'per FC-SU-01'
+    policyRef: "FC-SU-01",
+    blueprintPage: "per FC-SU-01"
   },
-  'stass': {
-    label: 'STASS - Short-Term Assessment (N/A - excluded)',
-    fullLabel: 'Short-Term Assessment Support Services',
+  "stass": {
+    label: "Short-Term Assessment Support Services",
+    shortLabel: "STASS",
     cycle: null,
-    color: 'gray',
+    color: "gray",
+    bgColor: "bg-gray-100",
+    borderColor: "border-gray-500",
+    textColor: "text-gray-800",
     requiresContinuedStay: false,
-    policyRef: 'FC-STASS-01',
-    blueprintPage: 'N/A'
+    policyRef: "FC-STASS-01",
+    blueprintPage: "N/A"
   },
-  'tffc': {
-    label: 'Treatment Foster Family Care (60-day)',
-    fullLabel: 'T3C Treatment Foster Family Care Support Services',
+  "tffc": {
+    label: "T3C Treatment Foster Family Care Support Services",
+    shortLabel: "TFFC",
     cycle: 60,
-    color: 'purple',
+    color: "rose",
+    bgColor: "bg-rose-50",
+    borderColor: "border-rose-500",
+    textColor: "text-rose-800",
     requiresContinuedStay: true,
-    policyRef: 'FC-TFFC-01',
-    blueprintPage: 'p.145'
+    policyRef: "FC-TFFC-01",
+    blueprintPage: "p.145"
   }
 } as const
 
 type PackageKey = keyof typeof PACKAGES
-import Link from "next/link"
 
 interface EnhancedContinuedStayFormProps {
   childData: {
@@ -120,9 +152,6 @@ function EnhancedContinuedStayForm({
     dfpsCopySent: sectionData?.dfpsCopySent || false,
     dfpsSentDate: sectionData?.dfpsSentDate || "",
     radiusAttached: sectionData?.radiusAttached || false,
-    // TFFC-specific certification
-    tffcContinuedNeedConfirmation: sectionData?.tffcContinuedNeedConfirmation || false,
-    fosterHomeCredentialConfirmation: sectionData?.fosterHomeCredentialConfirmation || false,
   })
 
   const [packageSpecific, setPackageSpecific] = useState({
@@ -153,32 +182,36 @@ function EnhancedContinuedStayForm({
     therapyEngagement: sectionData?.packageSpecific?.therapyEngagement || "",
     stepDownReadiness: sectionData?.packageSpecific?.stepDownReadiness || "",
     stepDownIndicators: sectionData?.packageSpecific?.stepDownIndicators || [],
-    stepDownBarriersTffc: sectionData?.packageSpecific?.stepDownBarriersTffc || [],
+    stepDownBarriersList: sectionData?.packageSpecific?.stepDownBarriersList || [],
     stepDownDestination: sectionData?.packageSpecific?.stepDownDestination || "",
     stepDownNotes: sectionData?.packageSpecific?.stepDownNotes || "",
+    tffcContinuedNeedConfirmation: sectionData?.packageSpecific?.tffcContinuedNeedConfirmation || false,
+    fosterHomeCredentialConfirmation: sectionData?.packageSpecific?.fosterHomeCredentialConfirmation || false,
   })
 
-  // Helper: Get ordinal suffix
+  // Derived package information
+  const selectedPackageConfig = formData.servicePackage ? PACKAGES[formData.servicePackage as PackageKey] : null
+  const reviewCycle = selectedPackageConfig?.cycle || 90
+  const isSTASS = formData.servicePackage === "stass"
+  const isTFFC = formData.servicePackage === "tffc"
+  const isSubstanceUse = formData.servicePackage === "substance-use"
+
+  // Calculate days in placement and remaining (for TFFC)
+  const daysInPlacement = useMemo(() => {
+    if (!formData.placementStartDate) return 0
+    const start = new Date(formData.placementStartDate)
+    const today = new Date()
+    return Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+  }, [formData.placementStartDate])
+
+  const daysRemaining = 365 - daysInPlacement
+
+  // Get ordinal suffix
   const getOrdinal = (n: number) => {
     const s = ["th", "st", "nd", "rd"]
     const v = n % 100
     return n + (s[(v - 20) % 10] || s[v] || s[0])
   }
-
-  // Helper: Calculate days in placement
-  const calculateDaysInPlacement = (placementDate: string) => {
-    if (!placementDate) return 0
-    const start = new Date(placementDate)
-    const today = new Date()
-    const diffTime = today.getTime() - start.getTime()
-    return Math.floor(diffTime / (1000 * 60 * 60 * 24))
-  }
-
-  // Get current package configuration
-  const currentPackage = formData.servicePackage ? PACKAGES[formData.servicePackage as PackageKey] : null
-  const cycleDays = currentPackage?.cycle || 90
-  const daysInPlacement = calculateDaysInPlacement(formData.placementStartDate)
-  const daysRemaining = formData.servicePackage === 'tffc' ? Math.max(0, 365 - daysInPlacement) : null
 
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
 
@@ -192,12 +225,10 @@ function EnhancedContinuedStayForm({
     return diffDays <= 30 && diffDays >= 0
   }
 
-  const calculateNextReviewDate = (currentReviewDate: string, packageType: string) => {
+  const calculateNextReviewDate = (currentReviewDate: string, cycle: number = reviewCycle) => {
     if (!currentReviewDate) return ""
-    const pkg = PACKAGES[packageType as PackageKey]
-    const cycleDaysForPackage = pkg?.cycle || 90
     const date = new Date(currentReviewDate)
-    date.setDate(date.getDate() + cycleDaysForPackage)
+    date.setDate(date.getDate() + cycle)
     return date.toISOString().split("T")[0]
   }
 
@@ -248,10 +279,16 @@ function EnhancedContinuedStayForm({
 
       // Auto-calculate next review date when review date or package changes
       if (field === "reviewDate" && value) {
-        updated.nextReviewDate = calculateNextReviewDate(value, updated.servicePackage)
+        const pkgConfig = PACKAGES[updated.servicePackage as PackageKey]
+        const cycle = pkgConfig?.cycle || 90
+        updated.nextReviewDate = calculateNextReviewDate(value, cycle)
       }
+      
+      // Recalculate next review date when package changes
       if (field === "servicePackage" && updated.reviewDate) {
-        updated.nextReviewDate = calculateNextReviewDate(updated.reviewDate, value)
+        const pkgConfig = PACKAGES[value as PackageKey]
+        const cycle = pkgConfig?.cycle || 90
+        updated.nextReviewDate = calculateNextReviewDate(updated.reviewDate, cycle)
       }
 
       // Auto-save on change
@@ -327,44 +364,120 @@ function EnhancedContinuedStayForm({
           )}
 
           <div className="flex items-center gap-3 mb-4">
-            <FileCheck className={`h-8 w-8 ${formData.servicePackage === 'tffc' ? 'text-purple-600' : 'text-blue-600'}`} />
+            <FileCheck className={`h-8 w-8 ${isTFFC ? "text-rose-600" : isSubstanceUse ? "text-amber-600" : "text-blue-600"}`} />
             <div>
               <h1 className="text-3xl font-bold text-gray-900 print:text-black">
                 Enhanced Continued Stay Confirmation
               </h1>
-              <p className={`font-medium ${formData.servicePackage === 'tffc' ? 'text-purple-600' : 'text-blue-600'} print:text-black`}>
-                {formData.servicePackage === 'tffc' ? '60-Day' : '90-Day'} Confirmation
+              <p className={`print:text-black ${isTFFC ? "text-rose-600 font-semibold" : "text-gray-600"}`}>
+                {isTFFC ? "60-Day" : "90-Day"} Confirmation for Specialized T3C Service Packages
               </p>
-              <p className="text-gray-600 print:text-black text-sm">For specialized T3C service packages</p>
             </div>
             <Badge
               variant="secondary"
-              className={`bg-amber-100 text-amber-800 ${viewMode === "print" ? "print:hidden" : ""}`}
+              className={`${viewMode === "print" ? "print:hidden" : ""} ${
+                isTFFC ? "bg-rose-100 text-rose-800" : 
+                isSubstanceUse ? "bg-amber-100 text-amber-800" : 
+                "bg-blue-100 text-blue-800"
+              }`}
             >
-              Draft
+              {isSTASS ? "N/A" : `${reviewCycle}-Day Cycle`}
             </Badge>
           </div>
 
           {/* Integration Notice */}
           <div className={`border rounded-lg p-4 mb-6 print:break-inside-avoid ${
-            formData.servicePackage === 'tffc' ? 'bg-purple-50 border-purple-200' : 'bg-blue-50 border-blue-200'
+            isTFFC ? "bg-rose-50 border-rose-200" :
+            isSubstanceUse ? "bg-amber-50 border-amber-200" :
+            "bg-blue-50 border-blue-200"
           }`}>
             <div className="flex items-start gap-2">
-              <AlertCircle className={`h-5 w-5 mt-0.5 ${formData.servicePackage === 'tffc' ? 'text-purple-600' : 'text-blue-600'}`} />
-              <div className={`text-sm print:text-black ${formData.servicePackage === 'tffc' ? 'text-purple-800' : 'text-blue-800'}`}>
+              <AlertCircle className={`h-5 w-5 mt-0.5 ${
+                isTFFC ? "text-rose-600" :
+                isSubstanceUse ? "text-amber-600" :
+                "text-blue-600"
+              }`} />
+              <div className={`text-sm print:text-black ${
+                isTFFC ? "text-rose-800" :
+                isSubstanceUse ? "text-amber-800" :
+                "text-blue-800"
+              }`}>
                 <p className="font-medium mb-1">Service Plan Integration</p>
                 <p>
-                  This form is incorporated into the Service Plan for children receiving specialized T3C service packages
-                  requiring continued stay confirmation, including Mental & Behavioral Health, IDD/Autism Spectrum Disorder,
+                  This form is incorporated into the Service Plan for children receiving specialized T3C service packages 
+                  requiring continued stay confirmation, including Mental & Behavioral Health, IDD/Autism Spectrum Disorder, 
                   Substance Use, and Treatment Foster Family Care Support Services.
                 </p>
                 <p className="mt-2 font-medium">
-                  Review frequency: <span className="underline">{formData.servicePackage === 'tffc' ? '60 days (TFFC)' : '90 days (MH, IDD, SU)'}</span>
+                  Review frequency: {isTFFC ? "60 days (TFFC)" : "90 days (MH, IDD, SU)"} per TAC §749.1335 and T3C Blueprint requirements.
                 </p>
-                <p className="text-xs mt-1">Per TAC §749.1335 and T3C Blueprint requirements.</p>
               </div>
             </div>
           </div>
+          
+          {/* STASS Exclusion Notice */}
+          {isSTASS && (
+            <Alert className="mb-6 border-2 border-gray-400 bg-gray-100">
+              <XCircle className="h-5 w-5 text-gray-600" />
+              <AlertTitle className="text-lg text-gray-800">
+                ⚠️ Continued Stay Reviews Not Required for STASS
+              </AlertTitle>
+              <AlertDescription className="text-gray-700 mt-2">
+                <p>
+                  Short-Term Assessment Support Services is a <strong>time-limited</strong> placement 
+                  (30-45 days maximum) designed for assessment purposes only.
+                </p>
+                <p className="mt-2 font-medium">Instead, use these forms:</p>
+                <ul className="list-disc ml-6 mt-1 space-y-1">
+                  <li><Link href="/forms/stass-assessment-progress" className="text-blue-600 hover:underline">STASS Assessment Progress Tracking</Link></li>
+                  <li><Link href="/forms/stass-transition-planning" className="text-blue-600 hover:underline">STASS Transition Planning</Link></li>
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {/* TFFC Alert */}
+          {isTFFC && (
+            <Alert className={`mb-6 border-2 ${
+              daysRemaining <= 30 ? "border-red-500 bg-red-50" :
+              daysRemaining <= 60 ? "border-orange-500 bg-orange-50" :
+              daysRemaining <= 90 ? "border-yellow-500 bg-yellow-50" :
+              "border-rose-300 bg-rose-50"
+            }`}>
+              <AlertTriangle className={`h-5 w-5 ${
+                daysRemaining <= 30 ? "text-red-600" :
+                daysRemaining <= 60 ? "text-orange-600" :
+                daysRemaining <= 90 ? "text-yellow-600" :
+                "text-rose-600"
+              }`} />
+              <AlertTitle className={`${
+                daysRemaining <= 30 ? "text-red-800" :
+                daysRemaining <= 60 ? "text-orange-800" :
+                daysRemaining <= 90 ? "text-yellow-800" :
+                "text-rose-800"
+              }`}>
+                TFFC 60-Day Review Requirements
+              </AlertTitle>
+              <AlertDescription className={`mt-2 ${
+                daysRemaining <= 30 ? "text-red-700" :
+                daysRemaining <= 60 ? "text-orange-700" :
+                daysRemaining <= 90 ? "text-yellow-700" :
+                "text-rose-700"
+              }`}>
+                <ul className="list-disc ml-4 space-y-1">
+                  <li>Review cycle: <strong>60 days</strong> (not 90)</li>
+                  <li>Maximum placement: <strong>365 days</strong> ({daysRemaining > 0 ? `${daysRemaining} remaining` : "EXCEEDED"})</li>
+                  <li>Step-down assessment: <strong>REQUIRED</strong> every review</li>
+                  <li>Crisis analysis: <strong>REQUIRED</strong> every review</li>
+                </ul>
+                {daysRemaining <= 60 && (
+                  <p className="mt-2 font-bold">
+                    {daysRemaining <= 30 ? "⚠️ URGENT: Step-down must occur soon." : "⚠️ Step-down planning should be prioritized."}
+                  </p>
+                )}
+              </AlertDescription>
+            </Alert>
+          )}
 
           {/* Progress Indicator */}
           {viewMode === "edit" && (
@@ -461,45 +574,45 @@ function EnhancedContinuedStayForm({
                       value={formData.servicePackage}
                       onValueChange={(value) => handleInputChange("servicePackage", value)}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className={selectedPackageConfig ? `border-2 ${selectedPackageConfig.borderColor}` : ""}>
                         <SelectValue placeholder="Select service package" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="mental-behavioral">
                           <span className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                            <span className="w-2 h-2 rounded-full bg-blue-500" />
                             Mental & Behavioral Health (90-day)
                           </span>
                         </SelectItem>
                         <SelectItem value="idd-autism">
                           <span className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-teal-500"></span>
+                            <span className="w-2 h-2 rounded-full bg-teal-500" />
                             IDD/Autism Spectrum Disorder (90-day)
                           </span>
                         </SelectItem>
                         <SelectItem value="substance-use">
                           <span className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                            <span className="w-2 h-2 rounded-full bg-amber-500" />
                             Substance Use Support Services (90-day)
                           </span>
                         </SelectItem>
                         <SelectItem value="stass">
                           <span className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                            <span className="w-2 h-2 rounded-full bg-gray-500" />
                             STASS - Short-Term Assessment (N/A - excluded)
                           </span>
                         </SelectItem>
                         <SelectItem value="tffc">
                           <span className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                            <span className="w-2 h-2 rounded-full bg-rose-500" />
                             Treatment Foster Family Care (60-day)
                           </span>
                         </SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (
-                    <p className="p-2 bg-gray-50 rounded print:bg-white print:text-black print:border">
-                      {currentPackage?.fullLabel || "Not provided"}
+                    <p className={`p-2 rounded print:bg-white print:text-black print:border ${selectedPackageConfig?.bgColor || "bg-gray-50"}`}>
+                      {selectedPackageConfig?.shortLabel || "Not provided"}
                     </p>
                   )}
                 </div>
@@ -518,25 +631,6 @@ function EnhancedContinuedStayForm({
                   ) : (
                     <p className="p-2 bg-gray-50 rounded print:bg-white print:text-black">
                       {formData.placementStartDate || "Not provided"}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <Label htmlFor="reviewNumber" className="print:text-black">
-                    Review # *
-                  </Label>
-                  {viewMode === "edit" ? (
-                    <Input
-                      id="reviewNumber"
-                      type="number"
-                      min="1"
-                      value={formData.reviewNumber}
-                      onChange={(e) => handleInputChange("reviewNumber", e.target.value)}
-                      required
-                    />
-                  ) : (
-                    <p className="p-2 bg-gray-50 rounded print:bg-white print:text-black">
-                      {formData.reviewNumber || "1"}
                     </p>
                   )}
                 </div>
@@ -653,7 +747,7 @@ function EnhancedContinuedStayForm({
                 </div>
                 <div>
                   <Label htmlFor="nextReviewDate" className="print:text-black">
-                    Next {formData.servicePackage === 'tffc' ? '60' : '90'}-Day Review Due *
+                    Next {reviewCycle}-Day Review Due *
                   </Label>
                   {viewMode === "edit" ? (
                     <Input
@@ -674,128 +768,77 @@ function EnhancedContinuedStayForm({
                   )}
                 </div>
               </div>
+              
+              {/* Review Counter - Days in Placement */}
+              {!isSTASS && formData.placementStartDate && (
+                <div className={`mt-4 p-4 rounded-lg border-2 ${
+                  isTFFC ? "border-rose-300 bg-rose-50" : "border-blue-200 bg-blue-50"
+                }`}>
+                  <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
+                        isTFFC ? "bg-rose-200" : "bg-blue-200"
+                      }`}>
+                        <span className={`text-2xl font-bold ${isTFFC ? "text-rose-700" : "text-blue-700"}`}>
+                          {formData.reviewNumber || "1"}
+                        </span>
+                      </div>
+                      <div>
+                        <div className={`text-lg font-semibold ${isTFFC ? "text-rose-800" : "text-blue-800"}`}>
+                          {getOrdinal(parseInt(formData.reviewNumber) || 1)} {reviewCycle}-Day Review
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Placement Date: {new Date(formData.placementStartDate).toLocaleDateString()}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Days in Placement: <strong>{daysInPlacement}</strong>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Review Number Input */}
+                    {viewMode === "edit" && (
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="reviewNumber" className="text-sm whitespace-nowrap">Review #:</Label>
+                        <Input
+                          id="reviewNumber"
+                          type="number"
+                          min="1"
+                          value={formData.reviewNumber}
+                          onChange={(e) => handleInputChange("reviewNumber", e.target.value)}
+                          className="w-16"
+                        />
+                      </div>
+                    )}
+                    
+                    {/* TFFC Days Remaining Badge */}
+                    {isTFFC && (
+                      <div className={`px-4 py-2 rounded-lg font-semibold ${
+                        daysRemaining <= 30 ? "bg-red-200 text-red-800" :
+                        daysRemaining <= 60 ? "bg-orange-200 text-orange-800" :
+                        daysRemaining <= 90 ? "bg-yellow-200 text-yellow-800" :
+                        "bg-green-200 text-green-800"
+                      }`}>
+                        <div className="text-xs uppercase">Days Remaining</div>
+                        <div className="text-2xl font-bold">{Math.max(0, daysRemaining)}</div>
+                        <div className="text-xs">of 365</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* STASS Exclusion Notice */}
-          {formData.servicePackage === 'stass' && (
-            <Card className="border-l-4 border-gray-500 bg-gray-50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-gray-700">
-                  <AlertTriangle className="h-5 w-5" />
-                  Continued Stay Reviews Not Required for STASS
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 mb-4">
-                  Short-Term Assessment Support Services is a <strong>time-limited</strong> placement 
-                  (30-45 days maximum) designed for assessment purposes only. Extended Stay Reviews 
-                  are not applicable to this package.
-                </p>
-                <p className="text-gray-700 mb-2">Instead, use these forms:</p>
-                <ul className="list-disc ml-6 space-y-1 text-gray-700">
-                  <li>
-                    <Link href="/forms/short-term-assessment-logic-model" className="text-blue-600 hover:underline">
-                      STASS Logic Model & Assessment Framework
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/forms/placement-workflow" className="text-blue-600 hover:underline">
-                      Placement Workflow (includes transition planning)
-                    </Link>
-                  </li>
-                </ul>
-                <div className="mt-4 p-3 bg-amber-50 rounded border border-amber-200">
-                  <p className="text-amber-800 text-sm">
-                    <strong>Note:</strong> If a child has been in STASS placement beyond 45 days, 
-                    an extension must be documented with Program Director approval per T3C Blueprint p.72.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Review Counter - Show for all except STASS */}
-          {formData.servicePackage && formData.servicePackage !== 'stass' && formData.placementStartDate && (
-            <Card className={`border-l-4 ${formData.servicePackage === 'tffc' ? 'border-purple-500' : 'border-blue-500'}`}>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-6">
-                  {/* Review number circle */}
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                    formData.servicePackage === 'tffc' ? 'bg-purple-100' : 'bg-blue-100'
-                  }`}>
-                    <span className={`text-2xl font-bold ${
-                      formData.servicePackage === 'tffc' ? 'text-purple-700' : 'text-blue-700'
-                    }`}>
-                      {formData.reviewNumber || '1'}
-                    </span>
-                  </div>
-                  
-                  {/* Review details */}
-                  <div className="flex-1">
-                    <div className="text-lg font-semibold text-gray-800">
-                      {getOrdinal(parseInt(formData.reviewNumber) || 1)} {cycleDays}-Day Review
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      Placement Date: {formData.placementStartDate ? new Date(formData.placementStartDate).toLocaleDateString() : 'Not set'}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      Days in Placement: <span className="font-medium">{daysInPlacement}</span>
-                    </div>
-                  </div>
-                  
-                  {/* TFFC: Days remaining badge */}
-                  {formData.servicePackage === 'tffc' && daysRemaining !== null && (
-                    <div className={`px-4 py-2 rounded-lg text-center ${
-                      daysRemaining <= 30 ? 'bg-red-100 border-2 border-red-500' :
-                      daysRemaining <= 60 ? 'bg-orange-100 border-2 border-orange-500' :
-                      daysRemaining <= 90 ? 'bg-yellow-100 border-2 border-yellow-500' :
-                      'bg-purple-100 border-2 border-purple-300'
-                    }`}>
-                      <div className={`text-2xl font-bold ${
-                        daysRemaining <= 30 ? 'text-red-700' :
-                        daysRemaining <= 60 ? 'text-orange-700' :
-                        daysRemaining <= 90 ? 'text-yellow-700' :
-                        'text-purple-700'
-                      }`}>
-                        {daysRemaining}
-                      </div>
-                      <div className="text-xs text-gray-600">days remaining</div>
-                      <div className="text-xs text-gray-500">(365-day max)</div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* TFFC Warning if approaching limit */}
-                {formData.servicePackage === 'tffc' && daysRemaining !== null && daysRemaining <= 90 && (
-                  <div className={`mt-4 p-3 rounded ${
-                    daysRemaining <= 30 ? 'bg-red-50 border-l-4 border-red-500' :
-                    daysRemaining <= 60 ? 'bg-orange-50 border-l-4 border-orange-500' :
-                    'bg-yellow-50 border-l-4 border-yellow-500'
-                  }`}>
-                    <p className={`text-sm font-medium ${
-                      daysRemaining <= 30 ? 'text-red-800' :
-                      daysRemaining <= 60 ? 'text-orange-800' :
-                      'text-yellow-800'
-                    }`}>
-                      ⏱️ {daysRemaining} days remaining until 365-day maximum.
-                      {daysRemaining <= 60 && ' Step-down planning should be prioritized.'}
-                      {daysRemaining <= 30 && ' URGENT: Step-down must occur soon.'}
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
           {/* CANS 3.0 Assessment Data */}
+          {!isSTASS && (
           <Card className="print:break-inside-avoid">
             <CardHeader>
               <CardTitle className="print:text-black">CANS 3.0 Assessment Data</CardTitle>
               <CardDescription className="print:text-black">Most recent assessment information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <Label htmlFor="cansAssessmentDate" className="print:text-black">
                     Most Recent CANS 3.0 Assessment Date *
@@ -816,7 +859,7 @@ function EnhancedContinuedStayForm({
                 </div>
                 <div>
                   <Label htmlFor="cansOverallScore" className="print:text-black">
-                    Overall CANS Score *
+                    Current CANS Score *
                   </Label>
                   {viewMode === "edit" ? (
                     <Input
@@ -833,6 +876,24 @@ function EnhancedContinuedStayForm({
                   )}
                 </div>
                 <div>
+                  <Label htmlFor="previousCansScore" className="print:text-black">
+                    Previous CANS Score
+                  </Label>
+                  {viewMode === "edit" ? (
+                    <Input
+                      id="previousCansScore"
+                      type="number"
+                      value={formData.previousCansScore}
+                      onChange={(e) => handleInputChange("previousCansScore", e.target.value)}
+                      placeholder="For trend comparison"
+                    />
+                  ) : (
+                    <p className="p-2 bg-gray-50 rounded print:bg-white print:text-black">
+                      {formData.previousCansScore || "Not provided"}
+                    </p>
+                  )}
+                </div>
+                <div>
                   <Label htmlFor="cansTrend" className="print:text-black">
                     Trend Indicator *
                   </Label>
@@ -842,79 +903,42 @@ function EnhancedContinuedStayForm({
                         <SelectValue placeholder="Select trend" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="improving">Improving</SelectItem>
-                        <SelectItem value="stable">Stable</SelectItem>
-                        <SelectItem value="worsening">Worsening</SelectItem>
+                        <SelectItem value="improving">📈 Improving</SelectItem>
+                        <SelectItem value="stable">➡️ Stable</SelectItem>
+                        <SelectItem value="worsening">📉 Worsening</SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (
                     <p className="p-2 bg-gray-50 rounded print:bg-white print:text-black">
                       {formData.cansTrend === "improving"
-                        ? "Improving"
+                        ? "📈 Improving"
                         : formData.cansTrend === "stable"
-                          ? "Stable"
+                          ? "➡️ Stable"
                           : formData.cansTrend === "worsening"
-                            ? "Worsening"
+                            ? "📉 Worsening"
                             : "Not provided"}
                     </p>
                   )}
                 </div>
               </div>
               
-              {/* Previous Score Reference */}
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="previousCansScore" className="text-sm">Previous CANS Score (for reference)</Label>
-                    {viewMode === "edit" ? (
-                      <Input
-                        id="previousCansScore"
-                        type="number"
-                        value={formData.previousCansScore}
-                        onChange={(e) => handleInputChange("previousCansScore", e.target.value)}
-                        placeholder="Previous score"
-                        className="mt-1"
-                      />
-                    ) : (
-                      <p className="p-2 bg-white rounded mt-1">{formData.previousCansScore || "Not provided"}</p>
-                    )}
-                  </div>
-                  
-                  {/* Trend visualization */}
-                  {formData.cansOverallScore && formData.previousCansScore && (
-                    <div className="flex items-center gap-2">
-                      <div className={`flex items-center gap-1 px-3 py-2 rounded-lg ${
-                        parseFloat(formData.cansOverallScore) < parseFloat(formData.previousCansScore)
-                          ? 'bg-green-100 text-green-800'
-                          : parseFloat(formData.cansOverallScore) > parseFloat(formData.previousCansScore)
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {parseFloat(formData.cansOverallScore) < parseFloat(formData.previousCansScore) ? (
-                          <>
-                            <TrendingDown className="h-4 w-4" />
-                            <span className="text-sm font-medium">Score Decreased (Improvement)</span>
-                          </>
-                        ) : parseFloat(formData.cansOverallScore) > parseFloat(formData.previousCansScore) ? (
-                          <>
-                            <TrendingUp className="h-4 w-4" />
-                            <span className="text-sm font-medium">Score Increased (Concern)</span>
-                          </>
-                        ) : (
-                          <span className="text-sm font-medium">No Change</span>
-                        )}
-                      </div>
-                      <span className="text-sm text-gray-600">
-                        ({formData.previousCansScore} → {formData.cansOverallScore})
-                      </span>
-                    </div>
-                  )}
+              {/* Auto-calculated trend badge */}
+              {formData.cansOverallScore && formData.previousCansScore && (
+                <div className="mt-2 p-2 bg-gray-100 rounded inline-block">
+                  <span className="text-sm text-gray-600">
+                    Score change: {parseInt(formData.previousCansScore) - parseInt(formData.cansOverallScore) > 0 ? "↓" : parseInt(formData.previousCansScore) - parseInt(formData.cansOverallScore) < 0 ? "↑" : "="}{" "}
+                    {Math.abs(parseInt(formData.previousCansScore) - parseInt(formData.cansOverallScore))} points
+                    {parseInt(formData.previousCansScore) - parseInt(formData.cansOverallScore) > 0 && " (improved)"}
+                    {parseInt(formData.previousCansScore) - parseInt(formData.cansOverallScore) < 0 && " (increased needs)"}
+                  </span>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
+          )}
 
           {/* Clinical Justification */}
+          {!isSTASS && (
           <Card className="print:break-inside-avoid">
             <CardHeader>
               <CardTitle className="print:text-black">Clinical Justification</CardTitle>
@@ -1041,33 +1065,27 @@ function EnhancedContinuedStayForm({
               </div>
             </CardContent>
           </Card>
+          )}
 
           {/* Package-Specific Elements */}
-          {formData.servicePackage && formData.servicePackage !== 'stass' && (
-            <Card className={`print:break-inside-avoid ${
-              formData.servicePackage === 'tffc' ? 'border-l-4 border-purple-500' :
-              formData.servicePackage === 'substance-use' ? 'border-l-4 border-amber-500' :
-              ''
-            }`}>
-              <CardHeader>
+          {formData.servicePackage && !isSTASS && (
+            <Card className={`print:break-inside-avoid border-l-4 ${selectedPackageConfig?.borderColor || "border-blue-500"}`}>
+              <CardHeader className={selectedPackageConfig?.bgColor}>
                 <CardTitle className="print:text-black flex items-center gap-2">
-                  {formData.servicePackage === 'substance-use' && <Heart className="h-5 w-5 text-amber-500" />}
-                  {formData.servicePackage === 'tffc' && <Shield className="h-5 w-5 text-purple-500" />}
+                  {formData.servicePackage === "mental-behavioral" && <Shield className="h-5 w-5 text-blue-600" />}
+                  {formData.servicePackage === "idd-autism" && <Shield className="h-5 w-5 text-teal-600" />}
+                  {isSubstanceUse && <Pill className="h-5 w-5 text-amber-600" />}
+                  {isTFFC && <Heart className="h-5 w-5 text-rose-600" />}
                   Package-Specific Assessment
                 </CardTitle>
                 <CardDescription className="print:text-black">
-                  {formData.servicePackage === "mental-behavioral"
-                    ? "Mental & Behavioral Health specific elements"
-                    : formData.servicePackage === "idd-autism"
-                      ? "IDD/Autism Spectrum Disorder specific elements"
-                      : formData.servicePackage === "substance-use"
-                        ? "Recovery Progress Assessment - Substance Use specific elements"
-                        : formData.servicePackage === "tffc"
-                          ? "Treatment Foster Care 60-Day Assessment"
-                          : ""}
+                  {formData.servicePackage === "mental-behavioral" && "Mental & Behavioral Health specific elements"}
+                  {formData.servicePackage === "idd-autism" && "IDD/Autism Spectrum Disorder specific elements"}
+                  {isSubstanceUse && "Recovery Progress Assessment - per FC-SU-01"}
+                  {isTFFC && "Treatment Foster Care 60-Day Assessment - per FC-TFFC-01"}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 pt-6">
                 {formData.servicePackage === "mental-behavioral" && (
                   <div className="space-y-4">
                     <div>
@@ -1248,451 +1266,365 @@ function EnhancedContinuedStayForm({
                   </div>
                 )}
 
-                {/* SUBSTANCE USE ASSESSMENT */}
-                {formData.servicePackage === "substance-use" && (
+                {/* Substance Use Section */}
+                {isSubstanceUse && (
                   <div className="space-y-6">
                     {/* Recovery Status */}
                     <div>
-                      <Label className="font-medium print:text-black">Recovery Status *</Label>
-                      <RadioGroup
-                        value={packageSpecific.recoveryStatus}
-                        onValueChange={(value) => handlePackageSpecificChange("recoveryStatus", value)}
-                        className="mt-2 space-y-2"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="stable" id="recovery-stable" />
-                          <Label htmlFor="recovery-stable" className="font-normal">
-                            Stable recovery - no substance use this period
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="challenges" id="recovery-challenges" />
-                          <Label htmlFor="recovery-challenges" className="font-normal">
-                            Recovery with minor challenges - maintained sobriety
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="relapse-reengaged" id="recovery-relapse" />
-                          <Label htmlFor="recovery-relapse" className="font-normal">
-                            Relapse occurred - re-engaged in treatment
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="active-concerns" id="recovery-active" />
-                          <Label htmlFor="recovery-active" className="font-normal">
-                            Active substance use concerns
-                          </Label>
-                        </div>
-                      </RadioGroup>
+                      <Label className="print:text-black font-medium">Recovery Status *</Label>
+                      {viewMode === "edit" ? (
+                        <RadioGroup
+                          value={packageSpecific.recoveryStatus}
+                          onValueChange={(value) => handlePackageSpecificChange("recoveryStatus", value)}
+                          className="mt-2 space-y-2"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="stable" id="stable" />
+                            <Label htmlFor="stable" className="font-normal">Stable recovery - no substance use this period</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="challenges" id="challenges" />
+                            <Label htmlFor="challenges" className="font-normal">Recovery with minor challenges - maintained sobriety</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="relapse-reengaged" id="relapse-reengaged" />
+                            <Label htmlFor="relapse-reengaged" className="font-normal">Relapse occurred - re-engaged in treatment</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="active-concerns" id="active-concerns" />
+                            <Label htmlFor="active-concerns" className="font-normal">Active substance use concerns</Label>
+                          </div>
+                        </RadioGroup>
+                      ) : (
+                        <p className="p-2 bg-amber-50 rounded">{packageSpecific.recoveryStatus || "Not provided"}</p>
+                      )}
                     </div>
 
-                    {/* Relapse Details - conditional */}
-                    {packageSpecific.recoveryStatus === 'relapse-reengaged' && (
+                    {/* Relapse Details - Conditional */}
+                    {packageSpecific.recoveryStatus === "relapse-reengaged" && (
                       <div className="bg-amber-50 p-4 rounded border border-amber-200">
-                        <Label className="font-medium text-amber-800">Relapse Information</Label>
+                        <Label className="print:text-black font-medium text-amber-800">Relapse Information</Label>
                         <p className="text-xs text-amber-700 mb-2">
                           Document in non-punitive, recovery-focused framing per FC-SU-01
                         </p>
-                        <Textarea
-                          value={packageSpecific.relapseDetails}
-                          onChange={(e) => handlePackageSpecificChange("relapseDetails", e.target.value)}
-                          placeholder="Describe circumstances, response, and treatment re-engagement..."
-                          rows={3}
-                        />
+                        {viewMode === "edit" ? (
+                          <Textarea
+                            value={packageSpecific.relapseDetails}
+                            onChange={(e) => handlePackageSpecificChange("relapseDetails", e.target.value)}
+                            placeholder="Describe circumstances, response, and treatment re-engagement..."
+                            className="min-h-[80px]"
+                          />
+                        ) : (
+                          <div className="p-3 bg-white rounded">{packageSpecific.relapseDetails || "Not provided"}</div>
+                        )}
                       </div>
                     )}
 
                     {/* Treatment Engagement */}
                     <div>
-                      <Label className="font-medium print:text-black">Substance Use Treatment Engagement *</Label>
-                      <RadioGroup
-                        value={packageSpecific.treatmentEngagement}
-                        onValueChange={(value) => handlePackageSpecificChange("treatmentEngagement", value)}
-                        className="mt-2 space-y-2"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="consistent" id="engagement-consistent" />
-                          <Label htmlFor="engagement-consistent" className="font-normal">
-                            Consistent - attended all/most sessions
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="mostly" id="engagement-mostly" />
-                          <Label htmlFor="engagement-mostly" className="font-normal">
-                            Mostly consistent - occasional missed sessions
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="inconsistent" id="engagement-inconsistent" />
-                          <Label htmlFor="engagement-inconsistent" className="font-normal">
-                            Inconsistent - frequent missed sessions
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="not-engaged" id="engagement-not" />
-                          <Label htmlFor="engagement-not" className="font-normal">
-                            Not engaged in therapy
-                          </Label>
-                        </div>
-                      </RadioGroup>
+                      <Label className="print:text-black font-medium">Substance Use Treatment Engagement *</Label>
+                      {viewMode === "edit" ? (
+                        <RadioGroup
+                          value={packageSpecific.treatmentEngagement}
+                          onValueChange={(value) => handlePackageSpecificChange("treatmentEngagement", value)}
+                          className="mt-2 space-y-2"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="consistent" id="consistent" />
+                            <Label htmlFor="consistent" className="font-normal">Consistent - attended all/most sessions</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="mostly" id="mostly" />
+                            <Label htmlFor="mostly" className="font-normal">Mostly consistent - occasional missed sessions</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="inconsistent" id="inconsistent" />
+                            <Label htmlFor="inconsistent" className="font-normal">Inconsistent - frequent missed sessions</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="not-engaged" id="not-engaged" />
+                            <Label htmlFor="not-engaged" className="font-normal">Not engaged in therapy</Label>
+                          </div>
+                        </RadioGroup>
+                      ) : (
+                        <p className="p-2 bg-amber-50 rounded">{packageSpecific.treatmentEngagement || "Not provided"}</p>
+                      )}
                     </div>
 
                     {/* MAT Status */}
                     <div>
-                      <Label className="font-medium print:text-black">Medication-Assisted Treatment (MAT)</Label>
-                      <RadioGroup
-                        value={packageSpecific.matStatus}
-                        onValueChange={(value) => handlePackageSpecificChange("matStatus", value)}
-                        className="mt-2 space-y-2"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="not-applicable" id="mat-na" />
-                          <Label htmlFor="mat-na" className="font-normal">Not on MAT</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="compliant" id="mat-compliant" />
-                          <Label htmlFor="mat-compliant" className="font-normal">On MAT - fully compliant</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="concerns" id="mat-concerns" />
-                          <Label htmlFor="mat-concerns" className="font-normal">On MAT - compliance concerns</Label>
-                        </div>
-                      </RadioGroup>
-                    </div>
-
-                    {/* Recovery Stability Indicators */}
-                    <div>
-                      <Label className="font-medium print:text-black">Recovery Stability Indicators</Label>
-                      <p className="text-xs text-gray-600 mb-2">Check all that apply</p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {[
-                          { id: 'support-activities', label: 'Engaged in recovery support activities' },
-                          { id: 'sober-network', label: 'Building sober support network' },
-                          { id: 'coping-skills', label: 'Developing healthy coping skills' },
-                          { id: 'trauma-addressed', label: 'Addressing underlying trauma/MH' },
-                          { id: 'school-work', label: 'School/work engagement improving' },
-                          { id: 'family', label: 'Family relationships improving' },
-                        ].map((item) => (
-                          <div key={item.id} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`indicator-${item.id}`}
-                              checked={packageSpecific.recoveryIndicators?.includes(item.id)}
-                              onCheckedChange={(checked) => {
-                                const current = packageSpecific.recoveryIndicators || []
-                                const updated = checked
-                                  ? [...current, item.id]
-                                  : current.filter((i: string) => i !== item.id)
-                                handlePackageSpecificChange("recoveryIndicators", updated)
-                              }}
-                            />
-                            <Label htmlFor={`indicator-${item.id}`} className="font-normal text-sm">
-                              {item.label}
-                            </Label>
+                      <Label className="print:text-black font-medium">Medication-Assisted Treatment (MAT)</Label>
+                      {viewMode === "edit" ? (
+                        <RadioGroup
+                          value={packageSpecific.matStatus}
+                          onValueChange={(value) => handlePackageSpecificChange("matStatus", value)}
+                          className="mt-2 space-y-2"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="not-applicable" id="not-applicable" />
+                            <Label htmlFor="not-applicable" className="font-normal">Not on MAT</Label>
                           </div>
-                        ))}
-                      </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="compliant" id="compliant" />
+                            <Label htmlFor="compliant" className="font-normal">On MAT - fully compliant</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="concerns" id="concerns" />
+                            <Label htmlFor="concerns" className="font-normal">On MAT - compliance concerns</Label>
+                          </div>
+                        </RadioGroup>
+                      ) : (
+                        <p className="p-2 bg-amber-50 rounded">{packageSpecific.matStatus || "Not provided"}</p>
+                      )}
                     </div>
 
                     {/* Recovery Progress Narrative */}
                     <div>
-                      <Label htmlFor="recoveryNarrative" className="font-medium print:text-black">
+                      <Label htmlFor="recoveryNarrative" className="print:text-black font-medium">
                         Recovery Progress Narrative *
                       </Label>
                       <p className="text-xs text-gray-600 mb-1">
                         Describe recovery progress and treatment engagement this review period
                       </p>
-                      <Textarea
-                        id="recoveryNarrative"
-                        value={packageSpecific.recoveryNarrative}
-                        onChange={(e) => handlePackageSpecificChange("recoveryNarrative", e.target.value)}
-                        placeholder="Include specific progress toward recovery goals, treatment participation, relapse prevention skill development..."
-                        rows={4}
-                        required
-                      />
+                      {viewMode === "edit" ? (
+                        <Textarea
+                          id="recoveryNarrative"
+                          value={packageSpecific.recoveryNarrative}
+                          onChange={(e) => handlePackageSpecificChange("recoveryNarrative", e.target.value)}
+                          placeholder="Include specific progress toward recovery goals, treatment participation, relapse prevention skill development..."
+                          className="min-h-[100px]"
+                          required
+                        />
+                      ) : (
+                        <div className="p-3 bg-amber-50 rounded">{packageSpecific.recoveryNarrative || "Not provided"}</div>
+                      )}
                     </div>
                   </div>
                 )}
 
-                {/* TFFC ASSESSMENT */}
-                {formData.servicePackage === "tffc" && (
+                {/* TFFC Section */}
+                {isTFFC && (
                   <div className="space-y-6">
-                    {/* TFFC Requirements Alert */}
-                    <div className="bg-purple-100 border border-purple-300 rounded p-4">
-                      <h4 className="font-bold text-purple-800">⚠️ TFFC Requirements</h4>
-                      <ul className="text-sm text-purple-700 mt-2 space-y-1">
-                        <li>• Review cycle: <strong>60 days</strong> (not 90)</li>
-                        <li>• Maximum placement: <strong>365 days</strong> ({daysRemaining} remaining)</li>
-                        <li>• Step-down assessment: <strong>REQUIRED</strong> every review</li>
-                        <li>• Crisis analysis: <strong>REQUIRED</strong> every review</li>
-                      </ul>
-                    </div>
-
-                    {/* Crisis Pattern Analysis */}
-                    <div className="bg-red-50 p-4 rounded border border-red-200">
+                    {/* Crisis Pattern Analysis - REQUIRED */}
+                    <div className="bg-red-50 p-4 rounded-lg border border-red-200">
                       <h4 className="font-semibold text-red-800 flex items-center gap-2">
-                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTriangle className="h-5 w-5" />
                         Crisis Pattern Analysis (REQUIRED)
                       </h4>
-                      <p className="text-xs text-red-600 mb-3">
+                      <p className="text-xs text-red-600 mb-4">
                         Per FC-TFFC-01 and FC-04.1: Crisis patterns must be analyzed at each 60-day review
                       </p>
 
                       <div className="space-y-4">
                         <div>
                           <Label className="font-medium">Number of crisis incidents this review period: *</Label>
-                          <Input
-                            type="number"
-                            min="0"
-                            value={packageSpecific.crisisCount}
-                            onChange={(e) => handlePackageSpecificChange("crisisCount", e.target.value)}
-                            className="w-32 mt-1"
-                            required
-                          />
+                          {viewMode === "edit" ? (
+                            <Input
+                              type="number"
+                              min="0"
+                              value={packageSpecific.crisisCount}
+                              onChange={(e) => handlePackageSpecificChange("crisisCount", e.target.value)}
+                              className="w-24 mt-1"
+                              required
+                            />
+                          ) : (
+                            <p className="p-2 bg-white rounded">{packageSpecific.crisisCount || "0"}</p>
+                          )}
                         </div>
 
                         <div>
                           <Label className="font-medium">Crisis frequency trend *</Label>
-                          <RadioGroup
-                            value={packageSpecific.crisisTrend}
-                            onValueChange={(value) => handlePackageSpecificChange("crisisTrend", value)}
-                            className="mt-2 space-y-1"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="significant-decrease" id="crisis-sig-dec" />
-                              <Label htmlFor="crisis-sig-dec" className="font-normal text-sm">
-                                Significant decrease from previous period
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="moderate-decrease" id="crisis-mod-dec" />
-                              <Label htmlFor="crisis-mod-dec" className="font-normal text-sm">
-                                Moderate decrease
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="stable" id="crisis-stable" />
-                              <Label htmlFor="crisis-stable" className="font-normal text-sm">
-                                Stable / No change
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="increase" id="crisis-increase" />
-                              <Label htmlFor="crisis-increase" className="font-normal text-sm">
-                                Increase from previous period
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="none" id="crisis-none" />
-                              <Label htmlFor="crisis-none" className="font-normal text-sm">
-                                No crises either period
-                              </Label>
-                            </div>
-                          </RadioGroup>
+                          {viewMode === "edit" ? (
+                            <RadioGroup
+                              value={packageSpecific.crisisTrend}
+                              onValueChange={(value) => handlePackageSpecificChange("crisisTrend", value)}
+                              className="mt-2 space-y-2"
+                            >
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="significant-decrease" id="sig-decrease" />
+                                <Label htmlFor="sig-decrease" className="font-normal">Significant decrease from previous period</Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="moderate-decrease" id="mod-decrease" />
+                                <Label htmlFor="mod-decrease" className="font-normal">Moderate decrease</Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="stable" id="crisis-stable" />
+                                <Label htmlFor="crisis-stable" className="font-normal">Stable / No change</Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="increase" id="increase" />
+                                <Label htmlFor="increase" className="font-normal">Increase from previous period</Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="none" id="no-crises" />
+                                <Label htmlFor="no-crises" className="font-normal">No crises either period</Label>
+                              </div>
+                            </RadioGroup>
+                          ) : (
+                            <p className="p-2 bg-white rounded">{packageSpecific.crisisTrend || "Not provided"}</p>
+                          )}
                         </div>
 
                         <div>
                           <Label className="font-medium">Crisis Pattern Analysis Narrative *</Label>
-                          <Textarea
-                            value={packageSpecific.crisisNarrative}
-                            onChange={(e) => handlePackageSpecificChange("crisisNarrative", e.target.value)}
-                            placeholder="Describe patterns in triggers, intensity, interventions that worked, On-Call Therapist involvement..."
-                            rows={3}
-                            required
-                          />
+                          {viewMode === "edit" ? (
+                            <Textarea
+                              value={packageSpecific.crisisNarrative}
+                              onChange={(e) => handlePackageSpecificChange("crisisNarrative", e.target.value)}
+                              placeholder="Describe patterns in triggers, intensity, interventions that worked, On-Call Therapist involvement..."
+                              className="min-h-[80px]"
+                              required
+                            />
+                          ) : (
+                            <div className="p-3 bg-white rounded">{packageSpecific.crisisNarrative || "Not provided"}</div>
+                          )}
                         </div>
                       </div>
                     </div>
 
                     {/* Behavioral Stability */}
                     <div>
-                      <Label className="font-semibold">Behavioral Stability Assessment *</Label>
-                      <RadioGroup
-                        value={packageSpecific.behavioralStability}
-                        onValueChange={(value) => handlePackageSpecificChange("behavioralStability", value)}
-                        className="mt-2 space-y-1"
-                      >
-                        {[
-                          { value: 'significantly-improved', label: 'Significantly improved' },
-                          { value: 'moderately-improved', label: 'Moderately improved' },
-                          { value: 'stable', label: 'Stable' },
-                          { value: 'some-regression', label: 'Some regression' },
-                          { value: 'significant-concerns', label: 'Significant concerns' },
-                        ].map((item) => (
-                          <div key={item.value} className="flex items-center space-x-2">
-                            <RadioGroupItem value={item.value} id={`behavior-${item.value}`} />
-                            <Label htmlFor={`behavior-${item.value}`} className="font-normal text-sm">
-                              {item.label}
-                            </Label>
-                          </div>
-                        ))}
-                      </RadioGroup>
+                      <Label className="font-medium">Behavioral Stability Assessment *</Label>
+                      {viewMode === "edit" ? (
+                        <RadioGroup
+                          value={packageSpecific.behavioralStability}
+                          onValueChange={(value) => handlePackageSpecificChange("behavioralStability", value)}
+                          className="mt-2 space-y-2"
+                        >
+                          {["significantly-improved", "moderately-improved", "stable", "some-regression", "significant-concerns"].map((opt) => (
+                            <div key={opt} className="flex items-center space-x-2">
+                              <RadioGroupItem value={opt} id={`beh-${opt}`} />
+                              <Label htmlFor={`beh-${opt}`} className="font-normal capitalize">{opt.replace(/-/g, " ")}</Label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      ) : (
+                        <p className="p-2 bg-rose-50 rounded">{packageSpecific.behavioralStability || "Not provided"}</p>
+                      )}
                     </div>
 
                     {/* Therapy Engagement */}
                     <div>
-                      <Label className="font-semibold">Therapy Engagement *</Label>
+                      <Label className="font-medium">Therapy Engagement *</Label>
                       <p className="text-xs text-gray-600">Weekly minimum individual therapy required for TFFC</p>
-                      <RadioGroup
-                        value={packageSpecific.therapyEngagement}
-                        onValueChange={(value) => handlePackageSpecificChange("therapyEngagement", value)}
-                        className="mt-2 space-y-1"
-                      >
-                        {[
-                          { value: 'fully-engaged', label: 'Fully engaged - consistent attendance and participation' },
-                          { value: 'mostly-engaged', label: 'Mostly engaged - good participation with occasional challenges' },
-                          { value: 'partially-engaged', label: 'Partially engaged - inconsistent attendance or participation' },
-                          { value: 'minimally-engaged', label: 'Minimally engaged - significant barriers' },
-                        ].map((item) => (
-                          <div key={item.value} className="flex items-center space-x-2">
-                            <RadioGroupItem value={item.value} id={`therapy-${item.value}`} />
-                            <Label htmlFor={`therapy-${item.value}`} className="font-normal text-sm">
-                              {item.label}
-                            </Label>
+                      {viewMode === "edit" ? (
+                        <RadioGroup
+                          value={packageSpecific.therapyEngagement}
+                          onValueChange={(value) => handlePackageSpecificChange("therapyEngagement", value)}
+                          className="mt-2 space-y-2"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="fully-engaged" id="fully-engaged" />
+                            <Label htmlFor="fully-engaged" className="font-normal">Fully engaged - consistent attendance and participation</Label>
                           </div>
-                        ))}
-                      </RadioGroup>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="mostly-engaged" id="mostly-engaged" />
+                            <Label htmlFor="mostly-engaged" className="font-normal">Mostly engaged - good participation with occasional challenges</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="partially-engaged" id="partially-engaged" />
+                            <Label htmlFor="partially-engaged" className="font-normal">Partially engaged - inconsistent attendance or participation</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="minimally-engaged" id="minimally-engaged" />
+                            <Label htmlFor="minimally-engaged" className="font-normal">Minimally engaged - significant barriers</Label>
+                          </div>
+                        </RadioGroup>
+                      ) : (
+                        <p className="p-2 bg-rose-50 rounded">{packageSpecific.therapyEngagement || "Not provided"}</p>
+                      )}
                     </div>
 
-                    {/* Step-Down Assessment (REQUIRED) */}
-                    <div className="bg-green-50 border border-green-300 p-4 rounded">
+                    {/* Step-Down Assessment - REQUIRED */}
+                    <div className="bg-green-50 border border-green-300 p-4 rounded-lg">
                       <h4 className="font-bold text-green-800 flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4" />
+                        <CheckCircle className="h-5 w-5" />
                         Step-Down Readiness Assessment (REQUIRED)
                       </h4>
-                      <p className="text-xs text-green-700 mb-3">
+                      <p className="text-xs text-green-700 mb-4">
                         Per T3C Blueprint: Step-down assessment must be completed at EVERY 60-day review.
                         Goal is transition to less intensive setting within 365-day maximum.
                       </p>
 
                       <div className="space-y-4">
-                        {/* Step-Down Readiness */}
                         <div>
                           <Label className="font-medium">Current Step-Down Readiness *</Label>
-                          <RadioGroup
-                            value={packageSpecific.stepDownReadiness}
-                            onValueChange={(value) => handlePackageSpecificChange("stepDownReadiness", value)}
-                            className="mt-2 space-y-1"
-                          >
-                            {[
-                              { value: 'ready', label: 'Ready for step-down - recommend transition planning' },
-                              { value: 'approaching', label: 'Approaching readiness - continue 1-2 more review periods' },
-                              { value: 'not-ready', label: 'Not ready - specific barriers identified' },
-                              { value: 'regression', label: 'Regression noted - intensification may be needed' },
-                            ].map((item) => (
-                              <div key={item.value} className="flex items-center space-x-2">
-                                <RadioGroupItem value={item.value} id={`stepdown-${item.value}`} />
-                                <Label htmlFor={`stepdown-${item.value}`} className="font-normal text-sm">
-                                  {item.label}
-                                </Label>
+                          {viewMode === "edit" ? (
+                            <RadioGroup
+                              value={packageSpecific.stepDownReadiness}
+                              onValueChange={(value) => handlePackageSpecificChange("stepDownReadiness", value)}
+                              className="mt-2 space-y-2"
+                            >
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="ready" id="ready" />
+                                <Label htmlFor="ready" className="font-normal">Ready for step-down - recommend transition planning</Label>
                               </div>
-                            ))}
-                          </RadioGroup>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="approaching" id="approaching" />
+                                <Label htmlFor="approaching" className="font-normal">Approaching readiness - continue 1-2 more review periods</Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="not-ready" id="not-ready" />
+                                <Label htmlFor="not-ready" className="font-normal">Not ready - specific barriers identified</Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="regression" id="regression" />
+                                <Label htmlFor="regression" className="font-normal">Regression noted - intensification may be needed</Label>
+                              </div>
+                            </RadioGroup>
+                          ) : (
+                            <p className="p-2 bg-white rounded">{packageSpecific.stepDownReadiness || "Not provided"}</p>
+                          )}
                         </div>
 
-                        {/* Step-Down Indicators */}
-                        <div>
-                          <Label className="font-medium">Step-Down Readiness Indicators Met</Label>
-                          <p className="text-xs text-gray-600">Check all that apply</p>
-                          <div className="grid grid-cols-2 gap-1 mt-2 text-sm">
-                            {[
-                              'Reduced crisis frequency',
-                              'Improved emotional regulation',
-                              'Stable medication regimen',
-                              'Consistent school attendance',
-                              'Reduced supervision needs',
-                              'Improved family relationships',
-                              'Coping skills developed',
-                              'Reduced self-harm (if applicable)',
-                            ].map((item) => (
-                              <div key={item} className="flex items-center gap-1">
-                                <Checkbox
-                                  id={`stepind-${item}`}
-                                  checked={packageSpecific.stepDownIndicators?.includes(item)}
-                                  onCheckedChange={(checked) => {
-                                    const current = packageSpecific.stepDownIndicators || []
-                                    const updated = checked
-                                      ? [...current, item]
-                                      : current.filter((i: string) => i !== item)
-                                    handlePackageSpecificChange("stepDownIndicators", updated)
-                                  }}
-                                />
-                                <Label htmlFor={`stepind-${item}`} className="font-normal text-xs">
-                                  {item}
-                                </Label>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Barriers to Step-Down */}
-                        <div>
-                          <Label className="font-medium">Barriers to Step-Down</Label>
-                          <p className="text-xs text-gray-600">Check all that apply</p>
-                          <div className="grid grid-cols-2 gap-1 mt-2 text-sm">
-                            {[
-                              'Ongoing crisis frequency',
-                              'Insufficient behavioral stability',
-                              'Medication adjustments in progress',
-                              'Active psychiatric symptoms',
-                              'No appropriate placement identified',
-                              'Family/permanency not ready',
-                              'Recent regression',
-                            ].map((item) => (
-                              <div key={item} className="flex items-center gap-1">
-                                <Checkbox
-                                  id={`barrier-${item}`}
-                                  checked={packageSpecific.stepDownBarriersTffc?.includes(item)}
-                                  onCheckedChange={(checked) => {
-                                    const current = packageSpecific.stepDownBarriersTffc || []
-                                    const updated = checked
-                                      ? [...current, item]
-                                      : current.filter((i: string) => i !== item)
-                                    handlePackageSpecificChange("stepDownBarriersTffc", updated)
-                                  }}
-                                />
-                                <Label htmlFor={`barrier-${item}`} className="font-normal text-xs">
-                                  {item}
-                                </Label>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Recommended Step-Down Destination */}
                         <div>
                           <Label className="font-medium">Recommended Step-Down Destination *</Label>
-                          <RadioGroup
-                            value={packageSpecific.stepDownDestination}
-                            onValueChange={(value) => handlePackageSpecificChange("stepDownDestination", value)}
-                            className="mt-2 space-y-1"
-                          >
-                            {[
-                              { value: 'same-home-basic', label: 'Same foster home - transition to Basic Package (if dually credentialed)' },
-                              { value: 'different-home-basic', label: 'Different foster home - Basic Package' },
-                              { value: 'different-specialized', label: 'Different foster home - other specialized package' },
-                              { value: 'permanency', label: 'Permanency placement (reunification, adoption, etc.)' },
-                              { value: 'not-appropriate', label: 'Step-down not appropriate at this time' },
-                            ].map((item) => (
-                              <div key={item.value} className="flex items-center space-x-2">
-                                <RadioGroupItem value={item.value} id={`dest-${item.value}`} />
-                                <Label htmlFor={`dest-${item.value}`} className="font-normal text-sm">
-                                  {item.label}
-                                </Label>
+                          {viewMode === "edit" ? (
+                            <RadioGroup
+                              value={packageSpecific.stepDownDestination}
+                              onValueChange={(value) => handlePackageSpecificChange("stepDownDestination", value)}
+                              className="mt-2 space-y-2"
+                            >
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="same-home-basic" id="same-home-basic" />
+                                <Label htmlFor="same-home-basic" className="font-normal">Same foster home - transition to Basic Package (if dually credentialed)</Label>
                               </div>
-                            ))}
-                          </RadioGroup>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="different-home-basic" id="different-home-basic" />
+                                <Label htmlFor="different-home-basic" className="font-normal">Different foster home - Basic Package</Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="different-specialized" id="different-specialized" />
+                                <Label htmlFor="different-specialized" className="font-normal">Different foster home - other specialized package</Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="permanency" id="permanency" />
+                                <Label htmlFor="permanency" className="font-normal">Permanency placement (reunification, adoption, etc.)</Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="not-appropriate" id="not-appropriate" />
+                                <Label htmlFor="not-appropriate" className="font-normal">Step-down not appropriate at this time</Label>
+                              </div>
+                            </RadioGroup>
+                          ) : (
+                            <p className="p-2 bg-white rounded">{packageSpecific.stepDownDestination || "Not provided"}</p>
+                          )}
                         </div>
 
-                        {/* Step-Down Planning Notes */}
                         <div>
                           <Label className="font-medium">Step-Down Planning Notes *</Label>
-                          <Textarea
-                            value={packageSpecific.stepDownNotes}
-                            onChange={(e) => handlePackageSpecificChange("stepDownNotes", e.target.value)}
-                            placeholder="Specific steps being taken toward step-down, timeline, barriers being addressed..."
-                            rows={3}
-                            required
-                          />
+                          {viewMode === "edit" ? (
+                            <Textarea
+                              value={packageSpecific.stepDownNotes}
+                              onChange={(e) => handlePackageSpecificChange("stepDownNotes", e.target.value)}
+                              placeholder="Specific steps being taken toward step-down, timeline, barriers being addressed..."
+                              className="min-h-[80px]"
+                              required
+                            />
+                          ) : (
+                            <div className="p-3 bg-white rounded">{packageSpecific.stepDownNotes || "Not provided"}</div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1703,6 +1635,7 @@ function EnhancedContinuedStayForm({
           )}
 
           {/* Service Plan Integration */}
+          {!isSTASS && (
           <Card className="print:break-inside-avoid">
             <CardHeader>
               <CardTitle className="print:text-black">Service Plan Integration</CardTitle>
@@ -1759,16 +1692,20 @@ function EnhancedContinuedStayForm({
                 </div>
               </div>
 
-              <div className="bg-gray-50 p-3 rounded-md print:bg-white print:border">
-                <p className="text-sm text-gray-700 print:text-black">
-                  <strong>Note:</strong> This confirmation must be completed concurrently with each{" "}
-                  {formData.servicePackage === 'tffc' ? '60' : '90'}-day Service Plan Review
+              <div className={`p-3 rounded-md print:bg-white print:border ${
+                isTFFC ? "bg-rose-50" : "bg-gray-50"
+              }`}>
+                <p className={`text-sm print:text-black ${isTFFC ? "text-rose-700" : "text-gray-700"}`}>
+                  <strong>Note:</strong> This confirmation must be completed concurrently with each {reviewCycle}-day Service Plan
+                  Review{isTFFC && " and includes required step-down assessment"}.
                 </p>
               </div>
             </CardContent>
           </Card>
+          )}
 
           {/* Certification Section */}
+          {!isSTASS && (
           <Card className="print:break-inside-avoid">
             <CardHeader>
               <CardTitle className="print:text-black">Certification</CardTitle>
@@ -1815,57 +1752,43 @@ function EnhancedContinuedStayForm({
               </div>
 
               <div className={`p-4 rounded-md print:bg-white print:border ${
-                  formData.servicePackage === 'tffc' ? 'bg-purple-50' : 'bg-blue-50'
-                }`}>
+                isTFFC ? "bg-rose-50" : isSubstanceUse ? "bg-amber-50" : "bg-blue-50"
+              }`}>
                 <p className={`text-sm print:text-black ${
-                  formData.servicePackage === 'tffc' ? 'text-purple-800' : 'text-blue-800'
+                  isTFFC ? "text-rose-800" : isSubstanceUse ? "text-amber-800" : "text-blue-800"
                 }`}>
                   <strong>Certification Statement:</strong> We certify that{" "}
-                  <span className="font-bold underline">{formData.childName || "[Child's Name]"}</span>{" "}
+                  <span className="font-bold">{formData.childName || "[Child's Name]"}</span>{" "}
                   continues to meet criteria for and is benefitting from the{" "}
-                  <span className="font-bold">{currentPackage?.fullLabel || "[Service Package Name]"}</span>,{" "}
+                  <span className="font-bold">{selectedPackageConfig?.label || "[Service Package Name]"}</span>, 
                   and that the less-restrictive T3C Basic Foster Home Service Package is not
-                  appropriate to meet the child's needs at this time.
+                  appropriate to meet the child&apos;s needs at this time.
                 </p>
               </div>
-
+              
               {/* TFFC Additional Certifications */}
-              {formData.servicePackage === 'tffc' && (
-                <div className="bg-purple-50 p-4 rounded-md mt-4 border border-purple-200">
-                  <h4 className="font-medium text-purple-800 mb-3">TFFC-Specific Certifications (Required)</h4>
+              {isTFFC && viewMode === "edit" && (
+                <div className="bg-rose-50 p-4 rounded-lg border border-rose-200 mt-4">
+                  <h4 className="font-medium text-rose-800 mb-3">TFFC Additional Certifications</h4>
                   <div className="space-y-3">
-                    <div className="flex items-start space-x-2">
-                      {viewMode === "edit" ? (
-                        <Checkbox
-                          id="tffcContinuedNeedConfirmation"
-                          checked={formData.tffcContinuedNeedConfirmation}
-                          onCheckedChange={(checked) => handleInputChange("tffcContinuedNeedConfirmation", checked)}
-                          required
-                        />
-                      ) : (
-                        <div className={`w-4 h-4 border rounded mt-0.5 ${formData.tffcContinuedNeedConfirmation ? "bg-purple-600" : "bg-white"}`}>
-                          {formData.tffcContinuedNeedConfirmation && <span className="text-white text-xs">✓</span>}
-                        </div>
-                      )}
-                      <Label htmlFor="tffcContinuedNeedConfirmation" className="font-normal text-purple-800">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="tffcContinuedNeedConfirmation"
+                        checked={packageSpecific.tffcContinuedNeedConfirmation}
+                        onCheckedChange={(checked) => handlePackageSpecificChange("tffcContinuedNeedConfirmation", checked)}
+                      />
+                      <Label htmlFor="tffcContinuedNeedConfirmation" className="font-normal">
                         Treatment Director confirms child requires continued T3C Treatment Foster Care 
                         and step-down is not appropriate at this time *
                       </Label>
                     </div>
-                    <div className="flex items-start space-x-2">
-                      {viewMode === "edit" ? (
-                        <Checkbox
-                          id="fosterHomeCredentialConfirmation"
-                          checked={formData.fosterHomeCredentialConfirmation}
-                          onCheckedChange={(checked) => handleInputChange("fosterHomeCredentialConfirmation", checked)}
-                          required
-                        />
-                      ) : (
-                        <div className={`w-4 h-4 border rounded mt-0.5 ${formData.fosterHomeCredentialConfirmation ? "bg-purple-600" : "bg-white"}`}>
-                          {formData.fosterHomeCredentialConfirmation && <span className="text-white text-xs">✓</span>}
-                        </div>
-                      )}
-                      <Label htmlFor="fosterHomeCredentialConfirmation" className="font-normal text-purple-800">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="fosterHomeCredentialConfirmation"
+                        checked={packageSpecific.fosterHomeCredentialConfirmation}
+                        onCheckedChange={(checked) => handlePackageSpecificChange("fosterHomeCredentialConfirmation", checked)}
+                      />
+                      <Label htmlFor="fosterHomeCredentialConfirmation" className="font-normal">
                         Foster home maintains Treatment Foster Care credential *
                       </Label>
                     </div>
@@ -1874,8 +1797,10 @@ function EnhancedContinuedStayForm({
               )}
             </CardContent>
           </Card>
+          )}
 
           {/* Distribution Requirements */}
+          {!isSTASS && (
           <Card className="print:break-inside-avoid">
             <CardHeader>
               <CardTitle className="print:text-black">Distribution Requirements</CardTitle>
@@ -1939,6 +1864,7 @@ function EnhancedContinuedStayForm({
               </div>
             </CardContent>
           </Card>
+          )}
 
           {/* Form Actions */}
           {isStandalone && (
@@ -1969,16 +1895,11 @@ function EnhancedContinuedStayForm({
         {/* Compliance Footer */}
         <div className="mt-12 p-4 bg-gray-50 rounded-lg print:bg-white print:border">
           <p className="text-xs text-gray-600 print:text-black">
-            <strong>Compliance Statement:</strong> This form fulfills T3C Blueprint requirements for{" "}
-            {formData.servicePackage === 'tffc' ? '60-day' : '90-day'} written confirmation of continued stay 
-            necessity as outlined in:{" "}
-            {formData.servicePackage === 'mental-behavioral' && 'Mental & Behavioral Health Support Services (p.85)'}
-            {formData.servicePackage === 'idd-autism' && 'IDD/Autism Spectrum Disorder Support Services (p.133-134)'}
-            {formData.servicePackage === 'substance-use' && 'Substance Use Support Services (per FC-SU-01)'}
-            {formData.servicePackage === 'tffc' && 'T3C Treatment Foster Family Care Support Services (p.145)'}
-            {!formData.servicePackage && 'the applicable service package'}{" "}
-            specifications. This form is conditionally incorporated into the Service Plan when these packages 
-            are utilized.
+            <strong>Compliance Statement:</strong> This form fulfills T3C Blueprint requirements for {isTFFC ? "60-day" : "90-day"} written
+            confirmation of continued stay necessity as outlined in the{" "}
+            {selectedPackageConfig?.label || "specialized service package"} ({selectedPackageConfig?.blueprintPage || "T3C Blueprint"}) 
+            specifications. This form is conditionally incorporated into the Service Plan when specialized packages are utilized.
+            Policy Reference: {selectedPackageConfig?.policyRef || "FC-CSR-01.1"}
           </p>
         </div>
       </div>

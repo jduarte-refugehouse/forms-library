@@ -24,6 +24,19 @@ import {
 import Link from "next/link"
 import Image from "next/image"
 
+// Package badge configuration
+const PACKAGE_BADGES = {
+  all: { label: "All", color: "bg-gray-600 text-white" },
+  basic: { label: "Basic", color: "bg-green-600 text-white" },
+  mh: { label: "MH", color: "bg-blue-600 text-white" },
+  idd: { label: "IDD", color: "bg-teal-600 text-white" },
+  su: { label: "SU", color: "bg-amber-600 text-white" },
+  stass: { label: "STASS", color: "bg-gray-500 text-white" },
+  tffc: { label: "TFFC", color: "bg-purple-600 text-white" },
+} as const
+
+type PackageKey = keyof typeof PACKAGE_BADGES
+
 export default function FormDirectory() {
   const generalForms = [
     {
@@ -33,6 +46,7 @@ export default function FormDirectory() {
       icon: Phone,
       category: "Communication",
       status: "draft",
+      packages: ["all"] as PackageKey[],
     },
   ]
 
@@ -45,6 +59,7 @@ export default function FormDirectory() {
       icon: UserPlus,
       category: "Intake",
       status: "draft",
+      packages: ["all"] as PackageKey[],
     },
     {
       id: "placement-workflow?childId=sample-child-123",
@@ -54,6 +69,7 @@ export default function FormDirectory() {
       icon: ListChecks,
       category: "Placement",
       status: "draft",
+      packages: ["all"] as PackageKey[],
     },
     {
       id: "admission-assessment?childId=sample-child-123&placementId=sample-placement-456",
@@ -63,6 +79,7 @@ export default function FormDirectory() {
       icon: FileCheck,
       category: "Assessment",
       status: "draft",
+      packages: ["all"] as PackageKey[],
     },
   ]
 
@@ -75,6 +92,7 @@ export default function FormDirectory() {
       icon: Building,
       category: "Foster Home Management",
       status: "draft",
+      packages: ["all"] as PackageKey[],
     },
     {
       id: "foster-home-credentialing-assessment?homeId=FH-2024-0156",
@@ -84,6 +102,7 @@ export default function FormDirectory() {
       icon: Shield,
       category: "Credentialing",
       status: "draft",
+      packages: ["all"] as PackageKey[],
     },
   ]
 
@@ -96,6 +115,7 @@ export default function FormDirectory() {
       icon: BookOpen,
       category: "Complete Guide",
       status: "active",
+      packages: ["basic"] as PackageKey[],
     },
     {
       id: "basic-logic-model",
@@ -105,6 +125,7 @@ export default function FormDirectory() {
       icon: BarChart3,
       category: "Logic Model",
       status: "active",
+      packages: ["basic"] as PackageKey[],
     },
     {
       id: "basic-cqi-model",
@@ -114,6 +135,7 @@ export default function FormDirectory() {
       icon: ListChecks,
       category: "CQI Model",
       status: "active",
+      packages: ["basic"] as PackageKey[],
     },
   ]
 
@@ -126,6 +148,7 @@ export default function FormDirectory() {
       icon: FileText,
       category: "Treatment Model",
       status: "active",
+      packages: ["mh"] as PackageKey[],
     },
     {
       id: "mental-behavioral-logic-model",
@@ -135,6 +158,7 @@ export default function FormDirectory() {
       icon: BarChart3,
       category: "Logic Model",
       status: "active",
+      packages: ["mh"] as PackageKey[],
     },
     {
       id: "mental-behavioral-cqi-model",
@@ -144,6 +168,7 @@ export default function FormDirectory() {
       icon: ListChecks,
       category: "CQI Model",
       status: "active",
+      packages: ["mh"] as PackageKey[],
     },
   ]
 
@@ -156,6 +181,7 @@ export default function FormDirectory() {
       icon: FileText,
       category: "Treatment Model",
       status: "active",
+      packages: ["idd"] as PackageKey[],
     },
     {
       id: "idd-autism-logic-model",
@@ -165,6 +191,7 @@ export default function FormDirectory() {
       icon: BarChart3,
       category: "Logic Model",
       status: "active",
+      packages: ["idd"] as PackageKey[],
     },
     {
       id: "idd-autism-cqi-model",
@@ -174,6 +201,7 @@ export default function FormDirectory() {
       icon: ListChecks,
       category: "CQI Model",
       status: "active",
+      packages: ["idd"] as PackageKey[],
     },
   ]
 
@@ -186,6 +214,7 @@ export default function FormDirectory() {
       icon: FileText,
       category: "Treatment Model",
       status: "active",
+      packages: ["stass"] as PackageKey[],
     },
     {
       id: "short-term-assessment-logic-model",
@@ -195,6 +224,7 @@ export default function FormDirectory() {
       icon: BarChart3,
       category: "Logic Model",
       status: "active",
+      packages: ["stass"] as PackageKey[],
     },
     {
       id: "short-term-assessment-cqi-model",
@@ -204,6 +234,7 @@ export default function FormDirectory() {
       icon: ListChecks,
       category: "CQI Model",
       status: "active",
+      packages: ["stass"] as PackageKey[],
     },
   ]
 
@@ -216,6 +247,7 @@ export default function FormDirectory() {
       icon: FileText,
       category: "Treatment Model",
       status: "active",
+      packages: ["tffc"] as PackageKey[],
     },
     {
       id: "treatment-foster-care-logic-model",
@@ -225,6 +257,7 @@ export default function FormDirectory() {
       icon: BarChart3,
       category: "Logic Model",
       status: "active",
+      packages: ["tffc"] as PackageKey[],
     },
     {
       id: "treatment-foster-care-cqi-model",
@@ -234,6 +267,7 @@ export default function FormDirectory() {
       icon: ListChecks,
       category: "CQI Model",
       status: "active",
+      packages: ["tffc"] as PackageKey[],
     },
   ]
 
@@ -246,6 +280,7 @@ export default function FormDirectory() {
       icon: FileText,
       category: "Treatment Model",
       status: "active",
+      packages: ["su"] as PackageKey[],
     },
     {
       id: "substance-use-logic-model",
@@ -255,6 +290,7 @@ export default function FormDirectory() {
       icon: BarChart3,
       category: "Logic Model",
       status: "active",
+      packages: ["su"] as PackageKey[],
     },
     {
       id: "substance-use-cqi-model",
@@ -264,6 +300,7 @@ export default function FormDirectory() {
       icon: ListChecks,
       category: "CQI Model",
       status: "active",
+      packages: ["su"] as PackageKey[],
     },
   ]
 
@@ -276,6 +313,7 @@ export default function FormDirectory() {
       icon: Calculator,
       category: "Staff Tools",
       status: "active",
+      packages: ["all"] as PackageKey[],
     },
     {
       id: "continued-stay-review-guide",
@@ -285,6 +323,7 @@ export default function FormDirectory() {
       icon: FileCheck,
       category: "Compliance Guide",
       status: "draft",
+      packages: ["mh", "idd", "su", "tffc"] as PackageKey[],
     },
     {
       id: "crisis-decision-tool",
@@ -294,6 +333,7 @@ export default function FormDirectory() {
       icon: Shield,
       category: "Crisis Support",
       status: "active",
+      packages: ["all"] as PackageKey[],
     },
     {
       id: "kinship-caregiver-resource-dashboard",
@@ -303,6 +343,7 @@ export default function FormDirectory() {
       icon: Users,
       category: "Resource Portal",
       status: "draft",
+      packages: ["basic"] as PackageKey[],
     },
     {
       id: "staff-kinship-support-dashboard",
@@ -312,6 +353,7 @@ export default function FormDirectory() {
       icon: BarChart3,
       category: "Staff Tools",
       status: "draft",
+      packages: ["basic"] as PackageKey[],
     },
     {
       id: "youth-transition-dashboard",
@@ -321,6 +363,7 @@ export default function FormDirectory() {
       icon: Users,
       category: "Youth Portal",
       status: "draft",
+      packages: ["all"] as PackageKey[],
     },
     {
       id: "staff-transition-dashboard",
@@ -330,6 +373,7 @@ export default function FormDirectory() {
       icon: BarChart3,
       category: "Staff Tools",
       status: "draft",
+      packages: ["all"] as PackageKey[],
     },
     {
       id: "pregnant-parenting-youth-dashboard",
@@ -339,6 +383,7 @@ export default function FormDirectory() {
       icon: Users,
       category: "Youth Support",
       status: "draft",
+      packages: ["all"] as PackageKey[],
     },
   ]
 
@@ -350,6 +395,7 @@ export default function FormDirectory() {
       icon: FileText,
       category: "Documentation",
       status: "draft",
+      packages: ["all"] as PackageKey[],
     },
     {
       id: "service-refusal",
@@ -358,6 +404,7 @@ export default function FormDirectory() {
       icon: ClipboardList,
       category: "Legal",
       status: "draft",
+      packages: ["all"] as PackageKey[],
     },
     {
       id: "aftercare-plan",
@@ -366,6 +413,7 @@ export default function FormDirectory() {
       icon: Users,
       category: "Planning",
       status: "draft",
+      packages: ["basic", "mh", "idd", "su", "tffc"] as PackageKey[],
     },
     {
       id: "aftercare-dashboard",
@@ -374,6 +422,7 @@ export default function FormDirectory() {
       icon: BarChart3,
       category: "Monitoring",
       status: "draft",
+      packages: ["basic", "mh", "idd", "su", "tffc"] as PackageKey[],
     },
   ]
 
@@ -382,10 +431,11 @@ export default function FormDirectory() {
       id: "enhanced-continued-stay",
       title: "Enhanced Continued Stay Confirmation (Draft)",
       description:
-        "90-day confirmation form for Mental & Behavioral Health and IDD/Autism service packages per T3C Blueprint requirements",
+        "60/90-day confirmation form for specialized service packages per T3C Blueprint requirements",
       icon: FileCheck,
       category: "Service Planning",
       status: "draft",
+      packages: ["mh", "idd", "su", "tffc"] as PackageKey[],
     },
     {
       id: "service-authorization",
@@ -395,6 +445,7 @@ export default function FormDirectory() {
       icon: ClipboardList,
       category: "Authorization",
       status: "draft",
+      packages: ["all"] as PackageKey[],
     },
     {
       id: "cans-integration",
@@ -404,15 +455,17 @@ export default function FormDirectory() {
       icon: ClipboardList,
       category: "Assessment Integration",
       status: "draft",
+      packages: ["all"] as PackageKey[],
     },
     {
       id: "package-specific-monitoring?packageType=mental-behavioral&childId=sample-child-123",
       title: "Package-Specific Monitoring Dashboard (Draft)",
       description:
-        "Adaptive monitoring dashboard that provides specialized tracking for Mental & Behavioral Health or IDD/Autism service packages with data visualization and alerts",
+        "Adaptive monitoring dashboard that provides specialized tracking for all service packages with data visualization and alerts",
       icon: BarChart3,
       category: "Monitoring",
       status: "draft",
+      packages: ["mh", "idd", "su", "stass", "tffc"] as PackageKey[],
     },
     {
       id: "foster-home-credential?childId=sample-child-123&homeId=FH-2024-0156",
@@ -422,6 +475,7 @@ export default function FormDirectory() {
       icon: Shield,
       category: "Credential Verification",
       status: "draft",
+      packages: ["all"] as PackageKey[],
     },
     {
       id: "service-plan-review-approval",
@@ -430,6 +484,43 @@ export default function FormDirectory() {
       icon: ClipboardList,
       category: "Service Planning",
       status: "draft",
+      packages: ["all"] as PackageKey[],
+    },
+    {
+      id: "stass-assessment-progress",
+      title: "STASS Assessment Progress Tracking (New)",
+      description: "Track assessment activities, timeline, and package recommendations for Short-Term Assessment placements.",
+      icon: ClipboardList,
+      category: "Assessment",
+      status: "draft",
+      packages: ["stass"] as PackageKey[],
+    },
+    {
+      id: "stass-transition-planning",
+      title: "STASS Transition Planning (New)",
+      description: "Coordinate transition from STASS to ongoing service package with placement and service continuity.",
+      icon: ListChecks,
+      category: "Transition",
+      status: "draft",
+      packages: ["stass"] as PackageKey[],
+    },
+    {
+      id: "tffc-step-down-planning",
+      title: "TFFC Step-Down Planning (New)",
+      description: "365-day countdown, readiness assessment, and transition planning for Treatment Foster Care step-down.",
+      icon: ListChecks,
+      category: "Transition",
+      status: "draft",
+      packages: ["tffc"] as PackageKey[],
+    },
+    {
+      id: "recovery-progress-tracker",
+      title: "Recovery Progress Tracker (New)",
+      description: "Track sobriety milestones, treatment engagement, and recovery indicators with non-punitive documentation.",
+      icon: BarChart3,
+      category: "Recovery",
+      status: "draft",
+      packages: ["su"] as PackageKey[],
     },
   ]
 
@@ -438,7 +529,7 @@ export default function FormDirectory() {
     alert(`Downloading form: ${formId}`)
   }
 
-  const renderFormCards = (forms: typeof generalForms, buttonText = "View Form") => {
+  const renderFormCards = (forms: typeof generalForms, buttonText = "View Form", showPackageBadges = true) => {
     if (forms.length === 0) {
       return (
         <div className="col-span-full">
@@ -471,6 +562,19 @@ export default function FormDirectory() {
           <CardDescription className="text-sm">{form.description}</CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Package Badges */}
+          {showPackageBadges && form.packages && form.packages.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-3">
+              {form.packages.map((pkg) => (
+                <span
+                  key={pkg}
+                  className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${PACKAGE_BADGES[pkg].color}`}
+                >
+                  {PACKAGE_BADGES[pkg].label}
+                </span>
+              ))}
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <Badge variant="outline" className="border-[#5E3989] text-[#5E3989]">
               {form.category}
@@ -542,7 +646,7 @@ export default function FormDirectory() {
               </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {renderFormCards(basicFosterFamilyHomeForms, "View Artifact")}
+              {renderFormCards(basicFosterFamilyHomeForms, "View Artifact", false)}
             </div>
           </div>
 
@@ -554,7 +658,7 @@ export default function FormDirectory() {
               </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {renderFormCards(mentalBehavioralHealthForms, "View Artifact")}
+              {renderFormCards(mentalBehavioralHealthForms, "View Artifact", false)}
             </div>
           </div>
 
@@ -566,7 +670,7 @@ export default function FormDirectory() {
               </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {renderFormCards(iddAsdSupportForms, "View Artifact")}
+              {renderFormCards(iddAsdSupportForms, "View Artifact", false)}
             </div>
           </div>
 
@@ -578,7 +682,7 @@ export default function FormDirectory() {
               </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {renderFormCards(shortTermAssessmentForms, "View Artifact")}
+              {renderFormCards(shortTermAssessmentForms, "View Artifact", false)}
             </div>
           </div>
 
@@ -590,7 +694,7 @@ export default function FormDirectory() {
               </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {renderFormCards(treatmentFosterFamilyCareForms, "View Artifact")}
+              {renderFormCards(treatmentFosterFamilyCareForms, "View Artifact", false)}
             </div>
           </div>
 
@@ -602,7 +706,7 @@ export default function FormDirectory() {
               </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {renderFormCards(substanceUseSupportForms, "View Artifact")}
+              {renderFormCards(substanceUseSupportForms, "View Artifact", false)}
             </div>
           </div>
         </div>
