@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, ReactNode } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -144,7 +144,7 @@ const createPDFHeader = (
   `
 }
 
-// Create footer HTML for page numbers
+// Create footer HTML
 const createPDFFooter = (): string => {
   return `
     <div style="
@@ -176,107 +176,154 @@ export function PDFExportButton({
   const handleExportPDF = async () => {
     if (!contentRef.current) {
       console.error("Content ref is not available")
+      alert("Unable to find page content. Please refresh and try again.")
       return
     }
 
     setIsGenerating(true)
+    setIsOpen(false)
 
     try {
       // Dynamically import html2pdf
-      const html2pdf = (await import("html2pdf.js")).default
+      const html2pdfModule = await import("html2pdf.js")
+      const html2pdf = html2pdfModule.default
 
       const generatedAt = new Date()
       const formUrl = `https://previewforms.refugehouse.org${formPath}`
 
-      // Create a container for the PDF content
-      const pdfContainer = document.createElement("div")
-      pdfContainer.style.backgroundColor = "white"
-      pdfContainer.style.padding = "0"
-      pdfContainer.style.width = "100%"
+      // Create a wrapper div that will be visible during rendering
+      const pdfWrapper = document.createElement("div")
+      pdfWrapper.id = "pdf-export-wrapper"
+      pdfWrapper.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 8.5in;
+        min-height: 11in;
+        background: white;
+        z-index: 99999;
+        padding: 0.5in;
+        box-sizing: border-box;
+        overflow: visible;
+      `
 
       // Add header
       const headerDiv = document.createElement("div")
       headerDiv.innerHTML = createPDFHeader(formTitle, formUrl, selectedPackage, generatedAt)
-      pdfContainer.appendChild(headerDiv)
+      pdfWrapper.appendChild(headerDiv)
 
-      // Clone and add the main content
+      // Clone the content
       const contentClone = contentRef.current.cloneNode(true) as HTMLElement
+      
+      // Remove unwanted elements from the clone
+      const selectorsToRemove = [
+        'button',
+        '[data-pdf-exclude="true"]',
+        '.pdf-exclude',
+        '.no-print',
+        'nav',
+        '[role="navigation"]',
+      ]
+      
+      selectorsToRemove.forEach(selector => {
+        const elements = contentClone.querySelectorAll(selector)
+        elements.forEach(el => el.remove())
+      })
 
-      // Remove any elements that shouldn't be in the PDF
-      const elementsToRemove = contentClone.querySelectorAll(
-        '[data-pdf-exclude="true"], .pdf-exclude, button, .no-print'
-      )
-      elementsToRemove.forEach((el) => el.remove())
-
-      // Remove the header section from the clone (already have our PDF header)
-      const headerSection = contentClone.querySelector(".bg-gradient-to-r.from-\\[\\#5E3989\\]")
-      if (headerSection) {
-        headerSection.remove()
-      }
-
-      // Style adjustments for PDF
-      contentClone.style.padding = "0"
-      contentClone.style.margin = "0"
-      contentClone.style.backgroundColor = "white"
-
-      // Remove any fixed or sticky positioning
-      const allElements = contentClone.querySelectorAll("*")
-      allElements.forEach((el) => {
-        const htmlEl = el as HTMLElement
-        const style = window.getComputedStyle(htmlEl)
-        if (style.position === "fixed" || style.position === "sticky") {
-          htmlEl.style.position = "relative"
+      // Find and remove the gradient header (the purple/magenta header)
+      const headers = contentClone.querySelectorAll('[class*="bg-gradient"]')
+      headers.forEach(header => {
+        // Check if it's the main header with the gradient
+        if (header.className.includes('from-[#5E3989]') || 
+            header.className.includes('from-purple') ||
+            (header as HTMLElement).style.background?.includes('gradient')) {
+          header.remove()
         }
       })
 
-      pdfContainer.appendChild(contentClone)
+      // Also try to remove the first child that's a gradient header
+      const firstChild = contentClone.firstElementChild
+      if (firstChild && firstChild.className.includes('bg-gradient')) {
+        firstChild.remove()
+      }
+
+      // Reset styles on the clone for PDF
+      contentClone.style.cssText = `
+        background: white;
+        padding: 0;
+        margin: 0;
+        min-height: auto;
+        width: 100%;
+      `
+
+      // Process all elements to ensure they render properly
+      const allElements = contentClone.querySelectorAll('*')
+      allElements.forEach(el => {
+        const htmlEl = el as HTMLElement
+        // Fix positioning issues
+        const computedStyle = window.getComputedStyle(htmlEl)
+        if (computedStyle.position === 'fixed' || computedStyle.position === 'sticky') {
+          htmlEl.style.position = 'relative'
+        }
+        // Ensure backgrounds render
+        if (computedStyle.backgroundColor === 'transparent') {
+          // Keep transparent
+        }
+      })
+
+      pdfWrapper.appendChild(contentClone)
 
       // Add footer
       const footerDiv = document.createElement("div")
       footerDiv.innerHTML = createPDFFooter()
-      pdfContainer.appendChild(footerDiv)
+      pdfWrapper.appendChild(footerDiv)
 
-      // Temporarily add to document for rendering
-      pdfContainer.style.position = "absolute"
-      pdfContainer.style.left = "-9999px"
-      pdfContainer.style.top = "0"
-      document.body.appendChild(pdfContainer)
+      // Add to document body (must be visible for html2canvas to work properly)
+      document.body.appendChild(pdfWrapper)
+
+      // Wait a moment for the DOM to update and render
+      await new Promise(resolve => setTimeout(resolve, 500))
 
       // Configure PDF options
       const opt = {
-        margin: [0.5, 0.5, 0.75, 0.5], // top, right, bottom, left in inches
+        margin: 0,
         filename: generateFilename(formTitle, selectedPackage),
-        image: { type: "jpeg", quality: 0.98 },
+        image: { type: "jpeg", quality: 0.95 },
         html2canvas: {
           scale: 2,
           useCORS: true,
-          logging: false,
+          logging: true, // Enable logging for debugging
           letterRendering: true,
           allowTaint: true,
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: 816, // 8.5in at 96dpi
+          windowHeight: 1056, // 11in at 96dpi
         },
         jsPDF: {
           unit: "in",
           format: "letter",
-          orientation: "portrait",
+          orientation: "portrait" as const,
         },
         pagebreak: {
-          mode: ["css", "legacy"],
-          before: ".pdf-page-break",
-          after: ".pdf-page-break-after",
-          avoid: ".pdf-no-break",
+          mode: ["avoid-all", "css", "legacy"],
         },
       }
 
-      // Generate and save PDF
-      await html2pdf().set(opt).from(pdfContainer).save()
+      // Generate PDF
+      await html2pdf().set(opt).from(pdfWrapper).save()
 
       // Clean up
-      document.body.removeChild(pdfContainer)
+      document.body.removeChild(pdfWrapper)
 
-      setIsOpen(false)
     } catch (error) {
       console.error("Error generating PDF:", error)
-      alert("There was an error generating the PDF. Please try again.")
+      // Try to clean up if there was an error
+      const wrapper = document.getElementById("pdf-export-wrapper")
+      if (wrapper) {
+        document.body.removeChild(wrapper)
+      }
+      alert("There was an error generating the PDF. Please check the console for details.")
     } finally {
       setIsGenerating(false)
     }
@@ -342,4 +389,3 @@ export function PDFExportButton({
 }
 
 export default PDFExportButton
-
