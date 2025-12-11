@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T3C Mental & Behavioral Health Support Services Logic Model</title>
+    <style>
+        @page {
+            size: landscape;
+            margin: 0.5in;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #A90533 0%, #5E3989 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 0;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1400px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        
+        .logo-banner {
+            background: #5E3989;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid #A90533;
+        }
+        
+        .logo-banner img {
+            height: 60px;
+            width: auto;
+        }
+        
+        .content-wrapper {
+            padding: 30px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        h1 {
+            color: #2d3748;
+            font-size: 32px;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #718096;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+        
+        .mission-vision {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .mission-box, .vision-box {
+            padding: 20px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+        }
+        
+        .mission-box h2, .vision-box h2 {
+            color: #4c51bf;
+            font-size: 20px;
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .mission-box p, .vision-box p {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .service-objective {
+            background: #fef3c7;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 5px solid #f59e0b;
+        }
+        
+        .service-objective h2 {
+            color: #92400e;
+            font-size: 18px;
+            margin: 0 0 10px 0;
+        }
+        
+        .service-objective p {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .treatment-model {
+            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border: 2px solid #f59e0b;
+        }
+        
+        .treatment-model h2 {
+            color: #92400e;
+            text-align: center;
+            font-size: 22px;
+            margin: 0 0 20px 0;
+        }
+        
+        .treatment-model p {
+            text-align: center;
+            font-style: italic;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .tbri-principles {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .principle {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .principle h3 {
+            color: #c05621;
+            font-size: 16px;
+            margin: 0 0 8px 0;
+        }
+        
+        .principle ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+        
+        .basic-tier {
+            color: #4a5568;
+            font-style: italic;
+        }
+        
+        .mh-specific {
+            background: #e6fffa;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border-left: 3px solid #319795;
+            margin: 2px 0;
+            font-weight: 600;
+        }
+        
+        .logic-flow {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .logic-column {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            border-top: 4px solid;
+        }
+        
+        .inputs { border-top-color: #9f7aea; }
+        .activities { border-top-color: #4299e1; }
+        .outputs { border-top-color: #48bb78; }
+        .outcomes { border-top-color: #ed8936; }
+        
+        .logic-column h3 {
+            font-size: 18px;
+            margin: 0 0 15px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .logic-column p {
+            font-size: 12px;
+            color: #718096;
+            margin: -10px 0 10px 0;
+        }
+        
+        .inputs h3 { color: #9f7aea; }
+        .activities h3 { color: #4299e1; }
+        .outputs h3 { color: #48bb78; }
+        .outcomes h3 { color: #ed8936; }
+        
+        .logic-column ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+            line-height: 1.7;
+            color: #4a5568;
+        }
+        
+        .logic-column li {
+            margin-bottom: 8px;
+        }
+        
+        .tier-label {
+            display: inline-block;
+            background: #edf2f7;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            margin-left: 5px;
+            color: #718096;
+        }
+        
+        .cqi-process {
+            background: linear-gradient(220deg, #A90533 0%, #5E3989 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 25px;
+        }
+        
+        .cqi-process h2 {
+            text-align: center;
+            font-size: 22px;
+            margin: 0 0 20px 0;
+        }
+        
+        .cqi-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        
+        .cqi-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .cqi-item h4 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            color: #fef3c7;
+        }
+        
+        .cqi-item ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .arrow-down {
+            text-align: center;
+            font-size: 24px;
+            color: #cbd5e0;
+            margin: 10px 0;
+        }
+        
+        .time-horizons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 5px;
+        }
+        
+        .time-period {
+            text-align: center;
+            padding: 8px;
+            background: #f7fafc;
+            border-radius: 5px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .time-period strong {
+            display: block;
+            color: #2d3748;
+            margin-bottom: 3px;
+            font-size: 14px;
+        }
+        
+        .package-note {
+            background: #e6fffa;
+            border: 2px solid #319795;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .package-note h3 {
+            color: #234e52;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        
+        .package-note p {
+            color: #2c5282;
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-banner">
+            <img src="https://github.com/jduarte-refugehouse/jduarte-refugehouse.github.io/blob/ca195301d9c07731d3eca63818516dd540d1e472/web-logo-with-name-dark-background.png?raw=true" alt="Refuge House Logo">
+        </div>
+        <div class="content-wrapper">
+            <div class="header">
+                <h1>T3C Mental & Behavioral Health Support Services Logic Model</h1>
+                <div class="subtitle">Service Package Specific Logic Model per T3C Blueprint Requirements</div>
+                <div class="subtitle">Compliant with T3C Blueprint (April 2025), TAC 749, and RCC Contract Requirements</div>
+            </div>
+        
+        <div class="package-note">
+            <h3>Mental & Behavioral Health Support Services Package</h3>
+            <p>This Logic Model is specifically for children requiring therapeutic and recovery services for emotional, conduct, or behavioral disorders.<br>
+            Incorporates T3C Basic Foster Family Home Support Services as foundational Tier 1 with enhanced therapeutic components.</p>
+        </div>
+        
+        <div class="mission-vision">
+            <div class="mission-box">
+                <h2>Mission</h2>
+                <p>To serve children with mental and behavioral health needs by providing comprehensive therapeutic support within stable family environments, utilizing evidence-based interventions to guide them toward healing and successful permanency.</p>
+            </div>
+            <div class="vision-box">
+                <h2>Vision</h2>
+                <p>To see children overcome trauma and behavioral challenges through intensive therapeutic interventions, achieving stability and well-being that enables successful transitions to less restrictive settings and permanent homes.</p>
+            </div>
+        </div>
+        
+        <div class="service-objective">
+            <h2>Mental & Behavioral Health Service Objective</h2>
+            <p>To provide trauma-informed therapeutic foster care for children with DSM-5 diagnoses or pending diagnoses for emotional, conduct, or behavioral disorders, delivering regular clinical interventions (therapy, education, and/or medication) through TBRI®-enhanced programming to support and manage day-to-day activities while working toward permanency goals.</p>
+        </div>
+        
+        <div class="treatment-model">
+            <h2>Evidence-Informed Treatment Model: Trust-Based Relational Intervention® (TBRI®)</h2>
+            <p style="text-align: center; font-style: italic; margin-bottom: 15px;">Enhanced with specific programming for mental & behavioral health needs (T3C Blueprint p.77)</p>
+            <div class="tbri-principles">
+                <div class="principle">
+                    <h3>Connecting Principles</h3>
+                    <ul>
+                        <li class="basic-tier">Building felt safety through attunement</li>
+                        <li class="basic-tier">Providing nurturing care</li>
+                        <li class="basic-tier">Supporting healthy attachment</li>
+                        <li class="mh-specific">Therapeutic alliance development</li>
+                        <li class="mh-specific">Trust-building in therapy context</li>
+                    </ul>
+                </div>
+                <div class="principle">
+                    <h3>Empowering Principles</h3>
+                    <ul>
+                        <li class="basic-tier">Meeting physical needs</li>
+                        <li class="basic-tier">Supporting self-regulation</li>
+                        <li class="basic-tier">Establishing predictable routines</li>
+                        <li class="mh-specific">Sensory strategies for regulation</li>
+                        <li class="mh-specific">Psychotropic medication support</li>
+                    </ul>
+                </div>
+                <div class="principle">
+                    <h3>Correcting Principles</h3>
+                    <ul>
+                        <li class="basic-tier">Proactive teaching strategies</li>
+                        <li class="basic-tier">IDEAL Response® framework</li>
+                        <li class="basic-tier">Life value terms</li>
+                        <li class="mh-specific">Behavioral intervention plans</li>
+                        <li class="mh-specific">Crisis de-escalation protocols</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="logic-flow">
+            <div class="logic-column inputs">
+                <h3>INPUTS</h3>
+                <p style="font-size: 10px; color: #718096; margin: -10px 0 10px 0;">Tier 1 (Basic) + MH Enhancements</p>
+                <ul>
+                    <li>Licensed CPA Administrator <span class="tier-label">BASIC</span></li>
+                    <li>Program Director <span class="tier-label">BASIC</span></li>
+                    <li class="mh-specific">Treatment Director (Master's level required)</li>
+                    <li>Case Managers - Enhanced ratio 1:15 <span class="tier-label">MH</span></li>
+                    <li class="mh-specific">Licensed Therapists (1:14 ratio)</li>
+                    <li class="mh-specific">Behavioral Support Specialists (1:15)</li>
+                    <li class="mh-specific">Crisis Management Staff (1:25)</li>
+                    <li class="mh-specific">Aftercare Case Managers (1:25)</li>
+                    <li>Verified foster homes (35-hour training) <span class="tier-label">BASIC</span></li>
+                    <li class="mh-specific">MH-specialized foster parent training</li>
+                    <li>TBRI® trained staff <span class="tier-label">BASIC</span></li>
+                    <li class="mh-specific">24/7 crisis response capability</li>
+                    <li>IT systems (Radius) <span class="tier-label">BASIC</span></li>
+                    <li class="mh-specific">Enhanced data tracking for MH metrics</li>
+                    <li>STAR Health coordination <span class="tier-label">BASIC</span></li>
+                    <li class="mh-specific">HHSC Behavioral Health coordination</li>
+                </ul>
+            </div>
+            
+            <div class="logic-column activities">
+                <h3>ACTIVITIES</h3>
+                <p style="font-size: 10px; color: #718096; margin: -10px 0 10px 0;">Tier 1 (Basic) + MH Interventions</p>
+                <ul>
+                    <li>TBRI® implementation with therapeutic integration <span class="tier-label">BASIC+</span></li>
+                    <li class="mh-specific">Regular & frequent individual therapy (per T3C p.77)</li>
+                    <li class="mh-specific">Family therapy sessions (as appropriate)</li>
+                    <li class="mh-specific">Group therapy programs (as indicated)</li>
+                    <li class="mh-specific">Psychiatric consultations & evaluations</li>
+                    <li class="mh-specific">Medication management & monitoring</li>
+                    <li class="mh-specific">Behavioral intervention plan implementation</li>
+                    <li class="mh-specific">Crisis intervention (24/7)</li>
+                    <li>CANS 3.0 - Every 90 days <span class="tier-label">MH</span></li>
+                    <li>Service Planning - 90-day reviews <span class="tier-label">MH</span></li>
+                    <li>Family engagement <span class="tier-label">BASIC</span></li>
+                    <li class="mh-specific">Therapeutic family participation</li>
+                    <li>STAR Health coordination <span class="tier-label">BASIC</span></li>
+                    <li class="mh-specific">HHSC BH service coordination</li>
+                    <li class="mh-specific">ECI coordination (if applicable)</li>
+                    <li>Educational advocacy <span class="tier-label">BASIC</span></li>
+                    <li class="mh-specific">Special education coordination</li>
+                    <li>Normalcy activities <span class="tier-label">BASIC</span></li>
+                    <li class="mh-specific">Aftercare planning & provision</li>
+                </ul>
+            </div>
+            
+            <div class="logic-column outputs">
+                <h3>OUTPUTS</h3>
+                <p style="font-size: 10px; color: #718096; margin: -10px 0 10px 0;">MH-Specific Measurables</p>
+                <ul>
+                    <li>Number of MH children served</li>
+                    <li>Service Plans completed within 90 days (100%)</li>
+                    <li>CANS 3.0 completed every 90 days (100%)</li>
+                    <li class="mh-specific">Weekly therapy sessions delivered</li>
+                    <li class="mh-specific">Therapy attendance rate (target ≥90%)</li>
+                    <li class="mh-specific">Crisis interventions provided</li>
+                    <li class="mh-specific">Crisis response time (<1 hour)</li>
+                    <li class="mh-specific">Behavioral plans implemented</li>
+                    <li class="mh-specific">Psychiatric consultations completed</li>
+                    <li class="mh-specific">Medication compliance rate (≥85%)</li>
+                    <li class="mh-specific">Family therapy sessions conducted</li>
+                    <li>Foster parent MH training hours (enhanced)</li>
+                    <li class="mh-specific">Service denials notified (3-day compliance)</li>
+                    <li class="mh-specific">Program Director confirmations (15-day)</li>
+                    <li class="mh-specific">Treatment Director reviews documented</li>
+                    <li class="mh-specific">Aftercare services initiated</li>
+                    <li class="mh-specific">Step-down assessments completed</li>
+                    <li class="mh-specific">HHSC BH services accessed</li>
+                </ul>
+            </div>
+            
+            <div class="logic-column outcomes">
+                <h3>OUTCOMES</h3>
+                <p style="font-size: 10px; color: #718096; margin: -10px 0 10px 0;">MH-Specific Results</p>
+                <div class="time-horizons">
+                    <div class="time-period">
+                        <strong>SHORT-TERM (90 days)</strong>
+                        Behavioral stabilization<br>
+                        Crisis reduction<br>
+                        Medication stability<br>
+                        Therapeutic engagement
+                    </div>
+                    <div class="time-period">
+                        <strong>INTERMEDIATE (6 months)</strong>
+                        CANS improvement ≥20%<br>
+                        Treatment goals achieved<br>
+                        Family functioning improved<br>
+                        School performance gains
+                    </div>
+                    <div class="time-period">
+                        <strong>LONG-TERM (12+ months)</strong>
+                        Step-down to Basic package<br>
+                        Permanency achievement<br>
+                        Sustained stability<br>
+                        Community integration
+                    </div>
+                </div>
+                <ul style="margin-top: 15px;">
+                    <li class="mh-specific">Reduced psychiatric hospitalizations (≥50%)</li>
+                    <li class="mh-specific">Decreased behavioral incidents (≥40%)</li>
+                    <li class="mh-specific">Improved CANS behavioral domain scores</li>
+                    <li class="mh-specific">Successful medication adherence</li>
+                    <li class="mh-specific">Treatment completion rate (≥70%)</li>
+                    <li class="mh-specific">Step-down success rate (≥60%)</li>
+                    <li>Placement stability (MH-adjusted targets)</li>
+                    <li>RCC permanency targets (MH cohort)</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="arrow-down">⬇</div>
+        
+        <div class="cqi-process">
+            <h2>Mental & Behavioral Health CQI Process (TAC §749.665)</h2>
+            <div class="cqi-grid">
+                <div class="cqi-item">
+                    <h4>MH-Specific Data Collection</h4>
+                    <ul>
+                        <li>Weekly therapy attendance tracking</li>
+                        <li>Monthly behavioral incident analysis</li>
+                        <li>90-day CANS trend monitoring</li>
+                        <li>Medication compliance rates</li>
+                        <li>Crisis intervention frequencies</li>
+                        <li>Psychiatric consultation outcomes</li>
+                        <li>Family therapy participation</li>
+                        <li>TBRI® fidelity assessments</li>
+                        <li>Step-down readiness indicators</li>
+                    </ul>
+                </div>
+                <div class="cqi-item">
+                    <h4>MH Program Review</h4>
+                    <ul>
+                        <li>90-day Service Plan reviews</li>
+                        <li>Treatment Director quarterly analysis</li>
+                        <li>Continued stay criteria evaluation</li>
+                        <li>TBRI® fidelity in therapeutic context</li>
+                        <li>Cross-system coordination effectiveness</li>
+                        <li>Therapist caseload management</li>
+                        <li>Crisis response effectiveness</li>
+                        <li>Aftercare engagement rates</li>
+                    </ul>
+                </div>
+                <div class="cqi-item">
+                    <h4>MH Implementation Adjustments</h4>
+                    <ul>
+                        <li>Therapeutic approach modifications</li>
+                        <li>Crisis protocol refinements</li>
+                        <li>Behavioral intervention updates</li>
+                        <li>Medication protocol reviews</li>
+                        <li>Step-down criteria adjustments</li>
+                        <li>Family engagement strategies</li>
+                        <li>Training enhancements for MH</li>
+                        <li>Annual Logic Model updates</li>
+                    </ul>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

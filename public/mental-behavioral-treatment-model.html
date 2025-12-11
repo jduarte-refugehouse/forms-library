@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treatment Model for T3C Mental and Behavioral Health Support Services</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #A90533 0%, #5E3989 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 0;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1200px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        
+        .logo-banner {
+            background: #5E3989;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid #A90533;
+        }
+        
+        .logo-banner img {
+            height: 60px;
+            width: auto;
+        }
+        
+        .content-wrapper {
+            padding: 40px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        h1 {
+            color: #2d3748;
+            font-size: 32px;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #718096;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+        
+        .section {
+            margin-bottom: 35px;
+        }
+        
+        .section h2 {
+            color: #2d3748;
+            font-size: 24px;
+            margin: 0 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .section h3 {
+            color: #4a5568;
+            font-size: 18px;
+            margin: 20px 0 10px 0;
+            font-weight: 600;
+        }
+        
+        .section p {
+            color: #4a5568;
+            font-size: 15px;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+        
+        .section ul {
+            margin: 10px 0;
+            padding-left: 25px;
+            color: #4a5568;
+            font-size: 15px;
+            line-height: 1.8;
+        }
+        
+        .section li {
+            margin-bottom: 8px;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+        }
+        
+        .highlight-box h3 {
+            color: #4c51bf;
+            margin-top: 0;
+        }
+        
+        .tbri-principles {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .principle-card {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            border-top: 4px solid;
+        }
+        
+        .principle-card.connecting {
+            border-top-color: #667eea;
+        }
+        
+        .principle-card.empowering {
+            border-top-color: #48bb78;
+        }
+        
+        .principle-card.correcting {
+            border-top-color: #ed8936;
+        }
+        
+        .principle-card h4 {
+            color: #2d3748;
+            font-size: 16px;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+        }
+        
+        .principle-card ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+        }
+        
+        .service-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .service-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-size: 15px;
+            font-weight: 600;
+        }
+        
+        .service-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .service-table tr:hover {
+            background: #f7fafc;
+        }
+        
+        .wellbeing-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .wellbeing-card {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid;
+        }
+        
+        .wellbeing-card.physical {
+            border-left-color: #ed64a6;
+        }
+        
+        .wellbeing-card.emotional {
+            border-left-color: #9f7aea;
+        }
+        
+        .wellbeing-card.social {
+            border-left-color: #4299e1;
+        }
+        
+        .wellbeing-card.spiritual {
+            border-left-color: #48bb78;
+        }
+        
+        .wellbeing-card h4 {
+            color: #2d3748;
+            font-size: 16px;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+        }
+        
+        .wellbeing-card ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+        }
+        
+        .outcomes-section {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #f59e0b;
+        }
+        
+        .outcomes-section h3 {
+            color: #92400e;
+            margin-top: 0;
+        }
+        
+        .outcomes-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        .outcome-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .outcome-box h4 {
+            color: #92400e;
+            font-size: 15px;
+            margin: 0 0 8px 0;
+        }
+        
+        .outcome-box ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-banner">
+            <img src="https://github.com/jduarte-refugehouse/jduarte-refugehouse.github.io/blob/ca195301d9c07731d3eca63818516dd540d1e472/web-logo-with-name-dark-background.png?raw=true" alt="Refuge House Logo">
+        </div>
+        <div class="content-wrapper">
+            <div class="header">
+                <h1>Treatment Model for T3C Mental and Behavioral Health Support Services</h1>
+                <div class="subtitle">Evidence-Based, Trauma-Informed Care Framework</div>
+            </div>
+
+            <div class="highlight-box" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 5px solid #f59e0b;">
+                <h3 style="color: #92400e; margin-top: 0;">📚 Foundational Treatment Model</h3>
+                <p style="color: #78350f; margin-bottom: 10px;">This Mental and Behavioral Health Support Services treatment model is an <strong>enhancement and extension</strong> of our foundational TBRI® model used in the T3C Basic Foster Family Home Support Services package.</p>
+                <p style="color: #78350f; margin-bottom: 15px;">For comprehensive information about the core TBRI® principles, implementation strategies, education plans, and foundational practices, please refer to:</p>
+                <a href="/forms/basic-tbri-resource-guide" target="_parent" style="display: inline-block; background: #5E3989; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    View Complete TBRI® Resource Guide (Basic Foster Family Home)
+                </a>
+                <p style="color: #78350f; margin-top: 15px; font-size: 14px; font-style: italic;">All staff and caregivers working with children in the Mental and Behavioral Health package must first complete training in the foundational TBRI® model before receiving specialized mental health training.</p>
+            </div>
+
+            <div class="section">
+                <h2>1. Treatment Model Framework and Structure</h2>
+                <p>Our Child Placing Agency implements Trust-Based Relational Intervention® (TBRI®) as our primary treatment model, enhanced with clinical interventions for providing the T3C Mental and Behavioral Health Support Services. TBRI provides the evidence-based, trauma-informed foundation while incorporating specialized mental health practices for children with DSM-5 diagnoses requiring intensive therapeutic support.</p>
+                
+                <div class="highlight-box">
+                    <h3>Core TBRI Principles with Clinical Enhancements</h3>
+                    <p>The enhanced TBRI framework maintains three interconnected principles adapted for children with mental health needs. <a href="/forms/basic-tbri-resource-guide" target="_parent" style="color: #4c51bf; text-decoration: underline; font-weight: 600;">See the foundational TBRI® Resource Guide</a> for detailed information on the core principles.</p>
+                </div>
+
+                <div class="tbri-principles">
+                    <div class="principle-card connecting">
+                        <h4>Connecting Principles - Therapeutic Engagement</h4>
+                        <ul>
+                            <li>Therapeutic communication techniques integrated into daily interactions</li>
+                            <li>Age-appropriate relationship building strategies</li>
+                            <li>Engagement approaches that support trauma recovery</li>
+                            <li>Daily check-ins using validated tools</li>
+                            <li>Connection maintained during behavioral crises</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="principle-card empowering">
+                        <h4>Empowering Principles - Clinical Support</h4>
+                        <ul>
+                            <li>Medication management integrated into routines</li>
+                            <li>Sensory accommodations based on individual needs</li>
+                            <li>Crisis prevention planning with individualized strategies</li>
+                            <li>Relaxation and coping techniques</li>
+                            <li>Regular health monitoring</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="principle-card correcting">
+                        <h4>Correcting Principles - Behavioral Interventions</h4>
+                        <ul>
+                            <li>Positive Behavioral Interventions and Supports (PBIS) framework</li>
+                            <li>Functional assessment of challenging behaviors</li>
+                            <li>Individualized behavior support plans</li>
+                            <li>Teaching at appropriate developmental level</li>
+                            <li>Natural consequences with therapeutic support</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>Service Integration</h3>
+                <p>Our model integrates required therapeutic services within the foster home environment:</p>
+                
+                <table class="service-table">
+                    <thead>
+                        <tr>
+                            <th>Service Component</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Therapeutic Services</strong></td>
+                            <td>
+                                • Weekly individual therapy (minimum)<br>
+                                • Family therapy as clinically indicated<br>
+                                • Group therapy for skill building<br>
+                                • Psychiatric services for medication management<br>
+                                • 24/7 crisis intervention availability
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Staffing Structure</strong></td>
+                            <td>
+                                • Treatment Director meeting T3C qualifications<br>
+                                • Licensed Therapists (1:14 ratio)<br>
+                                • Behavior Support Specialists (1:15 ratio)<br>
+                                • Crisis Management Staff (1:25 ratio)<br>
+                                • Case Managers with mental health training (1:15 ratio)
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section">
+                <h2>2. Meeting Custom Physical, Emotional, Social, and Spiritual Well-being Needs</h2>
+                <p>Our enhanced TBRI model addresses all domains of well-being with clinical precision:</p>
+                
+                <div class="wellbeing-grid">
+                    <div class="wellbeing-card physical">
+                        <h4>Physical Well-being</h4>
+                        <p>Children with mental health diagnoses often experience physical symptoms and medication effects requiring careful management:</p>
+                        <ul>
+                            <li>Comprehensive health assessments and monitoring</li>
+                            <li>Medication administration and side effect tracking</li>
+                            <li>Sleep hygiene programs</li>
+                            <li>Physical activity as therapeutic intervention</li>
+                            <li>Nutritional planning</li>
+                            <li>STAR Health coordination</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="wellbeing-card emotional">
+                        <h4>Emotional Well-being</h4>
+                        <p>Intensive emotional support addresses the complex needs of children with mental health diagnoses:</p>
+                        <ul>
+                            <li>Daily mood monitoring</li>
+                            <li>Crisis safety planning</li>
+                            <li>Emotion regulation skill training</li>
+                            <li>Trauma-informed interventions</li>
+                            <li>Therapeutic outlets (journaling, arts)</li>
+                            <li>CANS assessment every 90 days</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="wellbeing-card social">
+                        <h4>Social Well-being</h4>
+                        <p>Mental health symptoms significantly impact relationships, requiring structured support:</p>
+                        <ul>
+                            <li>Evidence-based social skills training</li>
+                            <li>Supported peer interactions</li>
+                            <li>Family therapy and education</li>
+                            <li>School collaboration</li>
+                            <li>Community integration with support</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="wellbeing-card spiritual">
+                        <h4>Spiritual Well-being</h4>
+                        <ul>
+                            <li>Values development at appropriate level</li>
+                            <li>Cultural identity support</li>
+                            <li>Inclusion in faith communities when desired</li>
+                            <li>Meaning-making opportunities</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>3. Evidence and Data Informing Treatment Model Selection</h2>
+                
+                <div class="highlight-box" style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-left: 5px solid #3b82f6;">
+                    <h3 style="color: #1e40af; margin-top: 0;">🏆 Evidence-Based Recognition</h3>
+                    <p style="color: #1e3a8a; margin-bottom: 10px;"><strong>California Evidence-Based Clearinghouse for Child Welfare (CEBC) Rating:</strong></p>
+                    <p style="color: #1e3a8a; margin-bottom: 10px;">TBRI® Caregiver Training is rated as a <strong>"Promising Practice"</strong> based on scientific research showing improved outcomes for children who experienced trauma, abuse, and neglect.</p>
+                    
+                    <p style="color: #1e3a8a; margin-bottom: 10px;"><strong>Title IV-E Prevention Services Clearinghouse:</strong></p>
+                    <p style="color: #1e3a8a; margin-bottom: 10px;">TBRI® is recognized for mental health prevention and treatment, making it eligible for use in programs requiring evidence-based, trauma-informed interventions.</p>
+                    
+                    <p style="color: #1e3a8a; margin-bottom: 10px;"><strong>Implementation Support:</strong></p>
+                    <p style="color: #1e3a8a; margin-bottom: 10px;">The Karyn Purvis Institute of Child Development (KPICD) provides ongoing support including coaching, site visits, teleconferencing, and email support to ensure fidelity to the model.</p>
+                    
+                    <p style="color: #1e3a8a;"><strong>Fidelity Measures:</strong></p>
+                    <p style="color: #1e3a8a;">TBRI® includes "Rate Your Understanding" assessments to ensure consistent delivery across all caregivers and settings.</p>
+                </div>
+                
+                <h3>Research Foundation</h3>
+                <p>The integration of TBRI with clinical interventions is supported by substantial evidence. Studies demonstrate that combining attachment-based approaches with evidence-based mental health treatment produces superior outcomes compared to either approach alone. Texas-specific data shows children in programs using integrated models experience:</p>
+                <ul>
+                    <li>Reduced psychotropic medication use</li>
+                    <li>Improved school functioning</li>
+                    <li>Fewer behavioral health crises</li>
+                    <li>Higher rates of successful transition to less intensive services</li>
+                </ul>
+                
+                <h3>Quality Monitoring</h3>
+                <p>Our Continuous Quality Improvement process ensures effective service delivery through:</p>
+                <ul>
+                    <li>CANS assessments every 90 days</li>
+                    <li>Regular review of behavioral incidents</li>
+                    <li>Service utilization tracking</li>
+                    <li>Foster parent feedback</li>
+                    <li>Educational progress monitoring</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>4. Trauma-Informed Approach for Children Who Have Experienced Abuse and Neglect</h2>
+                <p>Children with mental health diagnoses and trauma histories require specialized approaches that address both experiences. Our model recognizes that trauma often underlies or exacerbates mental health symptoms.</p>
+                
+                <p style="background: #f0f9ff; padding: 15px; border-radius: 8px; border-left: 4px solid #0284c7; margin: 15px 0;">
+                    <strong>Note:</strong> All children and caregivers in the Mental and Behavioral Health package receive the foundational TBRI® education outlined in the <a href="/forms/basic-tbri-resource-guide" target="_parent" style="color: #0369a1; text-decoration: underline; font-weight: 600;">Basic Foster Family Home TBRI® Resource Guide</a>, plus additional specialized training in mental health symptom management and crisis intervention.
+                </p>
+                
+                <h3>Assessment and Treatment Integration</h3>
+                <ul>
+                    <li>CANS 3.0 serves as primary assessment tool</li>
+                    <li>Treatment planning addresses both trauma and mental health symptoms</li>
+                    <li>Evidence-based approaches adapted for individual needs</li>
+                    <li>Regular reassessment guides treatment adjustments</li>
+                </ul>
+                
+                <h3>Caregiver Support</h3>
+                <p>Foster parents receive comprehensive preparation for this complex population:</p>
+                <ul>
+                    <li>Training in trauma responses and mental health symptoms</li>
+                    <li>Strategies for therapeutic communication</li>
+                    <li>Crisis intervention techniques</li>
+                    <li>24/7 consultation availability</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>5. Appropriateness of the Treatment Model for T3C Mental and Behavioral Health Support Services</h2>
+                
+                <h3>Service Package Alignment</h3>
+                <p>Our enhanced TBRI model directly addresses T3C requirements:</p>
+                
+                <table class="service-table">
+                    <thead>
+                        <tr>
+                            <th>T3C Requirement</th>
+                            <th>Our Approach</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Regular individual/family therapy</td>
+                            <td>Weekly individual therapy minimum; family as indicated</td>
+                        </tr>
+                        <tr>
+                            <td>Service planning every 90 days</td>
+                            <td>CANS-informed reviews with clinical team</td>
+                        </tr>
+                        <tr>
+                            <td>24/7 crisis response</td>
+                            <td>On-call clinical staff with TBRI training</td>
+                        </tr>
+                        <tr>
+                            <td>Evidence-informed treatment</td>
+                            <td>TBRI enhanced with clinical interventions</td>
+                        </tr>
+                        <tr>
+                            <td>STAR Health coordination</td>
+                            <td>Dedicated staff for service navigation</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Quality Assurance Process</h3>
+                <p><strong>90-Day Review Components:</strong></p>
+                <ol>
+                    <li>CANS 3.0 administration</li>
+                    <li>Progress toward Service Plan goals</li>
+                    <li>Medication effectiveness</li>
+                    <li>Educational functioning</li>
+                    <li>Behavioral data analysis</li>
+                    <li>Continued stay determination</li>
+                </ol>
+                
+                <p><strong>Step-Down Criteria:</strong></p>
+                <ul>
+                    <li>Improved CANS scores</li>
+                    <li>Behavioral stability</li>
+                    <li>Medication stabilization</li>
+                    <li>Coping skill demonstration</li>
+                    <li>Foster parent confidence</li>
+                </ul>
+            </div>
+
+            <div class="outcomes-section">
+                <h3>Expected Outcomes</h3>
+                <p>Based on evidence-based practices, we anticipate:</p>
+                
+                <div class="outcomes-grid">
+                    <div class="outcome-box">
+                        <h4>Short-Term (3-6 months)</h4>
+                        <ul>
+                            <li>Reduced crisis incidents</li>
+                            <li>Improved therapy engagement</li>
+                            <li>Medication compliance</li>
+                            <li>CANS score improvement</li>
+                            <li>School stabilization</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="outcome-box">
+                        <h4>Long-Term (12-18 months)</h4>
+                        <ul>
+                            <li>Placement stability</li>
+                            <li>Reduced hospitalizations</li>
+                            <li>Decreased medication needs</li>
+                            <li>Successful transition to Basic Services when appropriate</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <p style="font-style: italic; color: #718096;">Through this enhanced treatment model, our T3C Mental and Behavioral Health Support Services program provides intensive, evidence-based care within TBRI's trauma-informed framework. The integration ensures children receive comprehensive mental health support while maintaining the relational foundation essential for healing.</p>
+                
+                <div style="margin-top: 30px; padding: 20px; background: #f9fafb; border-radius: 10px; border: 2px solid #e5e7eb;">
+                    <p style="color: #374151; margin: 0 0 10px 0; font-weight: 600;">Related Resources:</p>
+                    <ul style="margin: 0; padding-left: 20px; color: #4b5563;">
+                        <li style="margin-bottom: 8px;">
+                            <a href="/forms/basic-tbri-resource-guide" target="_parent" style="color: #5E3989; text-decoration: underline; font-weight: 600;">Complete TBRI® Resource Guide (Basic Foster Family Home)</a> - Foundational treatment model, education plan, and implementation materials
+                        </li>
+                        <li style="margin-bottom: 8px;">
+                            <a href="/forms/basic-logic-model" target="_parent" style="color: #5E3989; text-decoration: underline; font-weight: 600;">Logic Model (Basic Foster Family Home)</a> - Visual representation of TBRI® implementation framework
+                        </li>
+                        <li>
+                            <a href="/forms/basic-cqi-model" target="_parent" style="color: #5E3989; text-decoration: underline; font-weight: 600;">CQI Model (Basic Foster Family Home)</a> - Continuous quality improvement process for TBRI® fidelity
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

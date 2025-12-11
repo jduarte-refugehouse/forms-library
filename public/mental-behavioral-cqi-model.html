@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T3C Mental & Behavioral Health Support Services CQI Model</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #A90533 0%, #5E3989 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 0;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1200px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        
+        .logo-banner {
+            background: #5E3989;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid #A90533;
+        }
+        
+        .logo-banner img {
+            height: 60px;
+            width: auto;
+        }
+        
+        .content-wrapper {
+            padding: 30px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        h1 {
+            color: #2d3748;
+            font-size: 32px;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #718096;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+        
+        .package-note {
+            background: #e6fffa;
+            border: 2px solid #319795;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .package-note h3 {
+            color: #234e52;
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        
+        .package-note p {
+            color: #2c5282;
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .cqi-framework {
+            margin: 30px 0;
+        }
+        
+        .cqi-grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 25px;
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            padding: 40px;
+        }
+        
+        .cqi-quadrant {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 2px solid;
+            position: relative;
+        }
+        
+        .plan-quadrant {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(224,231,255,0.3) 0%, rgba(199,210,254,0.3) 100%);
+        }
+        
+        .do-quadrant {
+            border-color: #48bb78;
+            background: linear-gradient(135deg, rgba(198,246,213,0.3) 0%, rgba(154,230,180,0.3) 100%);
+        }
+        
+        .study-quadrant {
+            border-color: #ed64a6;
+            background: linear-gradient(135deg, rgba(251,182,206,0.3) 0%, rgba(246,135,179,0.3) 100%);
+        }
+        
+        .act-quadrant {
+            border-color: #ed8936;
+            background: linear-gradient(135deg, rgba(254,215,170,0.3) 0%, rgba(253,186,116,0.3) 100%);
+        }
+        
+        .quadrant-header {
+            border-bottom: 2px solid rgba(0,0,0,0.1);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .quadrant-header h3 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        
+        .quadrant-header .timing {
+            display: block;
+            font-size: 13px;
+            color: #718096;
+            margin-top: 3px;
+        }
+        
+        .quadrant-content {
+            font-size: 13px;
+        }
+        
+        .tier-basic, .tier-mh {
+            margin-bottom: 12px;
+        }
+        
+        .tier-basic {
+            opacity: 0.8;
+        }
+        
+        .tier-mh {
+            background: rgba(230,255,250,0.5);
+            padding: 8px;
+            border-radius: 6px;
+            border-left: 3px solid #319795;
+        }
+        
+        .quadrant-content strong {
+            font-size: 14px;
+        }
+        
+        .quadrant-content ul {
+            margin: 5px 0 0 0;
+            padding-left: 20px;
+            line-height: 1.7;
+            font-size: 13px;
+        }
+        
+        .center-model {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 3px solid #f59e0b;
+            border-radius: 50%;
+            width: 180px;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            z-index: 10;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        
+        .center-model h4 {
+            margin: 0;
+            font-size: 16px;
+            color: #92400e;
+            font-weight: 700;
+        }
+        
+        .center-model p {
+            margin: 8px 0 0 0;
+            font-size: 12px;
+            color: #78350f;
+            line-height: 1.4;
+        }
+        
+        .cycle-arrows {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+        
+        .arrow {
+            position: absolute;
+            font-size: 24px;
+            color: #cbd5e0;
+            font-weight: bold;
+        }
+        
+        .arrow-top {
+            top: 50%;
+            left: 25%;
+            transform: translateY(-50%);
+        }
+        
+        .arrow-right {
+            top: 25%;
+            right: 50%;
+            transform: translateX(50%);
+        }
+        
+        .arrow-bottom {
+            bottom: 50%;
+            right: 25%;
+            transform: translateY(50%);
+        }
+        
+        .arrow-left {
+            bottom: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .timeline-section {
+            background: #f7fafc;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .timeline-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .timeline-phase {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+        
+        .timeline-phase h3 {
+            font-size: 16px;
+            margin: 0 0 10px 0;
+            color: #2d3748;
+        }
+        
+        .timeline-phase p {
+            font-size: 12px;
+            color: #718096;
+        }
+        
+        .timeline-phase ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+        
+        .metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .metrics-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .metrics-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .metrics-table tr:hover {
+            background: #f7fafc;
+        }
+        
+        .mh-row {
+            background: #e6fffa !important;
+        }
+        
+        .mh-row td {
+            font-weight: 600;
+        }
+        
+        .basic-comparison {
+            color: #718096;
+            font-style: italic;
+            font-weight: normal;
+        }
+        
+        .roles-section {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .role-card {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            border-top: 4px solid;
+        }
+        
+        .role-card h3 {
+            font-size: 16px;
+            margin: 0 0 10px 0;
+            color: #2d3748;
+        }
+        
+        .role-card ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+        
+        .improvement-leads {
+            background: linear-gradient(220deg, #A90533 0%, #5E3989 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .improvement-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .improvement-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .improvement-leads h2 {
+            font-size: 22px;
+            margin: 0 0 15px 0;
+        }
+        
+        .improvement-item h4 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+        }
+        
+        .improvement-item p {
+            margin: 0;
+            font-size: 13px;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-banner">
+            <img src="https://github.com/jduarte-refugehouse/jduarte-refugehouse.github.io/blob/ca195301d9c07731d3eca63818516dd540d1e472/web-logo-with-name-dark-background.png?raw=true" alt="Refuge House Logo">
+        </div>
+        <div class="content-wrapper">
+            <div class="header">
+                <h1>T3C Mental & Behavioral Health Support Services</h1>
+                <h1 style="font-size: 24px; margin-top: 5px;">Continuous Quality Improvement Model</h1>
+                <div class="subtitle">Package-Specific CQI Process per T3C Blueprint Requirements</div>
+            </div>
+        
+        <div class="package-note">
+            <h3>Mental & Behavioral Health Support Services CQI Framework</h3>
+            <p>This CQI model is specifically designed for monitoring and improving therapeutic services for children with emotional, conduct, or behavioral disorders.<br>
+            Builds upon Basic Foster Family Home CQI processes with enhanced therapeutic quality metrics and 90-day review cycles.</p>
+        </div>
+        
+        <div class="cqi-framework">
+            <h2 style="font-size: 20px; text-align: center; margin-bottom: 25px;">Mental & Behavioral Health Support Services CQI Cycle</h2>
+            
+            <div class="cqi-grid-layout">
+                <div class="cqi-quadrant plan-quadrant">
+                    <div class="quadrant-header">
+                        <h3>PLAN</h3>
+                        <span class="timing">Beginning of 90-Day Cycle</span>
+                    </div>
+                    <div class="quadrant-content">
+                        <div class="tier-basic">
+                            <strong>Tier 1 (Basic):</strong>
+                            <ul>
+                                <li>Review Logic Model</li>
+                                <li>Set TBRI®-aligned goals</li>
+                                <li>Develop intervention strategies</li>
+                            </ul>
+                        </div>
+                        <div class="tier-mh">
+                            <strong>MH-Specific:</strong>
+                            <ul>
+                                <li>Schedule weekly therapy per T3C p.77</li>
+                                <li>Develop TBRI®-informed crisis protocols</li>
+                                <li>Plan therapeutic family engagement</li>
+                                <li>Review psychotropic medications</li>
+                                <li>Set behavioral intervention goals within TBRI®</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="cqi-quadrant do-quadrant">
+                    <div class="quadrant-header">
+                        <h3>DO</h3>
+                        <span class="timing">Days 1-75</span>
+                    </div>
+                    <div class="quadrant-content">
+                        <div class="tier-basic">
+                            <strong>Tier 1 (Basic):</strong>
+                            <ul>
+                                <li>Implement TBRI® Connecting daily</li>
+                                <li>Document all services</li>
+                                <li>Family engagement per TBRI®</li>
+                            </ul>
+                        </div>
+                        <div class="tier-mh">
+                            <strong>MH-Specific:</strong>
+                            <ul>
+                                <li>Conduct weekly individual therapy (required)</li>
+                                <li>Facilitate family therapy with TBRI® integration</li>
+                                <li>Monitor medication compliance daily</li>
+                                <li>Implement behavioral plans using TBRI® Correcting</li>
+                                <li>Provide 24/7 crisis response per protocol</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="cqi-quadrant study-quadrant">
+                    <div class="quadrant-header">
+                        <h3>STUDY</h3>
+                        <span class="timing">Days 76-85</span>
+                    </div>
+                    <div class="quadrant-content">
+                        <div class="tier-basic">
+                            <strong>Tier 1 (Basic):</strong>
+                            <ul>
+                                <li>Analyze data</li>
+                                <li>Compare to model</li>
+                                <li>Identify trends</li>
+                            </ul>
+                        </div>
+                        <div class="tier-mh">
+                            <strong>MH-Specific:</strong>
+                            <ul>
+                                <li>Review 90-day CANS results</li>
+                                <li>Assess therapy attendance (≥90%)</li>
+                                <li>Analyze crisis incident patterns</li>
+                                <li>Evaluate medication effectiveness</li>
+                                <li>Determine step-down readiness</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="cqi-quadrant act-quadrant">
+                    <div class="quadrant-header">
+                        <h3>ACT</h3>
+                        <span class="timing">Days 86-90</span>
+                    </div>
+                    <div class="quadrant-content">
+                        <div class="tier-basic">
+                            <strong>Tier 1 (Basic):</strong>
+                            <ul>
+                                <li>Refine TBRI® implementation</li>
+                                <li>Adjust service approaches</li>
+                                <li>Enhance training as needed</li>
+                            </ul>
+                        </div>
+                        <div class="tier-mh">
+                            <strong>MH-Specific:</strong>
+                            <ul>
+                                <li>Adjust therapy frequency/modality per needs</li>
+                                <li>Update behavioral plans with TBRI® strategies</li>
+                                <li>Revise crisis protocols based on data</li>
+                                <li>Modify medication regimens (with psychiatrist)</li>
+                                <li>Plan transitions or aftercare services</li>
+                                <li>Document Program Director confirmation (15-day)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="center-model">
+                    <h4>Mental & Behavioral Health<br>Logic Model</h4>
+                    <p>TBRI® Foundation<br>+ Therapeutic Services<br>90-Day Review Cycle</p>
+                </div>
+            </div>
+            
+            <div class="cycle-arrows">
+                <div class="arrow arrow-top">→</div>
+                <div class="arrow arrow-right">↓</div>
+                <div class="arrow arrow-bottom">←</div>
+                <div class="arrow arrow-left">↑</div>
+            </div>
+        </div>
+        
+        <div class="timeline-section">
+            <h2 style="font-size: 18px; margin: 0 0 15px 0;">Mental & Behavioral Health CQI Timeline</h2>
+            <div class="timeline-grid">
+                <div class="timeline-phase" style="border-left-color: #667eea;">
+                    <h3>Beginning of 90-Day Cycle</h3>
+                    <p style="font-size: 10px; color: #718096;">Program Director, Treatment Director, QA Team</p>
+                    <ul>
+                        <li>Review MH service delivery</li>
+                        <li>Set therapeutic targets</li>
+                        <li class="mh-specific">Plan therapy schedules</li>
+                        <li class="mh-specific">Review medication protocols</li>
+                        <li class="mh-specific">Update crisis plans</li>
+                    </ul>
+                </div>
+                
+                <div class="timeline-phase" style="border-left-color: #48bb78;">
+                    <h3>Days 1-75</h3>
+                    <p style="font-size: 10px; color: #718096;">Therapists, Case Managers, Foster Parents</p>
+                    <ul>
+                        <li>TBRI® implementation</li>
+                        <li class="mh-specific">Weekly individual therapy</li>
+                        <li class="mh-specific">Family therapy sessions</li>
+                        <li class="mh-specific">Behavioral interventions</li>
+                        <li class="mh-specific">Crisis management</li>
+                        <li class="mh-specific">Medication monitoring</li>
+                    </ul>
+                </div>
+                
+                <div class="timeline-phase" style="border-left-color: #ed64a6;">
+                    <h3>Days 76-85</h3>
+                    <p style="font-size: 10px; color: #718096;">QA Coordinator, Treatment Director</p>
+                    <ul>
+                        <li>Compile therapy data</li>
+                        <li>Analyze CANS results</li>
+                        <li class="mh-specific">Review therapy attendance</li>
+                        <li class="mh-specific">Assess crisis incidents</li>
+                        <li class="mh-specific">Evaluate medication compliance</li>
+                        <li class="mh-specific">Determine continued stay</li>
+                    </ul>
+                </div>
+                
+                <div class="timeline-phase" style="border-left-color: #ed8936;">
+                    <h3>Day 86-90</h3>
+                    <p style="font-size: 10px; color: #718096;">Full MH CQI Team</p>
+                    <ul>
+                        <li>Treatment team meeting</li>
+                        <li>Review all outcomes</li>
+                        <li class="mh-specific">Adjust treatment plans</li>
+                        <li class="mh-specific">Modify therapy frequency</li>
+                        <li class="mh-specific">Update behavioral plans</li>
+                        <li class="mh-specific">Plan aftercare services</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <h2 style="font-size: 18px; margin: 30px 0 15px 0;">Mental & Behavioral Health CQI Metrics</h2>
+        <table class="metrics-table">
+            <thead>
+                <tr>
+                    <th>Logic Model Component</th>
+                    <th>MH-Specific Metrics</th>
+                    <th>Target/Threshold</th>
+                    <th>Review Frequency</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="mh-row">
+                    <td><strong>TBRI® Implementation</strong></td>
+                    <td>• Staff TBRI® Practitioner competency<br>
+                        • TBRI® fidelity in therapy sessions<br>
+                        • Caregiver TBRI® implementation scores<br>
+                        • Crisis de-escalation using IDEAL Response®</td>
+                    <td>≥90% competency<br>
+                        Documented in sessions<br>
+                        ≥85% fidelity<br>
+                        100% utilization</td>
+                    <td>Quarterly assessment<br>
+                        Monthly review</td>
+                </tr>
+                <tr>
+                    <td><strong>Therapeutic Services</strong></td>
+                    <td>• Weekly individual therapy attendance<br>
+                        • Family therapy participation<br>
+                        • Group therapy engagement<br>
+                        • Psychiatric consultation frequency</td>
+                    <td>≥90% attendance<br>
+                        Monthly minimum<br>
+                        As indicated<br>
+                        Quarterly minimum</td>
+                    <td>Weekly monitoring<br>
+                        Monthly review</td>
+                </tr>
+                <tr>
+                    <td><strong>CANS Assessment</strong></td>
+                    <td>• 90-day CANS completion <span class="basic-comparison">(vs 6-month Basic)</span><br>
+                        • Behavioral domain improvements<br>
+                        • Risk behavior reductions<br>
+                        • Strengths development</td>
+                    <td>100% on time<br>
+                        ≥20% improvement<br>
+                        Decrease in scores<br>
+                        Increase in scores</td>
+                    <td>Every 90 days</td>
+                </tr>
+                <tr class="mh-row">
+                    <td><strong>Crisis Management</strong></td>
+                    <td>• Crisis intervention frequency<br>
+                        • Response time to crisis<br>
+                        • De-escalation success rate<br>
+                        • Psychiatric hospitalization rate</td>
+                    <td>Decreasing trend<br>
+                        <1 hour<br>
+                        ≥80%<br>
+                        ≤2 per year</td>
+                    <td>Monthly</td>
+                </tr>
+                <tr>
+                    <td><strong>Medication Management</strong></td>
+                    <td>• Medication compliance rate<br>
+                        • Medication effectiveness<br>
+                        • Side effect monitoring<br>
+                        • Psychiatric follow-ups</td>
+                    <td>≥85%<br>
+                        Clinical improvement<br>
+                        Weekly checks<br>
+                        Monthly minimum</td>
+                    <td>Weekly/Monthly</td>
+                </tr>
+                <tr class="mh-row">
+                    <td><strong>Behavioral Interventions</strong></td>
+                    <td>• Behavioral plan implementation<br>
+                        • Incident frequency<br>
+                        • School behavior reports<br>
+                        • Positive behavior increases</td>
+                    <td>100% fidelity<br>
+                        ≥40% reduction<br>
+                        Improving trend<br>
+                        Documented gains</td>
+                    <td>Weekly data<br>
+                        Monthly analysis</td>
+                </tr>
+                <tr>
+                    <td><strong>Service Coordination</strong></td>
+                    <td>• STAR Health utilization<br>
+                        • HHSC BH services accessed<br>
+                        • ECI coordination (if applicable)<br>
+                        • Service denial notifications</td>
+                    <td>All eligible services<br>
+                        As needed<br>
+                        100% eligible<br>
+                        Within 3 days</td>
+                    <td>Monthly</td>
+                </tr>
+                <tr>
+                    <td><strong>Continued Stay/Step-Down</strong></td>
+                    <td>• Continued stay criteria met per T3C<br>
+                        • Program Director confirmations<br>
+                        • Treatment Director reviews<br>
+                        • Step-down readiness indicators<br>
+                        • TBRI® progress documentation</td>
+                    <td>Documented<br>
+                        Within 15 business days<br>
+                        Every 90 days<br>
+                        Per criteria<br>
+                        Quarterly assessment</td>
+                    <td>Every 90 days</td>
+                </tr>
+                <tr>
+                    <td><strong>Aftercare Services</strong></td>
+                    <td>• Aftercare plan development<br>
+                        • Service linkage success<br>
+                        • Post-discharge follow-up<br>
+                        • Sustained stability</td>
+                    <td>100% at discharge<br>
+                        ≥80% connected<br>
+                        30/60/90 days<br>
+                        6-month check</td>
+                    <td>At discharge<br>
+                        Post-placement</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="roles-section">
+            <div class="role-card" style="border-top-color: #667eea;">
+                <h3>Program Director - MH Responsibilities</h3>
+                <ul>
+                    <li>Oversee MH service package delivery per T3C Blueprint</li>
+                    <li>Monitor TBRI® implementation across all services</li>
+                    <li class="mh-specific">Review continued stay criteria every 90 days</li>
+                    <li class="mh-specific">Provide written confirmations within 15 business days</li>
+                    <li>Lead MH-specific CQI reviews with TBRI® focus</li>
+                    <li>Approve Logic Model modifications based on CQI</li>
+                </ul>
+            </div>
+            
+            <div class="role-card" style="border-top-color: #48bb78;">
+                <h3>Treatment Director - MH Specific</h3>
+                <ul>
+                    <li class="mh-specific">Supervise all licensed therapists</li>
+                    <li class="mh-specific">Review treatment effectiveness</li>
+                    <li class="mh-specific">Oversee behavioral interventions</li>
+                    <li class="mh-specific">Coordinate psychiatric services</li>
+                    <li class="mh-specific">Lead clinical team meetings</li>
+                    <li class="mh-specific">Approve step-down transitions</li>
+                </ul>
+            </div>
+            
+            <div class="role-card" style="border-top-color: #ed64a6;">
+                <h3>Licensed Therapists - MH Team</h3>
+                <ul>
+                    <li class="mh-specific">Provide weekly individual therapy using TBRI® principles</li>
+                    <li class="mh-specific">Conduct family therapy with TBRI® integration</li>
+                    <li class="mh-specific">Lead group therapy programs as appropriate</li>
+                    <li class="mh-specific">Document treatment progress per T3C requirements</li>
+                    <li class="mh-specific">Collaborate on TBRI®-informed behavioral plans</li>
+                    <li class="mh-specific">Participate in 90-day Service Plan reviews</li>
+                </ul>
+            </div>
+            
+            <div class="role-card" style="border-top-color: #ed8936;">
+                <h3>Case Managers - MH Enhanced</h3>
+                <ul>
+                    <li>Implement TBRI® in all therapeutic contexts</li>
+                    <li>Coordinate all MH services per Service Plan</li>
+                    <li class="mh-specific">Ensure therapy attendance (≥90% target)</li>
+                    <li class="mh-specific">Monitor medication compliance daily</li>
+                    <li class="mh-specific">Document behavioral incidents using TBRI® framework</li>
+                    <li class="mh-specific">Facilitate family engagement per TBRI® Connecting</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="improvement-leads">
+            <h2 style="font-size: 20px; margin: 0 0 15px 0;">Mental & Behavioral Health CQI Outcomes</h2>
+            <div class="improvement-grid">
+                <div class="improvement-item">
+                    <h4>🧠 Clinical Stabilization</h4>
+                    <p>Achieved through intensive therapy and behavioral interventions</p>
+                </div>
+                <div class="improvement-item">
+                    <h4>💊 Treatment Adherence</h4>
+                    <p>Supported by coordinated medication management and therapy</p>
+                </div>
+                <div class="improvement-item">
+                    <h4>🏥 Crisis Reduction</h4>
+                    <p>Accomplished via 24/7 response and preventive interventions</p>
+                </div>
+                <div class="improvement-item">
+                    <h4>📊 Step-Down Success</h4>
+                    <p>Enabled by therapeutic progress and comprehensive aftercare</p>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
