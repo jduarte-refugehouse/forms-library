@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { AlertCircle, CheckCircle, Plus, Trash2, FileText, Send, ArrowLeft, Users } from "lucide-react"
+import { AlertCircle, CheckCircle, Plus, Trash2, FileText, Send, ArrowLeft, Users, HeartPulse, Search, XCircle } from "lucide-react"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 
@@ -75,6 +75,20 @@ export default function AftercarePlanForm() {
       week3: "",
       week4: "",
     },
+
+    // Substance Use Support Services
+    substanceUseTreatmentProvider: "",
+    substanceUseTreatmentPhone: "",
+    matStatus: "not-applicable", // not-applicable, on-mat, discontinued
+    matMedication: "",
+    matPrescriber: "",
+    recoveryStatus: "",
+    relapsePrevention: "",
+    soberSupportNetwork: "",
+    sponsorInfo: "",
+    recoveryMeetings: "",
+    triggersIdentified: "",
+    copingStrategies: "",
 
     // Independent Living Services
     alumniEmail: "",
@@ -195,6 +209,12 @@ export default function AftercarePlanForm() {
         case "treatment":
           scheduleText = "Twice monthly contact for 6 months minimum"
           break
+        case "substance-use":
+          scheduleText = "Twice monthly contact for 6 months minimum. Recovery-focused check-ins with MAT compliance monitoring if applicable."
+          break
+        case "stass":
+          scheduleText = "N/A - STASS does not require aftercare services"
+          break
         case "independent":
           scheduleText =
             "Weekly contact for first month, then bi-weekly for 2 months, then monthly for remainder of 6 months"
@@ -218,76 +238,103 @@ export default function AftercarePlanForm() {
       value: "mental",
       label: "Mental & Behavioral Health Support Services (Required)",
       helpText: "6 months, twice monthly contact minimum. Include STAR Health Coordinator if assigned.",
+      hasAftercare: true,
     },
     {
       value: "idd",
       label: "IDD/Autism Spectrum Disorder Support Services (Required)",
       helpText: "6 months, twice monthly contact minimum. Education Portfolio required for all cases.",
+      hasAftercare: true,
+    },
+    {
+      value: "substance-use",
+      label: "Substance Use Support Services (Required)",
+      helpText: "6 months, recovery-focused aftercare. Twice monthly contact minimum. MAT compliance tracking if applicable.",
+      hasAftercare: true,
     },
     {
       value: "treatment",
       label: "T3C Treatment Foster Family Care Support Services (Required)",
       helpText: "6 months, twice monthly contact minimum. Weekly contact schedule required.",
+      hasAftercare: true,
+    },
+    {
+      value: "stass",
+      label: "Short-Term Assessment Support Services (STASS)",
+      helpText: "⚠️ STASS does NOT require aftercare services. This is a time-limited assessment placement (30-45 days).",
+      hasAftercare: false,
     },
     {
       value: "emergency",
       label: "Emergency Shelter Services",
       helpText: "Optional aftercare - requires Program Director approval.",
+      hasAftercare: true,
     },
     {
       value: "basic",
       label: "Basic Foster Care Services",
       helpText: "Optional aftercare - requires Program Director approval.",
+      hasAftercare: true,
     },
     {
       value: "therapeutic",
       label: "Therapeutic Foster Care Services",
       helpText: "Optional aftercare - requires Program Director approval.",
+      hasAftercare: true,
     },
     {
       value: "kinship",
       label: "Kinship Caregiver Support Add-On",
       helpText: "30-day pre-permanency planning required. Focus on family support and stability.",
+      hasAftercare: true,
     },
     {
       value: "adoption",
       label: "Adoption Support Services",
       helpText: "Post-adoption support planning. Include family integration strategies.",
+      hasAftercare: true,
     },
     {
       value: "independent",
       label: "Independent Living Services",
       helpText: "6-month transition support required. Alumni information mandatory for tracking.",
+      hasAftercare: true,
     },
     {
       value: "respite",
       label: "Respite Care Services",
       helpText: "Short-term support planning. Coordinate with primary placement.",
+      hasAftercare: true,
     },
     {
       value: "family-preservation",
       label: "Family Preservation Services",
       helpText: "Focus on family strengthening and prevention strategies.",
+      hasAftercare: true,
     },
     {
       value: "reunification",
       label: "Family Reunification Services",
       helpText: "Transition planning for family reunification. Safety planning required.",
+      hasAftercare: true,
     },
     {
       value: "pregnant-parenting",
       label: "Pregnant & Parenting Youth Add-On",
       helpText: "Focus on dual-generation support. Include parenting education and child development.",
+      hasAftercare: true,
     },
     {
       value: "transition",
       label: "Transition Support Services Add-On",
       helpText: "PAL worker support and alumni connections. Weekly to monthly contact schedule.",
+      hasAftercare: true,
     },
     {
       value: "other",
       label: "Other (please specify)",
       helpText: "Requires Program Director approval and detailed justification.",
+      hasAftercare: true,
     },
   ]
 
@@ -473,6 +520,25 @@ export default function AftercarePlanForm() {
       // Treatment package has standard aftercare requirements, no additional fields required
     }
 
+    if (formData.packageType === "substance-use") {
+      if (!formData.substanceUseTreatmentProvider) {
+        newErrors.substanceUseTreatmentProvider = "Substance use treatment provider is required"
+      }
+      if (!formData.recoveryStatus) {
+        newErrors.recoveryStatus = "Recovery status is required"
+      }
+      if (!formData.relapsePrevention) {
+        newErrors.relapsePrevention = "Relapse prevention plan is required"
+      }
+    }
+
+    if (formData.packageType === "stass") {
+      // STASS does not require aftercare - skip validation
+      // Return early with no errors for STASS
+      setErrors({})
+      return true
+    }
+
     if (formData.packageType === "other") {
       // Optional aftercare - ensure approval is documented in notes
       if (!formData.additionalNotes) {
@@ -613,6 +679,45 @@ export default function AftercarePlanForm() {
                       {errors.otherPackageType && (
                         <p className="text-red-500 text-sm mt-1">{errors.otherPackageType}</p>
                       )}
+                    </div>
+                  )}
+
+                  {/* STASS Exclusion Notice */}
+                  {formData.packageType === "stass" && (
+                    <div className="md:col-span-2">
+                      <div className="bg-gray-100 border-l-4 border-gray-500 p-6 rounded-r-lg">
+                        <div className="flex items-start gap-3">
+                          <XCircle className="h-6 w-6 text-gray-600 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <h3 className="text-lg font-bold text-gray-700">
+                              Aftercare Services Not Required for STASS
+                            </h3>
+                            <p className="mt-2 text-gray-600">
+                              Short-Term Assessment Support Services (STASS) is a <strong>time-limited placement</strong> (30-45 days maximum) 
+                              designed for assessment purposes only. Children transition to their recommended service package 
+                              after assessment completion.
+                            </p>
+                            <div className="mt-4 p-3 bg-white rounded-lg border border-gray-300">
+                              <p className="text-sm text-gray-700 font-medium mb-2">Instead, use these STASS-specific forms:</p>
+                              <ul className="space-y-1 text-sm">
+                                <li>
+                                  <Link href="/forms/stass-assessment-progress" className="text-blue-600 hover:text-blue-800 underline">
+                                    → STASS Assessment Progress Tracking
+                                  </Link>
+                                </li>
+                                <li>
+                                  <Link href="/forms/stass-transition-planning" className="text-blue-600 hover:text-blue-800 underline">
+                                    → STASS Transition Planning
+                                  </Link>
+                                </li>
+                              </ul>
+                            </div>
+                            <p className="mt-3 text-sm text-gray-500">
+                              Aftercare services will be provided under the receiving service package after STASS transition.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -1174,6 +1279,180 @@ export default function AftercarePlanForm() {
                           className="w-full p-2 border border-gray-300 rounded-md"
                         />
                       </div>
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {formData.packageType === "substance-use" && (
+                <section className="space-y-4 bg-amber-50 p-4 rounded-lg">
+                  <h2 className="text-xl font-semibold text-amber-800 flex items-center gap-2">
+                    <HeartPulse className="h-6 w-6" />
+                    Substance Use Support Services - Recovery Aftercare
+                  </h2>
+                  <p className="text-sm text-amber-700">
+                    Required aftercare: 6 months, twice monthly contact minimum. Recovery-focused support with MAT compliance monitoring if applicable.
+                  </p>
+
+                  <div className="bg-amber-100 border border-amber-300 rounded-lg p-3 mb-4">
+                    <p className="text-sm text-amber-800">
+                      <strong>Recovery-Focused Approach:</strong> All aftercare contacts should use non-punitive, 
+                      recovery-focused framing. Relapse is part of recovery for many - focus on re-engagement, not punishment.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Substance Use Treatment Provider *</label>
+                      <input
+                        type="text"
+                        name="substanceUseTreatmentProvider"
+                        value={formData.substanceUseTreatmentProvider}
+                        onChange={handleInputChange}
+                        placeholder="Name of treatment provider or program"
+                        className={`w-full p-2 border rounded-md ${errors.substanceUseTreatmentProvider ? "border-red-500" : "border-gray-300"}`}
+                      />
+                      {errors.substanceUseTreatmentProvider && (
+                        <p className="text-red-500 text-sm mt-1">{errors.substanceUseTreatmentProvider}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Treatment Provider Phone</label>
+                      <input
+                        type="tel"
+                        name="substanceUseTreatmentPhone"
+                        value={formData.substanceUseTreatmentPhone}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Medication-Assisted Treatment (MAT) Status</label>
+                      <select
+                        name="matStatus"
+                        value={formData.matStatus}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      >
+                        <option value="not-applicable">Not on MAT</option>
+                        <option value="on-mat">Currently on MAT</option>
+                        <option value="discontinued">MAT discontinued (document reason below)</option>
+                      </select>
+                    </div>
+
+                    {formData.matStatus === "on-mat" && (
+                      <>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">MAT Medication</label>
+                          <input
+                            type="text"
+                            name="matMedication"
+                            value={formData.matMedication}
+                            onChange={handleInputChange}
+                            placeholder="e.g., Suboxone, Vivitrol, etc."
+                            className="w-full p-2 border border-gray-300 rounded-md"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">MAT Prescriber</label>
+                          <input
+                            type="text"
+                            name="matPrescriber"
+                            value={formData.matPrescriber}
+                            onChange={handleInputChange}
+                            placeholder="Prescribing provider name and contact"
+                            className="w-full p-2 border border-gray-300 rounded-md"
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Current Recovery Status *</label>
+                      <textarea
+                        name="recoveryStatus"
+                        value={formData.recoveryStatus}
+                        onChange={handleInputChange}
+                        rows="2"
+                        placeholder="Describe current recovery status, sobriety milestones, and any recent challenges"
+                        className={`w-full p-2 border rounded-md ${errors.recoveryStatus ? "border-red-500" : "border-gray-300"}`}
+                      />
+                      {errors.recoveryStatus && <p className="text-red-500 text-sm mt-1">{errors.recoveryStatus}</p>}
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Relapse Prevention Plan *</label>
+                      <textarea
+                        name="relapsePrevention"
+                        value={formData.relapsePrevention}
+                        onChange={handleInputChange}
+                        rows="3"
+                        placeholder="Document relapse prevention strategies, warning signs, and response plan"
+                        className={`w-full p-2 border rounded-md ${errors.relapsePrevention ? "border-red-500" : "border-gray-300"}`}
+                      />
+                      {errors.relapsePrevention && <p className="text-red-500 text-sm mt-1">{errors.relapsePrevention}</p>}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Sober Support Network</label>
+                      <textarea
+                        name="soberSupportNetwork"
+                        value={formData.soberSupportNetwork}
+                        onChange={handleInputChange}
+                        rows="2"
+                        placeholder="List sober supports (family, friends, peers in recovery)"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Sponsor Information</label>
+                      <input
+                        type="text"
+                        name="sponsorInfo"
+                        value={formData.sponsorInfo}
+                        onChange={handleInputChange}
+                        placeholder="12-step or recovery sponsor name and contact"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Recovery Meetings / Support Groups</label>
+                      <input
+                        type="text"
+                        name="recoveryMeetings"
+                        value={formData.recoveryMeetings}
+                        onChange={handleInputChange}
+                        placeholder="AA, NA, SMART Recovery, etc. - locations and frequency"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Triggers Identified</label>
+                      <textarea
+                        name="triggersIdentified"
+                        value={formData.triggersIdentified}
+                        onChange={handleInputChange}
+                        rows="2"
+                        placeholder="Known triggers for substance use"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Coping Strategies</label>
+                      <textarea
+                        name="copingStrategies"
+                        value={formData.copingStrategies}
+                        onChange={handleInputChange}
+                        rows="2"
+                        placeholder="Healthy coping strategies developed during treatment"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
                     </div>
                   </div>
                 </section>

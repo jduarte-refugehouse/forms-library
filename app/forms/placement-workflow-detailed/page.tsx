@@ -63,6 +63,18 @@ interface HealthScreening {
   specialEquipmentVerified?: boolean
   communicationMethodIdentified?: boolean
   sensoryAccommodationsNeeded?: boolean
+  // Substance Use specific
+  substanceHistoryObtained?: boolean
+  withdrawalRiskAssessed?: boolean
+  matNeedsIdentified?: boolean
+  // STASS specific
+  unknownHistoryProtocol?: boolean
+  expeditedSafetyPlanInitiated?: boolean
+  initialObservationPeriodPlanned?: boolean
+  // TFFC specific
+  tbriAssessmentInitiated?: boolean
+  onCallTherapistVerified?: boolean
+  crisisInterventionPlanReviewed?: boolean
 }
 
 interface FaceToFaceContact {
@@ -759,6 +771,123 @@ export default function PlacementWorkflowPage() {
                                 }
                               />
                               <Label>Sensory accommodations needed?</Label>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {childData.servicePackage === "Substance Use Support Services" && (
+                        <div className="space-y-4 p-4 bg-amber-50 rounded-lg">
+                          <h4 className="font-medium text-amber-900">Substance Use Support Specific</h4>
+                          <div className="space-y-3">
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                checked={healthScreening.substanceHistoryObtained || false}
+                                onCheckedChange={(checked) =>
+                                  setHealthScreening((prev) => ({ ...prev, substanceHistoryObtained: !!checked }))
+                                }
+                              />
+                              <Label>Substance use history obtained?</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                checked={healthScreening.withdrawalRiskAssessed || false}
+                                onCheckedChange={(checked) =>
+                                  setHealthScreening((prev) => ({ ...prev, withdrawalRiskAssessed: !!checked }))
+                                }
+                              />
+                              <Label>Withdrawal risk assessed?</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                checked={healthScreening.matNeedsIdentified || false}
+                                onCheckedChange={(checked) =>
+                                  setHealthScreening((prev) => ({ ...prev, matNeedsIdentified: !!checked }))
+                                }
+                              />
+                              <Label>MAT needs identified?</Label>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {childData.servicePackage === "Short-Term Assessment Support Services" && (
+                        <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                          <h4 className="font-medium text-gray-900">STASS Assessment Specific</h4>
+                          <Alert className="mb-3">
+                            <AlertTriangle className="h-4 w-4" />
+                            <AlertDescription>
+                              STASS children often have unknown histories. Enhanced safety monitoring required.
+                            </AlertDescription>
+                          </Alert>
+                          <div className="space-y-3">
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                checked={healthScreening.unknownHistoryProtocol || false}
+                                onCheckedChange={(checked) =>
+                                  setHealthScreening((prev) => ({ ...prev, unknownHistoryProtocol: !!checked }))
+                                }
+                              />
+                              <Label>Unknown history protocol initiated?</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                checked={healthScreening.expeditedSafetyPlanInitiated || false}
+                                onCheckedChange={(checked) =>
+                                  setHealthScreening((prev) => ({ ...prev, expeditedSafetyPlanInitiated: !!checked }))
+                                }
+                              />
+                              <Label>Expedited safety plan initiated (72-hour)?</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                checked={healthScreening.initialObservationPeriodPlanned || false}
+                                onCheckedChange={(checked) =>
+                                  setHealthScreening((prev) => ({ ...prev, initialObservationPeriodPlanned: !!checked }))
+                                }
+                              />
+                              <Label>Initial observation period planned?</Label>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {childData.servicePackage === "Treatment Foster Family Care" && (
+                        <div className="space-y-4 p-4 bg-purple-50 rounded-lg">
+                          <h4 className="font-medium text-purple-900">TFFC Specific</h4>
+                          <Alert className="mb-3 bg-purple-100 border-purple-200">
+                            <AlertTriangle className="h-4 w-4 text-purple-600" />
+                            <AlertDescription className="text-purple-800">
+                              TFFC requires 24/7 On-Call Licensed Therapist access. Verify before placement.
+                            </AlertDescription>
+                          </Alert>
+                          <div className="space-y-3">
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                checked={healthScreening.tbriAssessmentInitiated || false}
+                                onCheckedChange={(checked) =>
+                                  setHealthScreening((prev) => ({ ...prev, tbriAssessmentInitiated: !!checked }))
+                                }
+                              />
+                              <Label>TBRI assessment initiated?</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                checked={healthScreening.onCallTherapistVerified || false}
+                                onCheckedChange={(checked) =>
+                                  setHealthScreening((prev) => ({ ...prev, onCallTherapistVerified: !!checked }))
+                                }
+                              />
+                              <Label>On-Call Therapist verified?</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                checked={healthScreening.crisisInterventionPlanReviewed || false}
+                                onCheckedChange={(checked) =>
+                                  setHealthScreening((prev) => ({ ...prev, crisisInterventionPlanReviewed: !!checked }))
+                                }
+                              />
+                              <Label>Crisis intervention plan reviewed?</Label>
                             </div>
                           </div>
                         </div>

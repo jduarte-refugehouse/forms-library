@@ -36,13 +36,15 @@ import { Calendar } from "@/components/ui/calendar"
 import { useToast } from "@/hooks/use-toast"
 
 // --- Type Definitions ---
+type PackageType = "mental-behavioral" | "idd-autism" | "substance-use" | "stass" | "tffc" | "basic" | "none"
+
 interface ChildData {
   id: string
   name: string
   placementDate: string // YYYY-MM-DD
   servicePlanApprovalDate: string // YYYY-MM-DD
   age: number
-  packageType?: "mental-behavioral" | "idd-autism" | "none"
+  packageType?: PackageType
 }
 
 interface ReviewSchedule {
@@ -121,6 +123,18 @@ interface ServicePlanReviewApprovalData {
     skillAcquisitionUpdates: string
     supportLevelAdjustments: string
     educationalTeamInput: string
+    // Substance Use specific fields
+    recoveryStatus: string
+    matCompliance: string
+    relapsePrevention: string
+    treatmentEngagement: string
+    recoverySupports: string
+    // TFFC specific fields
+    tffcCrisisPatternAnalysis: string
+    behavioralStability: string
+    therapyEngagement: string
+    stepDownReadiness: string
+    daysRemaining: number
   }
   programDirectorQuarterlyReview: {
     reviewType: "90-day" | "180-day" | "270-day" | "Annual" | ""
@@ -336,6 +350,18 @@ const initialFormData: ServicePlanReviewApprovalData = {
     skillAcquisitionUpdates: "",
     supportLevelAdjustments: "",
     educationalTeamInput: "",
+    // Substance Use specific fields
+    recoveryStatus: "",
+    matCompliance: "",
+    relapsePrevention: "",
+    treatmentEngagement: "",
+    recoverySupports: "",
+    // TFFC specific fields
+    tffcCrisisPatternAnalysis: "",
+    behavioralStability: "",
+    therapyEngagement: "",
+    stepDownReadiness: "",
+    daysRemaining: 365,
   },
   programDirectorQuarterlyReview: {
     reviewType: "",
@@ -1420,7 +1446,175 @@ export default function ServicePlanReviewApproval({
                       )}
                     </div>
                   )}
-                  {childData.packageType === "none" && (
+
+                  {childData.packageType === "substance-use" && (
+                    <div className="space-y-4">
+                      <h4 className="font-semibold">For Substance Use Support Services</h4>
+                      <Alert className="bg-amber-50 border-amber-200">
+                        <AlertCircle className="h-4 w-4 text-amber-600" />
+                        <AlertDescription className="text-amber-800">
+                          Use recovery-focused, non-punitive language. Relapse is part of recovery for many.
+                        </AlertDescription>
+                      </Alert>
+                      {renderField(
+                        "Recovery Status",
+                        formData.treatmentTeamReview.recoveryStatus,
+                        (val) => handleChange("treatmentTeamReview.recoveryStatus", val),
+                        "select",
+                        [
+                          { value: "stable", label: "Stable recovery - no use this period" },
+                          { value: "challenges", label: "Recovery with challenges - maintained sobriety" },
+                          { value: "relapse-reengaged", label: "Relapse occurred - re-engaged in treatment" },
+                          { value: "active-concerns", label: "Active substance use concerns" },
+                        ],
+                        "Select recovery status",
+                      )}
+                      {renderField(
+                        "MAT Compliance (if applicable)",
+                        formData.treatmentTeamReview.matCompliance,
+                        (val) => handleChange("treatmentTeamReview.matCompliance", val),
+                        "select",
+                        [
+                          { value: "not-applicable", label: "Not on MAT" },
+                          { value: "compliant", label: "On MAT - fully compliant" },
+                          { value: "concerns", label: "On MAT - compliance concerns" },
+                        ],
+                        "Select MAT status",
+                      )}
+                      {renderField(
+                        "Relapse Prevention Progress",
+                        formData.treatmentTeamReview.relapsePrevention,
+                        (val) => handleChange("treatmentTeamReview.relapsePrevention", val),
+                        "textarea",
+                        [],
+                        "Describe progress on relapse prevention skills and plan",
+                      )}
+                      {renderField(
+                        "Treatment Engagement",
+                        formData.treatmentTeamReview.treatmentEngagement,
+                        (val) => handleChange("treatmentTeamReview.treatmentEngagement", val),
+                        "select",
+                        [
+                          { value: "consistent", label: "Consistent - attended all/most sessions" },
+                          { value: "mostly", label: "Mostly consistent - occasional missed sessions" },
+                          { value: "inconsistent", label: "Inconsistent - frequent missed sessions" },
+                          { value: "not-engaged", label: "Not engaged in treatment" },
+                        ],
+                        "Select engagement level",
+                      )}
+                      {renderField(
+                        "Recovery Supports",
+                        formData.treatmentTeamReview.recoverySupports,
+                        (val) => handleChange("treatmentTeamReview.recoverySupports", val),
+                        "textarea",
+                        [],
+                        "Describe sober support network, meetings, sponsor involvement",
+                      )}
+                      {renderField(
+                        "Recommendations for next period",
+                        formData.treatmentTeamReview.recommendations,
+                        (val) => handleChange("treatmentTeamReview.recommendations", val),
+                        "textarea",
+                        [],
+                        "Provide recovery-focused recommendations",
+                      )}
+                    </div>
+                  )}
+
+                  {childData.packageType === "stass" && (
+                    <div className="space-y-4">
+                      <Alert className="bg-gray-100 border-gray-300">
+                        <AlertCircle className="h-4 w-4 text-gray-600" />
+                        <AlertTitle>STASS - Different Review Process</AlertTitle>
+                        <AlertDescription>
+                          Short-Term Assessment Support Services uses a different review process. STASS placements are 
+                          time-limited (30-45 days) and focus on assessment rather than ongoing service plan reviews.
+                          <br /><br />
+                          <strong>Use these STASS-specific forms instead:</strong>
+                          <ul className="list-disc ml-4 mt-2">
+                            <li>STASS Assessment Progress Tracking</li>
+                            <li>STASS Transition Planning</li>
+                          </ul>
+                        </AlertDescription>
+                      </Alert>
+                    </div>
+                  )}
+
+                  {childData.packageType === "tffc" && (
+                    <div className="space-y-4">
+                      <h4 className="font-semibold">For Treatment Foster Family Care (60-Day Review)</h4>
+                      <Alert className="bg-purple-50 border-purple-200">
+                        <AlertCircle className="h-4 w-4 text-purple-600" />
+                        <AlertDescription className="text-purple-800">
+                          <strong>TFFC Requirements:</strong> Review cycle is 60 days (not 90). Maximum placement is 365 days. 
+                          Step-down assessment and crisis pattern analysis are REQUIRED at every review.
+                        </AlertDescription>
+                      </Alert>
+                      <div className="p-3 bg-purple-100 rounded-lg">
+                        <p className="text-sm font-medium text-purple-800">
+                          Days Remaining in TFFC: {formData.treatmentTeamReview.daysRemaining || 365} of 365
+                        </p>
+                      </div>
+                      {renderField(
+                        "Crisis Pattern Analysis (REQUIRED)",
+                        formData.treatmentTeamReview.tffcCrisisPatternAnalysis,
+                        (val) => handleChange("treatmentTeamReview.tffcCrisisPatternAnalysis", val),
+                        "textarea",
+                        [],
+                        "Describe crisis frequency trends, triggers, and intervention effectiveness per FC-TFFC-01",
+                      )}
+                      {renderField(
+                        "Behavioral Stability Assessment",
+                        formData.treatmentTeamReview.behavioralStability,
+                        (val) => handleChange("treatmentTeamReview.behavioralStability", val),
+                        "select",
+                        [
+                          { value: "significantly-improved", label: "Significantly improved" },
+                          { value: "moderately-improved", label: "Moderately improved" },
+                          { value: "stable", label: "Stable" },
+                          { value: "some-regression", label: "Some regression" },
+                          { value: "significant-concerns", label: "Significant concerns" },
+                        ],
+                        "Select stability level",
+                      )}
+                      {renderField(
+                        "Therapy Engagement",
+                        formData.treatmentTeamReview.therapyEngagement,
+                        (val) => handleChange("treatmentTeamReview.therapyEngagement", val),
+                        "select",
+                        [
+                          { value: "fully-engaged", label: "Fully engaged - consistent attendance and participation" },
+                          { value: "mostly-engaged", label: "Mostly engaged - good participation with occasional challenges" },
+                          { value: "partially-engaged", label: "Partially engaged - inconsistent" },
+                          { value: "minimally-engaged", label: "Minimally engaged - significant barriers" },
+                        ],
+                        "Weekly minimum therapy required for TFFC",
+                      )}
+                      {renderField(
+                        "Step-Down Readiness Assessment (REQUIRED)",
+                        formData.treatmentTeamReview.stepDownReadiness,
+                        (val) => handleChange("treatmentTeamReview.stepDownReadiness", val),
+                        "select",
+                        [
+                          { value: "ready", label: "Ready for step-down - recommend transition planning" },
+                          { value: "approaching", label: "Approaching readiness - continue 1-2 more review periods" },
+                          { value: "not-ready", label: "Not ready - specific barriers identified" },
+                          { value: "regression", label: "Regression noted - intensification may be needed" },
+                        ],
+                        "Step-down assessment required per T3C Blueprint",
+                      )}
+                      {renderField(
+                        "On-Call Therapist Utilization",
+                        formData.treatmentTeamReview.recommendations,
+                        (val) => handleChange("treatmentTeamReview.recommendations", val),
+                        "textarea",
+                        [],
+                        "Document On-Call Therapist consultations and recommendations for next period",
+                      )}
+                    </div>
+                  )}
+
+                  {(childData.packageType === "none" || childData.packageType === "basic") && (
                     <Alert>
                       <AlertCircle className="h-4 w-4" />
                       <AlertTitle>No Package Type Selected</AlertTitle>
@@ -2081,7 +2275,7 @@ export default function ServicePlanReviewApproval({
                   true,
                   userRole === "program_director" || userRole === "admin",
                 )}
-                {(childData.packageType === "mental-behavioral" || childData.packageType === "idd-autism") &&
+                {(childData.packageType === "mental-behavioral" || childData.packageType === "idd-autism" || childData.packageType === "substance-use" || childData.packageType === "tffc") &&
                   (userRole === "clinical_director" || userRole === "admin") && (
                     <>
                       {renderField(

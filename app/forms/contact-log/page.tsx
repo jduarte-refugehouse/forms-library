@@ -78,6 +78,21 @@ export default function ContactLogEntryForm() {
     familyDynamicsDiscussed: false,
     permanencyAchievementDate: "",
 
+    // Package-specific fields - Substance Use
+    recoveryCheckIn: "",
+    matComplianceDiscussed: false,
+    relapseIndicatorsAssessed: false,
+    soberSupportNetworkUpdated: false,
+    recoveryMeetingsAttended: "",
+    cravingsOrTriggersDiscussed: false,
+
+    // Package-specific fields - STASS
+    assessmentProgressDiscussed: false,
+    behavioralObservations: "",
+    unknownHistoryUpdates: "",
+    packageRecommendationDiscussed: false,
+    transitionTimelineUpdated: false,
+
     // Documentation
     documentationComplete: false,
     supervisorReview: false,
@@ -121,6 +136,18 @@ export default function ContactLogEntryForm() {
       value: "idd",
       label: "IDD/Autism Spectrum Disorder Support Services",
       helpText: "Education Portfolio required. Document behavioral supports and accommodations.",
+      required: true,
+    },
+    {
+      value: "substance-use",
+      label: "Substance Use Support Services",
+      helpText: "Recovery-focused documentation. Include MAT compliance, recovery status, and relapse prevention.",
+      required: true,
+    },
+    {
+      value: "stass",
+      label: "Short-Term Assessment Support Services (STASS)",
+      helpText: "Assessment-focused contacts. Document behavioral observations and assessment progress for package recommendation.",
       required: true,
     },
     {
@@ -486,6 +513,8 @@ export default function ContactLogEntryForm() {
   const isPregnantParentingPackage =
     contactData.packageType === "pregnant-parenting" || contactData.packageType === "pregnant-parenting-addon"
   const isKinshipPackage = contactData.packageType === "kinship" || contactData.packageType === "kinship-addon"
+  const isSubstanceUsePackage = contactData.packageType === "substance-use"
+  const isSTASSPackage = contactData.packageType === "stass"
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -962,6 +991,185 @@ export default function ContactLogEntryForm() {
                 </section>
               )}
 
+              {/* Package-Specific Fields - Substance Use */}
+              {isSubstanceUsePackage && (
+                <section className="space-y-4 bg-amber-50 p-4 rounded-lg border border-amber-200">
+                  <h3 className="text-lg font-semibold text-amber-800 flex items-center">
+                    <AlertCircle className="h-6 w-6 mr-2" />
+                    Substance Use Recovery Specific Fields
+                  </h3>
+                  <p className="text-sm text-amber-700 mb-2">
+                    Use recovery-focused, non-punitive language. Relapse is part of recovery for many.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Recovery Check-In Status</label>
+                      <select
+                        name="recoveryCheckIn"
+                        value={contactData.recoveryCheckIn}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      >
+                        <option value="">Select status</option>
+                        <option value="stable">Stable recovery - no concerns</option>
+                        <option value="challenges">Experiencing challenges - maintaining sobriety</option>
+                        <option value="at-risk">At-risk indicators present</option>
+                        <option value="relapse">Relapse discussed - re-engagement in progress</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="matComplianceDiscussed"
+                          checked={contactData.matComplianceDiscussed}
+                          onChange={handleInputChange}
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium text-gray-700">MAT Compliance Discussed</span>
+                      </label>
+                    </div>
+
+                    <div>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="relapseIndicatorsAssessed"
+                          checked={contactData.relapseIndicatorsAssessed}
+                          onChange={handleInputChange}
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Relapse Indicators Assessed</span>
+                      </label>
+                    </div>
+
+                    <div>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="soberSupportNetworkUpdated"
+                          checked={contactData.soberSupportNetworkUpdated}
+                          onChange={handleInputChange}
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Sober Support Network Updated</span>
+                      </label>
+                    </div>
+
+                    <div>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="cravingsOrTriggersDiscussed"
+                          checked={contactData.cravingsOrTriggersDiscussed}
+                          onChange={handleInputChange}
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Cravings/Triggers Discussed</span>
+                      </label>
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Recovery Meetings Attended (this period)
+                      </label>
+                      <input
+                        type="text"
+                        name="recoveryMeetingsAttended"
+                        value={contactData.recoveryMeetingsAttended}
+                        onChange={handleInputChange}
+                        placeholder="e.g., 3 AA meetings, 1 NA meeting"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {/* Package-Specific Fields - STASS */}
+              {isSTASSPackage && (
+                <section className="space-y-4 bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h3 className="text-lg font-semibold text-blue-800 flex items-center">
+                    <Clock className="h-6 w-6 mr-2" />
+                    STASS Assessment Specific Fields
+                  </h3>
+                  <p className="text-sm text-blue-700 mb-2">
+                    Document observations for service package recommendation. STASS is time-limited (30-45 days).
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="assessmentProgressDiscussed"
+                          checked={contactData.assessmentProgressDiscussed}
+                          onChange={handleInputChange}
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Assessment Progress Discussed</span>
+                      </label>
+                    </div>
+
+                    <div>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="packageRecommendationDiscussed"
+                          checked={contactData.packageRecommendationDiscussed}
+                          onChange={handleInputChange}
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Package Recommendation Discussed</span>
+                      </label>
+                    </div>
+
+                    <div>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="transitionTimelineUpdated"
+                          checked={contactData.transitionTimelineUpdated}
+                          onChange={handleInputChange}
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Transition Timeline Updated</span>
+                      </label>
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Behavioral Observations (for package recommendation)
+                      </label>
+                      <textarea
+                        name="behavioralObservations"
+                        value={contactData.behavioralObservations}
+                        onChange={handleInputChange}
+                        rows={3}
+                        placeholder="Document behavioral patterns observed during this contact"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Unknown History Updates
+                      </label>
+                      <textarea
+                        name="unknownHistoryUpdates"
+                        value={contactData.unknownHistoryUpdates}
+                        onChange={handleInputChange}
+                        rows={2}
+                        placeholder="Any new history information discovered"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                  </div>
+                </section>
+              )}
+
               {/* Topics Discussed */}
               <section className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-700">Topics Discussed</h3>
@@ -1036,6 +1244,10 @@ export default function ContactLogEntryForm() {
                           " Include child welfare assessments, benefit status, and co-parenting dynamics."}
                         {contactData.packageType === "kinship-addon" &&
                           " Focus on caregiver support needs, family dynamics, and permanency progress."}
+                        {contactData.packageType === "substance-use" &&
+                          " Include recovery status, MAT compliance if applicable, relapse prevention, and sober support network."}
+                        {contactData.packageType === "stass" &&
+                          " Document behavioral observations for package recommendation. Focus on assessment progress and transition planning."}
                       </div>
                     )}
                     <textarea

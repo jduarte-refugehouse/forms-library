@@ -66,10 +66,23 @@ export default function ServiceRefusalDocumentationForm() {
       required: true,
     },
     {
+      value: "substance-use",
+      label: "Substance Use Support Services",
+      helpText: "Required aftercare: 6 months, twice monthly. Recovery-focused support with MAT compliance monitoring if applicable.",
+      required: true,
+    },
+    {
       value: "treatment",
       label: "T3C Treatment Foster Family Care Support Services",
       helpText: "Required aftercare: 6 months, twice monthly. Weekly contact schedule.",
       required: true,
+    },
+    {
+      value: "stass",
+      label: "Short-Term Assessment Support Services (STASS)",
+      helpText: "⚠️ STASS does NOT require aftercare - time-limited assessment placement (30-45 days). Aftercare provided under receiving package.",
+      required: false,
+      noAftercare: true,
     },
     {
       value: "basic",
@@ -245,6 +258,18 @@ export default function ServiceRefusalDocumentationForm() {
       case "idd":
         specificServices =
           "These services include educational portfolio support, developmental services, and specialized autism spectrum resources."
+        break
+      case "substance-use":
+        specificServices =
+          "These services include recovery support, relapse prevention planning, MAT compliance monitoring (if applicable), sober support network connections, and coordination with substance use treatment providers."
+        break
+      case "treatment":
+        specificServices =
+          "These services include continued therapeutic support, TBRI-informed transition assistance, and connection with ongoing treatment resources."
+        break
+      case "stass":
+        specificServices =
+          "Note: STASS is a time-limited assessment placement and does not typically include aftercare services. Aftercare will be provided under the recommended receiving service package."
         break
       default:
         specificServices =
