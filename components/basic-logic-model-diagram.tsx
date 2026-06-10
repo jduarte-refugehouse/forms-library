@@ -82,7 +82,7 @@ const LogicModel = () => {
                 <li>TBRI® Empowering strategies</li>
                 <li>TBRI® Correcting approaches</li>
                 <li>CANS 3.0 Assessments</li>
-                <li>Service Planning (6-month reviews)</li>
+                <li>Service Planning (90-day Snapshots — RCC contract floor)</li>
                 <li>Family engagement</li>
                 <li>STAR Health coordination</li>
                 <li>Educational advocacy</li>
