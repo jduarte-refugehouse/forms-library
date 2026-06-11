@@ -48,7 +48,7 @@ interface ChildData {
 }
 
 interface ReviewSchedule {
-  type: "30-day" | "90-day" | "6-month" | "Annual"
+  type: "30-day" | "90-day" | "Annual"
   dueDate: string
   status: "Complete" | "Due" | "Overdue"
   participants: string
@@ -270,12 +270,12 @@ const calculateReviewSchedule = (
     completion: 0,
   })
 
-  // 6-month review
-  const sixMonthDueDate = addDays(spDate, 180)
+  // 90-day Snapshot cadence per RCC contract (June 2026 decision; was 180-day/6-month)
+  const secondNinetyDayDueDate = addDays(spDate, 90 * 2)
   schedules.push({
-    type: "6-month",
-    dueDate: format(sixMonthDueDate, "yyyy-MM-dd"),
-    status: isPast(sixMonthDueDate) ? "Overdue" : "Due",
+    type: "90-day",
+    dueDate: format(secondNinetyDayDueDate, "yyyy-MM-dd"),
+    status: isPast(secondNinetyDayDueDate) ? "Overdue" : "Due",
     participants: "Full Team",
     completion: 0,
   })
@@ -969,7 +969,7 @@ export default function ServicePlanReviewApproval({
             </TableHeader>
             <TableBody>
               {formData.reviewScheduleMatrix.map((review) => (
-                <TableRow key={review.type}>
+                <TableRow key={`${review.type}-${review.dueDate}`}>
                   <TableCell>{review.type}</TableCell>
                   <TableCell>{review.dueDate}</TableCell>
                   <TableCell>
