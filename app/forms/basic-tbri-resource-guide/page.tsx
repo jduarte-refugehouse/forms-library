@@ -1091,8 +1091,9 @@ export default function BasicTBRIResourceGuide() {
                 <div>
                   <h3 className="text-2xl font-bold text-[#5E3989] mb-4">Detailed Materials Inventory</h3>
                   <p className="text-gray-700 leading-relaxed mb-4">
-                    These materials are delivered today in print by foster parents and Case Managers. Digital delivery of
-                    the child materials through Scout&apos;s Mountain is being built and is not yet in use.
+                    The age-banded child materials were designed as printed materials to be delivered to the child at
+                    placement. They are being digitized for delivery through Scout&apos;s Mountain, a child-facing
+                    application being implemented by the beginning of 2027.
                   </p>
                   <div className="space-y-6">
                     {/* Initial Placement Materials - Expanded */}
