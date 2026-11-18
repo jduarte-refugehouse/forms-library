@@ -1090,6 +1090,10 @@ export default function BasicTBRIResourceGuide() {
 
                 <div>
                   <h3 className="text-2xl font-bold text-[#5E3989] mb-4">Detailed Materials Inventory</h3>
+                  <p className="text-gray-700 leading-relaxed mb-4">
+                    These materials are delivered today in print by foster parents and Case Managers. Digital delivery of
+                    the child materials through Scout&apos;s Mountain is being built and is not yet in use.
+                  </p>
                   <div className="space-y-6">
                     {/* Initial Placement Materials - Expanded */}
                     <Collapsible open={openSections.materials1} onOpenChange={() => toggleSection("materials1")}>
@@ -1468,7 +1472,7 @@ export default function BasicTBRIResourceGuide() {
                         <div className="bg-purple-50 p-4 rounded-lg">
                           <p className="font-semibold text-gray-800 mb-2">For Case Managers</p>
                           <ul className="text-sm text-gray-700 space-y-1">
-                            <li>• TBRI® practitioner certification</li>
+                            <li>• TBRI® practitioner certification (as available by the certifying organization)</li>
                             <li>• Familiarity with all materials</li>
                             <li>• Skills in engaging children</li>
                             <li>• Regular supervision</li>
